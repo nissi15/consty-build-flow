@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Users, Calendar, DollarSign, TrendingUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import StatCard from '@/components/dashboard/StatCard';
 import {
   ChartContainer,
@@ -8,30 +9,8 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
-
-const stats = [
-  { title: 'Total Workers', value: '248', change: '+12% from last month', icon: Users },
-  { title: 'Attendance Rate', value: '94%', change: '+5% this week', icon: Calendar },
-  { title: 'Monthly Payroll', value: '$125K', change: 'On track', icon: DollarSign },
-  { title: 'Active Projects', value: '18', change: '+3 new projects', icon: TrendingUp },
-];
-
-const weeklyData = [
-  { day: 'Mon', attendance: 95, expenses: 12000 },
-  { day: 'Tue', attendance: 92, expenses: 15000 },
-  { day: 'Wed', attendance: 96, expenses: 11000 },
-  { day: 'Thu', attendance: 94, expenses: 13000 },
-  { day: 'Fri', attendance: 91, expenses: 14000 },
-  { day: 'Sat', attendance: 88, expenses: 9000 },
-  { day: 'Sun', attendance: 85, expenses: 7000 },
-];
-
-const expenseData = [
-  { name: 'Labor', value: 45000, color: '#FF8C00' },
-  { name: 'Materials', value: 30000, color: '#FFC94A' },
-  { name: 'Equipment', value: 15000, color: '#FFB84D' },
-  { name: 'Other', value: 10000, color: '#FFA500' },
-];
+import { useWorkers, useAttendance, useExpenses, useBudget } from '@/hooks/useSupabaseData';
+import { useMemo } from 'react';
 
 const chartConfig = {
   attendance: { label: 'Attendance %', color: 'hsl(var(--chart-1))' },
@@ -39,6 +18,80 @@ const chartConfig = {
 };
 
 const Dashboard = () => {
+  const { workers, loading: workersLoading } = useWorkers();
+  const { attendance, loading: attendanceLoading } = useAttendance();
+  const { expenses, loading: expensesLoading } = useExpenses();
+  const { budget, loading: budgetLoading } = useBudget();
+
+  const stats = useMemo(() => {
+    const totalWorkers = workers.filter(w => w.is_active).length;
+    const todayAttendance = attendance.filter(a => {
+      const today = new Date().toISOString().split('T')[0];
+      return a.date === today && a.status === 'present';
+    }).length;
+    const attendanceRate = totalWorkers > 0 ? Math.round((todayAttendance / totalWorkers) * 100) : 0;
+
+    return [
+      { title: 'Total Workers', value: totalWorkers.toString(), change: `${workers.length} total`, icon: Users },
+      { title: 'Attendance Rate', value: `${attendanceRate}%`, change: `${todayAttendance}/${totalWorkers} present today`, icon: Calendar },
+      { title: 'Monthly Expenses', value: `$${budget?.used_budget?.toFixed(0) || '0'}`, change: `of $${budget?.total_budget?.toFixed(0) || '0'} budget`, icon: DollarSign },
+      { title: 'Active Projects', value: '18', change: '+3 new projects', icon: TrendingUp },
+    ];
+  }, [workers, attendance, budget]);
+
+  const weeklyData = useMemo(() => {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return days.map(day => {
+      const dayExpenses = expenses
+        .filter(e => new Date(e.date).getDay() === days.indexOf(day) + 1)
+        .reduce((sum, e) => sum + Number(e.amount), 0);
+      
+      const dayAttendance = attendance
+        .filter(a => new Date(a.date).getDay() === days.indexOf(day) + 1 && a.status === 'present')
+        .length;
+      
+      const attendancePercent = workers.length > 0 ? Math.round((dayAttendance / workers.length) * 100) : 0;
+
+      return {
+        day,
+        attendance: attendancePercent,
+        expenses: dayExpenses,
+      };
+    });
+  }, [expenses, attendance, workers]);
+
+  const expenseData = useMemo(() => {
+    const categories = ['Labor', 'Materials', 'Equipment', 'Other'];
+    const colors = ['#FF8C00', '#FFC94A', '#FFB84D', '#FFA500'];
+    
+    return categories.map((category, idx) => {
+      const categoryExpenses = expenses
+        .filter(e => e.category === category)
+        .reduce((sum, e) => sum + Number(e.amount), 0);
+      
+      return {
+        name: category,
+        value: categoryExpenses,
+        color: colors[idx],
+      };
+    }).filter(item => item.value > 0);
+  }, [expenses]);
+
+  if (workersLoading || attendanceLoading || expensesLoading || budgetLoading) {
+    return (
+      <div className="p-6 space-y-6">
+        <Skeleton className="h-20 w-full" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32" />)}
+        </div>
+        <div className="grid md:grid-cols-2 gap-6">
+          <Skeleton className="h-[400px]" />
+          <Skeleton className="h-[400px]" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       <motion.div
@@ -107,36 +160,38 @@ const Dashboard = () => {
         </motion.div>
       </div>
 
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.6 }}
-      >
-        <Card className="p-6 glass">
-          <h3 className="text-lg font-semibold mb-4">Expense Breakdown</h3>
-          <ChartContainer config={chartConfig} className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={expenseData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                  label={(entry) => `${entry.name}: $${(Number(entry.value) / 1000).toFixed(0)}K`}
-                >
-                  {expenseData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <ChartTooltip content={<ChartTooltipContent />} />
-              </PieChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        </Card>
-      </motion.div>
+      {expenseData.length > 0 && (
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.6 }}
+        >
+          <Card className="p-6 glass">
+            <h3 className="text-lg font-semibold mb-4">Expense Breakdown</h3>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={expenseData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={5}
+                    dataKey="value"
+                    label={(entry) => `${entry.name}: $${(Number(entry.value) / 1000).toFixed(1)}K`}
+                  >
+                    {expenseData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </Card>
+        </motion.div>
+      )}
     </div>
   );
 };

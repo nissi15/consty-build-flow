@@ -7,8 +7,9 @@ import {
   Calendar, 
   DollarSign, 
   TrendingUp,
-  CheckCircle2,
-  ArrowRight
+  ArrowRight,
+  BarChart3,
+  Activity
 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 
@@ -16,30 +17,40 @@ const features = [
   {
     icon: Users,
     title: 'Worker Management',
-    description: 'Track and manage your entire workforce with ease'
+    description: 'Track and manage your workforce efficiently with real-time updates'
   },
   {
     icon: Calendar,
-    title: 'Attendance Tracking',
-    description: 'Monitor attendance and work hours in real-time'
+    title: 'Auto Attendance',
+    description: 'Automated expense tracking when marking attendance'
   },
   {
     icon: DollarSign,
-    title: 'Automated Payroll',
-    description: 'Process payments automatically and accurately'
+    title: 'Smart Payroll',
+    description: 'Automatic payroll calculations and budget updates'
+  },
+  {
+    icon: BarChart3,
+    title: 'Live Analytics',
+    description: 'Real-time dashboards with beautiful charts'
+  },
+  {
+    icon: Activity,
+    title: 'Activity Tracking',
+    description: 'Monitor all system activities and changes'
   },
   {
     icon: TrendingUp,
-    title: 'Budget Analytics',
-    description: 'Get insights into expenses and project costs'
+    title: 'Budget Control',
+    description: 'Keep projects within budget with auto-sync'
   }
 ];
 
 const stats = [
-  { value: '120+', label: 'Projects Managed' },
-  { value: '4,500+', label: 'Workers Tracked' },
-  { value: '98%', label: 'Client Satisfaction' },
-  { value: '$2M+', label: 'Payroll Processed' }
+  { value: '500+', label: 'Projects Managed' },
+  { value: '10K+', label: 'Workers Tracked' },
+  { value: '$50M+', label: 'Payroll Processed' },
+  { value: '99.9%', label: 'Uptime' }
 ];
 
 const Landing = () => {
@@ -124,7 +135,7 @@ const Landing = () => {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
@@ -132,10 +143,11 @@ const Landing = () => {
                 whileInView={{ y: 0, opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.05, y: -5 }}
               >
-                <Card className="p-6 glass hover:shadow-xl transition-all duration-300 h-full">
+                <Card className="p-6 glass hover:shadow-2xl transition-all duration-300 h-full">
                   <div className="p-3 rounded-xl bg-gradient-primary w-fit mb-4">
-                    <feature.icon className="h-6 w-6 text-white" />
+                    <feature.icon className="h-8 w-8 text-white" />
                   </div>
                   <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                   <p className="text-muted-foreground">{feature.description}</p>

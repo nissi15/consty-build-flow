@@ -14,7 +14,149 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activity_log: {
+        Row: {
+          action_type: string | null
+          created_at: string
+          id: string
+          message: string
+        }
+        Insert: {
+          action_type?: string | null
+          created_at?: string
+          id?: string
+          message: string
+        }
+        Update: {
+          action_type?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+        }
+        Relationships: []
+      }
+      attendance: {
+        Row: {
+          check_in_time: string | null
+          check_out_time: string | null
+          created_at: string
+          date: string
+          hours: number | null
+          id: string
+          lunch_money: number | null
+          status: string
+          worker_id: string
+        }
+        Insert: {
+          check_in_time?: string | null
+          check_out_time?: string | null
+          created_at?: string
+          date?: string
+          hours?: number | null
+          id?: string
+          lunch_money?: number | null
+          status: string
+          worker_id: string
+        }
+        Update: {
+          check_in_time?: string | null
+          check_out_time?: string | null
+          created_at?: string
+          date?: string
+          hours?: number | null
+          id?: string
+          lunch_money?: number | null
+          status?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      budget: {
+        Row: {
+          created_at: string
+          id: string
+          total_budget: number
+          used_budget: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          total_budget?: number
+          used_budget?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          total_budget?: number
+          used_budget?: number
+        }
+        Relationships: []
+      }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      workers: {
+        Row: {
+          created_at: string
+          daily_rate: number
+          id: string
+          is_active: boolean
+          lunch_allowance: number
+          name: string
+          role: string
+        }
+        Insert: {
+          created_at?: string
+          daily_rate?: number
+          id?: string
+          is_active?: boolean
+          lunch_allowance?: number
+          name: string
+          role: string
+        }
+        Update: {
+          created_at?: string
+          daily_rate?: number
+          id?: string
+          is_active?: boolean
+          lunch_allowance?: number
+          name?: string
+          role?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
