@@ -28,15 +28,27 @@ export const useWorkers = () => {
   }, []);
 
   const fetchWorkers = async () => {
-    const { data, error } = await supabase
-      .from('workers')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (!error && data) {
-      setWorkers(data);
+    try {
+      console.log('Fetching workers...');
+      const { data, error } = await supabase
+        .from('workers')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching workers:', error);
+        return;
+      }
+
+      console.log('Workers data received:', data);
+      if (data) {
+        setWorkers(data);
+      }
+    } catch (error) {
+      console.error('Error fetching workers:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return { workers, loading, refetch: fetchWorkers };

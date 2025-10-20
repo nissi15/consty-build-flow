@@ -20,5 +20,14 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/auth" replace />;
   }
 
+  // Ensure the session is established
+  if (!user.id) {
+    return (
+      <div className="p-6 space-y-6">
+        <Skeleton className="h-20 w-full" />
+      </div>
+    );
+  }
+
   return <>{children}</>;
 };

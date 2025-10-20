@@ -29,7 +29,7 @@ const Sidebar = () => {
       initial={{ x: -20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ delay: 0.1 }}
-      className="w-64 h-screen sticky top-0 glass border-r p-6 hidden lg:block"
+      className="w-64 h-screen sticky top-0 bg-white dark:bg-[#111827] border-r border-slate-300 dark:border-slate-800 p-6 hidden lg:block shadow-sm"
     >
       <nav className="space-y-2">
         {navItems.map((item, index) => (
@@ -45,8 +45,8 @@ const Sidebar = () => {
                 cn(
                   'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
                   isActive
-                    ? 'bg-gradient-primary text-white shadow-lg'
-                    : 'hover:bg-muted'
+                    ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg'
+                    : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
                 )
               }
             >

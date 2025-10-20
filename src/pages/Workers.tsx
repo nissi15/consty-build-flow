@@ -1,36 +1,114 @@
 import { motion } from 'framer-motion';
-import { Plus, Search, MoreVertical } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Plus, Calendar, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { useWorkers } from '@/hooks/useSupabaseData';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useWorkers, useAttendance } from '@/hooks/useSupabaseData';
 import { supabase } from '@/integrations/supabase/client';
-import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { useState, useEffect, useMemo } from 'react';
+import { format } from 'date-fns';
+import { toast } from 'sonner';
+import { WorkerStats } from '@/components/workers/WorkerStats';
+import { WorkerList } from '@/components/workers/WorkerList';
+import { WorkerFilters } from '@/components/workers/WorkerFilters';
 
-const Workers = () => {
-  const { workers, loading } = useWorkers();
+export default function Workers() {
+  const { workers, loading, refetch: refetchWorkers } = useWorkers();
+  const { attendance, loading: attendanceLoading } = useAttendance();
+
   const [search, setSearch] = useState('');
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedStatus, setSelectedStatus] = useState('all');
   const [isAddingWorker, setIsAddingWorker] = useState(false);
   const [newWorker, setNewWorker] = useState({
     name: '',
     role: '',
     daily_rate: '',
     lunch_allowance: '50',
+    contact_info: '',
+    join_date: format(new Date(), 'yyyy-MM-dd'),
   });
 
-  const filteredWorkers = workers.filter(w => 
-    w.name.toLowerCase().includes(search.toLowerCase()) ||
-    w.role.toLowerCase().includes(search.toLowerCase())
-  );
+  const stats = useMemo(() => {
+    const activeWorkers = workers.filter(w => w.is_active);
+    const today = new Date().toISOString().split('T')[0];
+    const presentToday = attendance.filter(a => 
+      a.date === today && a.status === 'present'
+    ).length;
+    
+    const avgDailyRate = activeWorkers.length > 0
+      ? Math.round(activeWorkers.reduce((sum, w) => sum + Number(w.daily_rate), 0) / activeWorkers.length)
+      : 0;
+
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - 7);
+    const weeklyHours = attendance
+      .filter(a => new Date(a.date) >= weekStart && a.status === 'present')
+      .reduce((sum, a) => sum + Number(a.hours || 8), 0);
+
+    return {
+      totalWorkers: activeWorkers.length,
+      presentToday,
+      avgDailyRate,
+      weeklyHours,
+    };
+  }, [workers, attendance]);
+
+  const filteredWorkers = useMemo(() => {
+    // First filter by search term
+    let filtered = workers.filter(w => 
+      w.name.toLowerCase().includes(search.toLowerCase()) ||
+      w.role.toLowerCase().includes(search.toLowerCase())
+    );
+
+    // Add attendance data to workers
+    filtered = filtered.map(worker => {
+      // Get today's attendance if a specific date is not selected
+      const targetDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : new Date().toISOString().split('T')[0];
+      const todayAttendance = attendance.find(a => 
+        a.worker_id === worker.id && a.date === targetDate
+      );
+
+      // Get weekly attendance stats
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - 7);
+      const weeklyAttendance = attendance.filter(a => 
+        a.worker_id === worker.id && 
+        new Date(a.date) >= weekStart
+      );
+
+      return {
+        ...worker,
+        attendance: todayAttendance,
+        weeklyAttendance: {
+          days: weeklyAttendance.length,
+          marked: weeklyAttendance.filter(a => a.status === 'present').length,
+        },
+      };
+    });
+
+    // Filter by status
+    if (selectedStatus !== 'all') {
+      if (selectedStatus === 'not_marked') {
+        filtered = filtered.filter(w => {
+          const today = new Date().toISOString().split('T')[0];
+          return !attendance.some(a => a.worker_id === w.id && a.date === today);
+        });
+      } else {
+        filtered = filtered.filter(w => {
+          const today = new Date().toISOString().split('T')[0];
+          return attendance.some(a => a.worker_id === w.id && a.date === today && a.status === selectedStatus);
+        });
+      }
+    }
+
+    return filtered;
+  }, [workers, attendance, search, selectedDate, selectedStatus]);
 
   const handleAddWorker = async () => {
-    if (!newWorker.name || !newWorker.role || !newWorker.daily_rate) {
+    if (!newWorker.name || !newWorker.role || !newWorker.daily_rate || !newWorker.join_date) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -41,14 +119,24 @@ const Workers = () => {
       role: newWorker.role,
       daily_rate: parseFloat(newWorker.daily_rate),
       lunch_allowance: parseFloat(newWorker.lunch_allowance),
+      contact_info: newWorker.contact_info,
+      join_date: newWorker.join_date,
+      is_active: true,
     });
 
     if (error) {
-      toast.error('Failed to add worker');
-      console.error(error);
+      console.error('Add worker error:', error);
+      toast.error(`Failed to add worker: ${error.message}`);
     } else {
       toast.success(`Worker ${newWorker.name} added successfully!`);
-      setNewWorker({ name: '', role: '', daily_rate: '', lunch_allowance: '50' });
+      setNewWorker({ 
+        name: '', 
+        role: '', 
+        daily_rate: '', 
+        lunch_allowance: '50',
+        contact_info: '',
+        join_date: format(new Date(), 'yyyy-MM-dd'),
+      });
       
       await supabase.from('activity_log').insert({
         message: `New worker added: ${newWorker.name}`,
@@ -61,145 +149,272 @@ const Workers = () => {
   if (loading) {
     return (
       <div className="p-6 space-y-6">
-        <Skeleton className="h-20 w-full" />
-        {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-4 w-48 mt-2" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32" />)}
+        </div>
+        <Skeleton className="h-[400px] w-full" />
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-      >
-        <div>
-          <h1 className="text-4xl font-bold mb-2">Workers</h1>
-          <p className="text-muted-foreground">Manage your workforce</p>
-        </div>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add Worker
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Worker</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div>
-                <Label htmlFor="name">Name *</Label>
-                <Input
-                  id="name"
-                  value={newWorker.name}
-                  onChange={(e) => setNewWorker({ ...newWorker, name: e.target.value })}
-                  placeholder="John Doe"
-                />
-              </div>
-              <div>
-                <Label htmlFor="role">Role *</Label>
-                <Input
-                  id="role"
-                  value={newWorker.role}
-                  onChange={(e) => setNewWorker({ ...newWorker, role: e.target.value })}
-                  placeholder="Foreman, Electrician, etc."
-                />
-              </div>
-              <div>
-                <Label htmlFor="daily_rate">Daily Rate (RWF) *</Label>
-                <Input
-                  id="daily_rate"
-                  type="number"
-                  value={newWorker.daily_rate}
-                  onChange={(e) => setNewWorker({ ...newWorker, daily_rate: e.target.value })}
-                  placeholder="350"
-                />
-              </div>
-              <div>
-                <Label htmlFor="lunch_allowance">Lunch Allowance (RWF)</Label>
-                <Input
-                  id="lunch_allowance"
-                  type="number"
-                  value={newWorker.lunch_allowance}
-                  onChange={(e) => setNewWorker({ ...newWorker, lunch_allowance: e.target.value })}
-                  placeholder="50"
-                />
-              </div>
-              <Button onClick={handleAddWorker} disabled={isAddingWorker} className="w-full">
-                {isAddingWorker ? 'Adding...' : 'Add Worker'}
-              </Button>
+    <div className="p-6 space-y-6 bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 min-h-screen">
+      <div className="space-y-6">
+        <motion.div
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+        >
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-4xl font-bold mb-2">Worker Management</h1>
+              <p className="text-muted-foreground">Manage your construction team and track their performance</p>
             </div>
-          </DialogContent>
-        </Dialog>
-      </motion.div>
-
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1 }}
-      >
-        <Card className="p-4 glass">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search workers..." 
-              className="pl-10"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="gap-2 bg-purple-500 hover:bg-purple-600">
+                  <Plus className="h-4 w-4" />
+                  Add Worker
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Worker</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div>
+                    <Label htmlFor="name">Worker Name *</Label>
+                    <Input
+                      id="name"
+                      value={newWorker.name}
+                      onChange={(e) => setNewWorker({ ...newWorker, name: e.target.value })}
+                      placeholder="e.g., John Smith"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="role">Role/Position *</Label>
+                    <Input
+                      id="role"
+                      value={newWorker.role}
+                      onChange={(e) => setNewWorker({ ...newWorker, role: e.target.value })}
+                      placeholder="e.g., Foreman, Carpenter, Electrician"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="daily_rate">Daily Rate (RWF) *</Label>
+                      <Input
+                        id="daily_rate"
+                        type="number"
+                        value={newWorker.daily_rate}
+                        onChange={(e) => setNewWorker({ ...newWorker, daily_rate: e.target.value })}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="lunch_allowance">Lunch Cost (RWF) *</Label>
+                      <Input
+                        id="lunch_allowance"
+                        type="number"
+                        value={newWorker.lunch_allowance}
+                        onChange={(e) => setNewWorker({ ...newWorker, lunch_allowance: e.target.value })}
+                        placeholder="50"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="contact_info">Contact Information</Label>
+                    <Input
+                      id="contact_info"
+                      value={newWorker.contact_info}
+                      onChange={(e) => setNewWorker({ ...newWorker, contact_info: e.target.value })}
+                      placeholder="Phone number or email"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="join_date">Join Date *</Label>
+                    <div className="relative">
+                      <Input
+                        id="join_date"
+                        type="date"
+                        value={newWorker.join_date}
+                        onChange={(e) => setNewWorker({ ...newWorker, join_date: e.target.value })}
+                      />
+                      <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setIsAddingWorker(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleAddWorker} disabled={isAddingWorker}>
+                      {isAddingWorker ? 'Adding...' : 'Save Worker'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
-        </Card>
-      </motion.div>
+        </motion.div>
 
-      <div className="grid gap-4">
-        {filteredWorkers.map((worker, index) => (
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+        >
+          <WorkerStats {...stats} />
+        </motion.div>
+
+        {workers.length === 0 ? (
           <motion.div
-            key={worker.id}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1 + index * 0.05 }}
-            whileHover={{ scale: 1.01 }}
+            transition={{ delay: 0.1 }}
+            className="text-center py-12"
           >
-            <Card className="p-6 glass hover:shadow-lg transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-gradient-primary text-white font-semibold">
-                      {worker.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-4">
+              <Users className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">No workers yet</h3>
+            <p className="text-muted-foreground mb-4">
+              Start building your team by adding your first construction worker. Track their attendance, manage payroll, and monitor performance.
+            </p>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="gap-2 bg-purple-500 hover:bg-purple-600">
+                  <Plus className="h-4 w-4" />
+                  Add Your First Worker
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Worker</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
                   <div>
-                    <h3 className="font-semibold text-lg">{worker.name}</h3>
-                    <p className="text-sm text-muted-foreground">{worker.role}</p>
+                    <Label htmlFor="name">Worker Name *</Label>
+                    <Input
+                      id="name"
+                      value={newWorker.name}
+                      onChange={(e) => setNewWorker({ ...newWorker, name: e.target.value })}
+                      placeholder="e.g., John Smith"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="role">Role/Position *</Label>
+                    <Input
+                      id="role"
+                      value={newWorker.role}
+                      onChange={(e) => setNewWorker({ ...newWorker, role: e.target.value })}
+                      placeholder="e.g., Foreman, Carpenter, Electrician"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="daily_rate">Daily Rate (RWF) *</Label>
+                      <Input
+                        id="daily_rate"
+                        type="number"
+                        value={newWorker.daily_rate}
+                        onChange={(e) => setNewWorker({ ...newWorker, daily_rate: e.target.value })}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="lunch_allowance">Lunch Cost (RWF) *</Label>
+                      <Input
+                        id="lunch_allowance"
+                        type="number"
+                        value={newWorker.lunch_allowance}
+                        onChange={(e) => setNewWorker({ ...newWorker, lunch_allowance: e.target.value })}
+                        placeholder="50"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="contact_info">Contact Information</Label>
+                    <Input
+                      id="contact_info"
+                      value={newWorker.contact_info}
+                      onChange={(e) => setNewWorker({ ...newWorker, contact_info: e.target.value })}
+                      placeholder="Phone number or email"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="join_date">Join Date *</Label>
+                    <div className="relative">
+                      <Input
+                        id="join_date"
+                        type="date"
+                        value={newWorker.join_date}
+                        onChange={(e) => setNewWorker({ ...newWorker, join_date: e.target.value })}
+                      />
+                      <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setIsAddingWorker(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleAddWorker} disabled={isAddingWorker}>
+                      {isAddingWorker ? 'Adding...' : 'Save Worker'}
+                    </Button>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-6">
-                  <div className="hidden sm:block text-right">
-                    <p className="text-sm text-muted-foreground">Daily Rate</p>
-                    <p className="font-medium">RWF {worker.daily_rate}</p>
-                  </div>
-                  <div className="hidden sm:block text-right">
-                    <p className="text-sm text-muted-foreground">Lunch</p>
-                    <p className="font-medium">RWF {worker.lunch_allowance}</p>
-                  </div>
-                  <Badge variant={worker.is_active ? 'default' : 'secondary'}>
-                    {worker.is_active ? 'Active' : 'Inactive'}
-                  </Badge>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
+              </DialogContent>
+            </Dialog>
           </motion.div>
-        ))}
+        ) : (
+          <>
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="space-y-4"
+            >
+              <WorkerFilters
+                search={search}
+                onSearchChange={setSearch}
+                date={selectedDate}
+                onDateChange={setSelectedDate}
+                status={selectedStatus}
+                onStatusChange={setSelectedStatus}
+              />
+              <WorkerList 
+                workers={filteredWorkers}
+                onEdit={(worker) => {
+                  // TODO: Implement edit functionality
+                  console.log('Edit worker:', worker);
+                }}
+                onDelete={async (worker) => {
+                  const { error } = await supabase
+                    .from('workers')
+                    .delete()
+                    .eq('id', worker.id);
+
+                  if (error) {
+                    toast.error('Failed to delete worker');
+                    console.error(error);
+                  } else {
+                    toast.success(`Worker ${worker.name} deleted successfully`);
+                    await supabase.from('activity_log').insert({
+                      message: `Worker deleted: ${worker.name}`,
+                      action_type: 'worker',
+                    });
+                  }
+                }}
+              />
+            </motion.div>
+          </>
+        )}
       </div>
     </div>
   );
 };
 
-export default Workers;
