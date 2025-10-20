@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: Users, label: 'Workers', path: '/workers' },
-  { icon: Calendar, label: 'Attendance', path: '/attendance' },
+  { icon: Calendar, label: 'Workforce', path: '/workforce' },
   { icon: DollarSign, label: 'Payroll', path: '/payroll' },
   { icon: TrendingUp, label: 'Expenses', path: '/expenses' },
   { icon: PiggyBank, label: 'Budget', path: '/budget' },

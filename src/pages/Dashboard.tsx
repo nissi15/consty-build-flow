@@ -9,8 +9,10 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { formatRWF } from '@/lib/utils';
 import { useWorkers, useAttendance, useExpenses, useBudget } from '@/hooks/useSupabaseData';
 import { useMemo } from 'react';
+import BudgetGauge from '@/components/dashboard/BudgetGauge';
 
 const chartConfig = {
   attendance: { label: 'Attendance %', color: 'hsl(var(--chart-1))' },
@@ -31,13 +33,15 @@ const Dashboard = () => {
     }).length;
     const attendanceRate = totalWorkers > 0 ? Math.round((todayAttendance / totalWorkers) * 100) : 0;
 
+    const used = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+    const total = Number(budget?.total_budget || 0);
     return [
       { title: 'Total Workers', value: totalWorkers.toString(), change: `${workers.length} total`, icon: Users },
       { title: 'Attendance Rate', value: `${attendanceRate}%`, change: `${todayAttendance}/${totalWorkers} present today`, icon: Calendar },
-      { title: 'Monthly Expenses', value: `RWF ${budget?.used_budget?.toFixed(0) || '0'}`, change: `of RWF ${budget?.total_budget?.toFixed(0) || '0'} budget`, icon: DollarSign },
-      { title: 'Active Projects', value: '18', change: '+3 new projects', icon: TrendingUp },
+      { title: 'Total Spent', value: formatRWF(used), change: `of ${formatRWF(total)} budget`, icon: DollarSign },
+      { title: 'Active Projects', value: '—', change: 'Tracking 1 budget', icon: TrendingUp },
     ];
-  }, [workers, attendance, budget]);
+  }, [workers, attendance, budget, expenses]);
 
   const weeklyData = useMemo(() => {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -61,8 +65,8 @@ const Dashboard = () => {
   }, [expenses, attendance, workers]);
 
   const expenseData = useMemo(() => {
-    const categories = ['Labor', 'Materials', 'Equipment', 'Other'];
-    const colors = ['#FF8C00', '#FFC94A', '#FFB84D', '#FFA500'];
+    const categories = ['Labor', 'Lunch', 'Materials', 'Equipment', 'Other'];
+    const colors = ['#FF8C00', '#FDBA74', '#FFC94A', '#FFB84D', '#FFA500'];
     
     return categories.map((category, idx) => {
       const categoryExpenses = expenses
@@ -76,6 +80,12 @@ const Dashboard = () => {
       };
     }).filter(item => item.value > 0);
   }, [expenses]);
+
+  const budgetVsActualData = useMemo(() => {
+    const total = Number(budget?.total_budget || 0);
+    const used = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+    return [{ name: 'Project', Budget: total, Actual: used }];
+  }, [budget, expenses]);
 
   if (workersLoading || attendanceLoading || expensesLoading || budgetLoading) {
     return (
@@ -138,24 +148,8 @@ const Dashboard = () => {
           transition={{ delay: 0.5 }}
         >
           <Card className="p-6 glass">
-            <h3 className="text-lg font-semibold mb-4">Weekly Expenses</h3>
-            <ChartContainer config={chartConfig} className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weeklyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis stroke="hsl(var(--muted-foreground))" />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line 
-                    type="monotone" 
-                    dataKey="expenses" 
-                    stroke="hsl(var(--chart-2))" 
-                    strokeWidth={3}
-                    dot={{ fill: 'hsl(var(--chart-2))', r: 4 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+            <h3 className="text-lg font-semibold mb-4">Remaining Budget</h3>
+            <BudgetGauge totalBudget={Number(budget?.total_budget || 0)} totalSpent={Number(budget?.used_budget || 0)} />
           </Card>
         </motion.div>
       </div>
@@ -192,6 +186,58 @@ const Dashboard = () => {
           </Card>
         </motion.div>
       )}
+
+      {/* Second row: Weekly expenses trend and Budget vs Actual */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.7 }}
+        >
+          <Card className="p-6 glass">
+            <h3 className="text-lg font-semibold mb-4">Weekly Expenses</h3>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={weeklyData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line
+                    type="monotone"
+                    dataKey="expenses"
+                    stroke="hsl(var(--chart-2))"
+                    strokeWidth={3}
+                    dot={{ fill: 'hsl(var(--chart-2))', r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.8 }}
+        >
+          <Card className="p-6 glass">
+            <h3 className="text-lg font-semibold mb-4">Budget vs Actual</h3>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={budgetVsActualData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="Budget" fill="hsl(var(--chart-1))" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="Actual" fill="hsl(var(--chart-2))" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </Card>
+        </motion.div>
+      </div>
     </div>
   );
 };
