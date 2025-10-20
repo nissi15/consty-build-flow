@@ -15,6 +15,7 @@ import Payroll from "./pages/Payroll";
 import Expenses from "./pages/Expenses";
 import Budget from "./pages/Budget";
 import Activity from "./pages/Activity";
+import Workforce from "./pages/Workforce";
 import Settings from "./pages/Settings";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import NotFound from "./pages/NotFound";
@@ -36,6 +37,7 @@ const App = () => (
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/workers" element={<Workers />} />
                 <Route path="/attendance" element={<Attendance />} />
+                <Route path="/workforce" element={<Workforce />} />
                 <Route path="/payroll" element={<Payroll />} />
                 <Route path="/expenses" element={<Expenses />} />
                 <Route path="/budget" element={<Budget />} />

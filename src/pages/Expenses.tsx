@@ -9,21 +9,9 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
-
-const expenseCategories = [
-  { name: 'Labor', amount: 45000, budget: 50000, color: '#FF8C00' },
-  { name: 'Materials', amount: 30000, budget: 35000, color: '#FFC94A' },
-  { name: 'Equipment', amount: 15000, budget: 18000, color: '#FFB84D' },
-  { name: 'Transportation', amount: 8000, budget: 10000, color: '#FFA500' },
-];
-
-const recentExpenses = [
-  { id: 1, description: 'Steel Beams', category: 'Materials', amount: 12500, date: '2025-01-18' },
-  { id: 2, description: 'Labor Payment', category: 'Labor', amount: 15000, date: '2025-01-17' },
-  { id: 3, description: 'Excavator Rental', category: 'Equipment', amount: 3500, date: '2025-01-16' },
-  { id: 4, description: 'Concrete Mix', category: 'Materials', amount: 4200, date: '2025-01-15' },
-  { id: 5, description: 'Truck Fuel', category: 'Transportation', amount: 800, date: '2025-01-14' },
-];
+import { useExpenses, useBudget } from '@/hooks/useSupabaseData';
+import { useMemo } from 'react';
+import { formatRWF } from '@/lib/utils';
 
 const chartConfig = {
   amount: { label: 'Spent', color: 'hsl(var(--chart-1))' },
@@ -31,7 +19,24 @@ const chartConfig = {
 };
 
 const Expenses = () => {
-  const totalExpenses = expenseCategories.reduce((sum, cat) => sum + cat.amount, 0);
+  const { expenses } = useExpenses();
+  const { budget } = useBudget();
+
+  const categories = useMemo(() => {
+    const map: Record<string, { name: string; amount: number; budget: number }> = {};
+    for (const e of expenses) {
+      const key = e.category || 'Other';
+      if (!map[key]) map[key] = { name: key, amount: 0, budget: 0 };
+      map[key].amount += Number(e.amount);
+    }
+    // Distribute a simple budget baseline from total_budget
+    const totalBudget = Number(budget?.total_budget || 0);
+    const perCat = Object.keys(map).length > 0 ? totalBudget / Object.keys(map).length : 0;
+    for (const key of Object.keys(map)) map[key].budget = perCat;
+    return Object.values(map);
+  }, [expenses, budget]);
+
+  const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
 
   return (
     <div className="p-6 space-y-6">
@@ -64,14 +69,14 @@ const Expenses = () => {
         <Card className="p-6 glass">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <p className="text-muted-foreground mb-1">Total Expenses This Month</p>
-              <h2 className="text-4xl font-bold">RWF {totalExpenses.toLocaleString()}</h2>
+              <p className="text-muted-foreground mb-1">Total Expenses</p>
+              <h2 className="text-4xl font-bold">{formatRWF(totalExpenses)}</h2>
             </div>
           </div>
           
           <ChartContainer config={chartConfig} className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={expenseCategories}>
+              <BarChart data={categories}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
                 <YAxis stroke="hsl(var(--muted-foreground))" />
@@ -92,7 +97,7 @@ const Expenses = () => {
         <Card className="p-6 glass">
           <h3 className="text-lg font-semibold mb-4">Recent Expenses</h3>
           <div className="space-y-3">
-            {recentExpenses.map((expense, index) => (
+            {expenses.slice(0, 20).map((expense, index) => (
               <motion.div
                 key={expense.id}
                 initial={{ x: 20, opacity: 0 }}
@@ -101,13 +106,13 @@ const Expenses = () => {
                 className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
               >
                 <div>
-                  <p className="font-medium">{expense.description}</p>
+                  <p className="font-medium">{expense.description || expense.category}</p>
                   <div className="flex items-center gap-2 mt-1">
                     <Badge variant="outline">{expense.category}</Badge>
                     <span className="text-sm text-muted-foreground">{expense.date}</span>
                   </div>
                 </div>
-                <p className="text-lg font-bold">RWF {expense.amount.toLocaleString()}</p>
+                <p className="text-lg font-bold">{formatRWF(expense.amount)}</p>
               </motion.div>
             ))}
           </div>
