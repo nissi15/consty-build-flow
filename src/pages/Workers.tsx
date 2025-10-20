@@ -109,7 +109,7 @@ const Workers = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="daily_rate">Daily Rate ($) *</Label>
+                <Label htmlFor="daily_rate">Daily Rate (RWF) *</Label>
                 <Input
                   id="daily_rate"
                   type="number"
@@ -119,7 +119,7 @@ const Workers = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="lunch_allowance">Lunch Allowance ($)</Label>
+                <Label htmlFor="lunch_allowance">Lunch Allowance (RWF)</Label>
                 <Input
                   id="lunch_allowance"
                   type="number"
@@ -180,11 +180,11 @@ const Workers = () => {
                 <div className="flex items-center gap-6">
                   <div className="hidden sm:block text-right">
                     <p className="text-sm text-muted-foreground">Daily Rate</p>
-                    <p className="font-medium">${worker.daily_rate}</p>
+                    <p className="font-medium">RWF {worker.daily_rate}</p>
                   </div>
                   <div className="hidden sm:block text-right">
                     <p className="text-sm text-muted-foreground">Lunch</p>
-                    <p className="font-medium">${worker.lunch_allowance}</p>
+                    <p className="font-medium">RWF {worker.lunch_allowance}</p>
                   </div>
                   <Badge variant={worker.is_active ? 'default' : 'secondary'}>
                     {worker.is_active ? 'Active' : 'Inactive'}

@@ -72,7 +72,7 @@ const Budget = () => {
               <p className="text-muted-foreground">Total Budget</p>
               <TrendingUp className="h-5 w-5 text-primary" />
             </div>
-            <h3 className="text-3xl font-bold">${totalBudget.toLocaleString()}</h3>
+            <h3 className="text-3xl font-bold">RWF {totalBudget.toLocaleString()}</h3>
           </Card>
         </motion.div>
 
@@ -86,7 +86,7 @@ const Budget = () => {
               <p className="text-muted-foreground">Total Spent</p>
               <TrendingDown className="h-5 w-5 text-destructive" />
             </div>
-            <h3 className="text-3xl font-bold">${totalSpent.toLocaleString()}</h3>
+            <h3 className="text-3xl font-bold">RWF {totalSpent.toLocaleString()}</h3>
           </Card>
         </motion.div>
 
@@ -100,7 +100,7 @@ const Budget = () => {
               <p className="text-muted-foreground">Remaining</p>
               <TrendingUp className="h-5 w-5 text-primary" />
             </div>
-            <h3 className="text-3xl font-bold">${totalRemaining.toLocaleString()}</h3>
+            <h3 className="text-3xl font-bold">RWF {totalRemaining.toLocaleString()}</h3>
           </Card>
         </motion.div>
       </div>
@@ -124,7 +124,7 @@ const Budget = () => {
                     <div>
                       <h3 className="text-xl font-semibold mb-1">{project.name}</h3>
                       <p className="text-sm text-muted-foreground">
-                        Budget: ${project.budget.toLocaleString()}
+                        Budget: RWF {project.budget.toLocaleString()}
                       </p>
                     </div>
                     <div className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -140,8 +140,8 @@ const Budget = () => {
 
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span>Spent: ${project.spent.toLocaleString()}</span>
-                      <span>Remaining: ${project.remaining.toLocaleString()}</span>
+                      <span>Spent: RWF {project.spent.toLocaleString()}</span>
+                      <span>Remaining: RWF {project.remaining.toLocaleString()}</span>
                     </div>
                     <Progress 
                       value={percentSpent} 

@@ -65,7 +65,7 @@ const Expenses = () => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <p className="text-muted-foreground mb-1">Total Expenses This Month</p>
-              <h2 className="text-4xl font-bold">${totalExpenses.toLocaleString()}</h2>
+              <h2 className="text-4xl font-bold">RWF {totalExpenses.toLocaleString()}</h2>
             </div>
           </div>
           
@@ -107,7 +107,7 @@ const Expenses = () => {
                     <span className="text-sm text-muted-foreground">{expense.date}</span>
                   </div>
                 </div>
-                <p className="text-lg font-bold">${expense.amount.toLocaleString()}</p>
+                <p className="text-lg font-bold">RWF {expense.amount.toLocaleString()}</p>
               </motion.div>
             ))}
           </div>

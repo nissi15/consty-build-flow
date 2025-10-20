@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/card';
 import { 
   Users, 
@@ -49,11 +50,14 @@ const features = [
 const stats = [
   { value: '500+', label: 'Projects Managed' },
   { value: '10K+', label: 'Workers Tracked' },
-  { value: '$50M+', label: 'Payroll Processed' },
+  { value: 'RWF 50M+', label: 'Payroll Processed' },
   { value: '99.9%', label: 'Uptime' }
 ];
 
 const Landing = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -79,17 +83,22 @@ const Landing = () => {
               automate payroll, manage budgets, and grow your projects with ease.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/dashboard">
-                <Button size="lg" className="text-lg px-8 py-6 group">
-                  Get Started
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-              <Link to="/dashboard">
-                <Button size="lg" variant="outline" className="text-lg px-8 py-6">
-                  View Dashboard Demo
-                </Button>
-              </Link>
+              <Button 
+                size="lg" 
+                className="text-lg px-8 py-6 group"
+                onClick={() => navigate(user ? '/dashboard' : '/auth')}
+              >
+                {user ? 'Go to Dashboard' : 'Get Started'}
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="text-lg px-8 py-6"
+                onClick={() => navigate(user ? '/dashboard' : '/auth')}
+              >
+                {user ? 'Dashboard' : 'Sign In'}
+              </Button>
             </div>
           </motion.div>
         </div>
@@ -173,11 +182,13 @@ const Landing = () => {
             <p className="text-xl text-muted-foreground mb-8">
               Join thousands of construction companies managing smarter.
             </p>
-            <Link to="/dashboard">
-              <Button size="lg" className="text-lg px-8 py-6">
-                Start Free Trial
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              className="text-lg px-8 py-6"
+              onClick={() => navigate(user ? '/dashboard' : '/auth')}
+            >
+              {user ? 'Go to Dashboard' : 'Start Free Trial'}
+            </Button>
           </Card>
         </motion.div>
       </section>

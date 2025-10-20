@@ -47,8 +47,8 @@ const Payroll = () => {
         <Card className="p-6 glass">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground mb-1">Total Monthly Payroll</p>
-              <h2 className="text-4xl font-bold">${totalPayroll.toLocaleString()}</h2>
+          <p className="text-muted-foreground mb-1">Total Monthly Payroll</p>
+          <h2 className="text-4xl font-bold">RWF {totalPayroll.toLocaleString()}</h2>
             </div>
             <div className="p-4 rounded-xl bg-gradient-primary">
               <DollarSign className="h-8 w-8 text-white" />
@@ -69,10 +69,10 @@ const Payroll = () => {
               <thead>
                 <tr className="border-b">
                   <th className="text-left py-3 px-4">Employee</th>
-                  <th className="text-left py-3 px-4">Rate/Hr</th>
+                  <th className="text-left py-3 px-4">Rate/Hr (RWF)</th>
                   <th className="text-left py-3 px-4">Hours</th>
-                  <th className="text-left py-3 px-4">Gross</th>
-                  <th className="text-left py-3 px-4">Net Pay</th>
+                  <th className="text-left py-3 px-4">Gross (RWF)</th>
+                  <th className="text-left py-3 px-4">Net Pay (RWF)</th>
                   <th className="text-left py-3 px-4">Status</th>
                   <th className="text-left py-3 px-4">Action</th>
                 </tr>
@@ -87,10 +87,10 @@ const Payroll = () => {
                     className="border-b hover:bg-muted/30 transition-colors"
                   >
                     <td className="py-4 px-4 font-medium">{record.name}</td>
-                    <td className="py-4 px-4">${record.rate}</td>
+                    <td className="py-4 px-4">RWF {record.rate}</td>
                     <td className="py-4 px-4">{record.hours}</td>
-                    <td className="py-4 px-4">${record.gross.toLocaleString()}</td>
-                    <td className="py-4 px-4 font-semibold">${record.net.toLocaleString()}</td>
+                    <td className="py-4 px-4">RWF {record.gross.toLocaleString()}</td>
+                    <td className="py-4 px-4 font-semibold">RWF {record.net.toLocaleString()}</td>
                     <td className="py-4 px-4">
                       <Badge
                         variant={

@@ -34,7 +34,7 @@ const Dashboard = () => {
     return [
       { title: 'Total Workers', value: totalWorkers.toString(), change: `${workers.length} total`, icon: Users },
       { title: 'Attendance Rate', value: `${attendanceRate}%`, change: `${todayAttendance}/${totalWorkers} present today`, icon: Calendar },
-      { title: 'Monthly Expenses', value: `$${budget?.used_budget?.toFixed(0) || '0'}`, change: `of $${budget?.total_budget?.toFixed(0) || '0'} budget`, icon: DollarSign },
+      { title: 'Monthly Expenses', value: `RWF ${budget?.used_budget?.toFixed(0) || '0'}`, change: `of RWF ${budget?.total_budget?.toFixed(0) || '0'} budget`, icon: DollarSign },
       { title: 'Active Projects', value: '18', change: '+3 new projects', icon: TrendingUp },
     ];
   }, [workers, attendance, budget]);
@@ -179,7 +179,7 @@ const Dashboard = () => {
                     outerRadius={100}
                     paddingAngle={5}
                     dataKey="value"
-                    label={(entry) => `${entry.name}: $${(Number(entry.value) / 1000).toFixed(1)}K`}
+                    label={(entry) => `${entry.name}: RWF ${(Number(entry.value) / 1000).toFixed(1)}K`}
                   >
                     {expenseData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
