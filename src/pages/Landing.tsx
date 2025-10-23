@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { useState, useRef } from 'react';
-import { ArrowRight, Users, DollarSign, TrendingUp, Clock, CheckCircle, Star, Zap } from 'lucide-react';
+import { ArrowRight, Users, DollarSign, TrendingUp, Clock, CheckCircle, Star, Zap, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Orb from '@/components/Orb';
@@ -298,6 +298,7 @@ export default function Landing() {
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const stats = [
     { icon: TrendingUp, value: "500+", label: "Projects Managed" },
@@ -383,19 +384,20 @@ export default function Landing() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="sticky top-0 z-50 p-4"
+        className="sticky top-0 z-50 px-3 md:px-4 py-3 md:py-4"
       >
         <GlassSurface className="rounded-2xl" blur="2xl" opacity={3}>
-          <nav className="flex items-center justify-between px-6 py-4">
+          <nav className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
             <motion.div
               className="text-2xl font-bold"
               whileHover={{ scale: 1.05 }}
             >
-              <GradientText className="text-3xl">Constry</GradientText>
+              <GradientText className="text-2xl md:text-3xl">Constry</GradientText>
             </motion.div>
             
+            {/* Desktop Navigation */}
             <motion.div
-              className="flex items-center space-x-6"
+              className="hidden md:flex items-center space-x-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
@@ -431,18 +433,69 @@ export default function Landing() {
                 />
               </motion.a>
               <FloatingButton onClick={() => navigate(user ? '/dashboard' : '/auth')}>
-                {user ? 'Go to Dashboard' : 'Get Started'}
+                {user ? 'Dashboard' : 'Get Started'}
                 <ArrowRight className="h-4 w-4" />
               </FloatingButton>
             </motion.div>
+
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden text-white p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </nav>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden border-t border-white/10 px-4 py-4 space-y-3"
+            >
+              <a
+                href="#features"
+                className="block text-gray-300 hover:text-white transition-colors py-2 text-base"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Features
+              </a>
+              <a
+                href="#stats"
+                className="block text-gray-300 hover:text-white transition-colors py-2 text-base"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Stats
+              </a>
+              <a
+                href="#reviews"
+                className="block text-gray-300 hover:text-white transition-colors py-2 text-base"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Reviews
+              </a>
+              <button
+                onClick={() => {
+                  navigate(user ? '/dashboard' : '/auth');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                {user ? 'Go to Dashboard' : 'Get Started'}
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </motion.div>
+          )}
         </GlassSurface>
       </motion.div>
 
       {/* Hero Section */}
       <motion.section
         style={{ y, opacity }}
-        className="relative z-10 flex flex-col items-center justify-center min-h-[75vh] px-6 text-center pt-20"
+        className="relative z-10 flex flex-col items-center justify-center min-h-[75vh] px-4 md:px-6 text-center pt-24 md:pt-20"
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -516,7 +569,7 @@ export default function Landing() {
       {/* Stats Section */}
       <motion.section
         id="stats"
-        className="relative py-20 px-6"
+        className="relative py-12 md:py-20 px-4 md:px-6"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
@@ -556,7 +609,7 @@ export default function Landing() {
       {/* Features Section */}
       <motion.section
         id="features"
-        className="relative z-10 py-20 px-6"
+        className="relative z-10 py-12 md:py-20 px-4 md:px-6"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
@@ -596,7 +649,7 @@ export default function Landing() {
       {/* Reviews Section */}
       <motion.section
         id="reviews"
-        className="relative z-10 py-20 px-6"
+        className="relative z-10 py-12 md:py-20 px-4 md:px-6"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
@@ -637,7 +690,7 @@ export default function Landing() {
 
       {/* CTA Section */}
       <motion.section
-        className="relative py-20 px-6"
+        className="relative py-12 md:py-20 px-4 md:px-6"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
