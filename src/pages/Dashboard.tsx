@@ -192,11 +192,12 @@ const Dashboard = () => {
           <p className="opacity-90">Here's an overview of your construction site today.</p>
           <p className="text-sm opacity-80 mt-2">{format(new Date(), 'EEEE, MMM dd')}</p>
         </motion.div>
-        <div className="flex items-end">
+        <div className="flex items-end gap-3">
           <ExportButton
             expenses={expenses}
             attendance={attendance}
             workers={workers}
+            budget={budget}
             className="w-full sm:w-auto"
           />
         </div>

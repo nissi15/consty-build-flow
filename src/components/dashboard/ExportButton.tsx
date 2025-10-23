@@ -1,76 +1,51 @@
-import { Download } from 'lucide-react';
+import { memo } from 'react';
+import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { exportToCSV, prepareExpenseData, prepareAttendanceData, prepareBudgetData } from '@/lib/export-utils';
+import { generateWeeklyPDFReport } from '@/lib/pdf-export';
 import { toast } from 'sonner';
 
 interface ExportButtonProps {
   expenses: any[];
   attendance: any[];
   workers: any[];
+  budget?: any;
   className?: string;
 }
 
-export function ExportButton({ expenses, attendance, workers, className }: ExportButtonProps) {
-  const handleExport = (type: 'expenses' | 'attendance' | 'budget') => {
+export const ExportButton = memo(function ExportButton({ expenses, attendance, workers, budget, className }: ExportButtonProps) {
+
+  const handlePDFExport = async () => {
     try {
-      switch (type) {
-        case 'expenses':
-          exportToCSV({
-            data: prepareExpenseData(expenses),
-            filename: 'expenses',
-            headers: ['Date', 'Category', 'Amount', 'Description'],
-          });
-          break;
-        
-        case 'attendance':
-          exportToCSV({
-            data: prepareAttendanceData(attendance, workers),
-            filename: 'attendance',
-            headers: ['Date', 'Worker', 'Status', 'Check In', 'Check Out', 'Hours', 'Lunch Money'],
-          });
-          break;
-        
-        case 'budget':
-          exportToCSV({
-            data: prepareBudgetData(expenses),
-            filename: 'budget_report',
-            headers: ['Week', 'Total Expenses', 'Labor', 'Materials', 'Equipment', 'Transport', 'Miscellaneous'],
-          });
-          break;
-      }
+      console.log('Starting PDF export...', { expenses, attendance, workers, budget });
+      toast.loading('Generating PDF report...');
       
-      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} report exported successfully`);
+      // Small delay to ensure toast shows
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      generateWeeklyPDFReport({
+        expenses,
+        attendance,
+        workers,
+        budget,
+      });
+      
+      toast.dismiss();
+      toast.success('PDF Weekly Report generated successfully!');
     } catch (error) {
-      console.error('Export error:', error);
-      toast.error('Failed to export report');
+      console.error('PDF export error:', error);
+      toast.dismiss();
+      toast.error(`Failed to generate PDF report: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" className={className}>
-          <Download className="h-4 w-4 mr-2" />
-          Export Report
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => handleExport('expenses')}>
-          Export Expenses
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('attendance')}>
-          Export Attendance
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('budget')}>
-          Export Budget Report
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button 
+      onClick={handlePDFExport} 
+      variant="default"
+      className={`gap-2 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 ${className}`}
+    >
+      <FileText className="h-4 w-4" />
+      Download Weekly Report
+    </Button>
   );
-}
+});
