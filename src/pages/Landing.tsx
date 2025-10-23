@@ -67,9 +67,9 @@ const GlassSurface = memo(({
   border?: boolean;
   shadow?: boolean;
 }) => {
-  // Reduce blur on mobile for better performance
+  // Slightly reduce blur on mobile for performance (xl → lg, not md)
   const mobile = isMobile();
-  const effectiveBlur = mobile && blur === "xl" ? "md" : mobile && blur === "2xl" ? "lg" : blur;
+  const effectiveBlur = mobile && blur === "xl" ? "lg" : mobile && blur === "2xl" ? "xl" : blur;
   
   const blurClass = {
     sm: "backdrop-blur-sm",
@@ -116,20 +116,20 @@ const GlassmorphicCard = memo(({ children, className = "", delay = 0 }: { childr
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: mobile ? 15 : 30 }} // Less movement on mobile
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: mobile ? 15 : 30 }}
-      transition={{ duration: mobile ? 0.3 : 0.5, delay: mobile ? 0 : delay }} // Faster, no stagger on mobile
+      initial={{ opacity: 0, y: mobile ? 20 : 30 }} // Slightly less movement on mobile
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: mobile ? 20 : 30 }}
+      transition={{ duration: mobile ? 0.4 : 0.5, delay: delay * 0.8 }} // Slightly faster, reduced stagger
       className={`relative ${className}`}
-      whileHover={mobile ? {} : { y: -5 }} // Disable hover on mobile
-      style={{ contain: 'layout style paint' }} // CSS containment
+      whileHover={{ y: -5, transition: { duration: 0.2 } }} // Keep hover on mobile
+      style={{ contain: 'layout style paint' }} // CSS containment for performance
     >
       {/* Simplified border */}
       <div className="absolute inset-0 rounded-3xl overflow-hidden">
         <CardShapeBlur index={Math.floor(delay * 10)} />
       </div>
       
-      {/* Glass card - reduce blur on mobile */}
-      <div className={`relative ${mobile ? 'backdrop-blur-md' : 'backdrop-blur-xl'} bg-white/[0.07] border border-white/10 rounded-3xl p-8 hover:bg-white/[0.12] hover:border-purple-500/30 transition-all duration-300`}>
+      {/* Glass card - slightly reduce blur on mobile */}
+      <div className={`relative ${mobile ? 'backdrop-blur-lg' : 'backdrop-blur-xl'} bg-white/[0.07] border border-white/10 rounded-3xl p-8 hover:bg-white/[0.12] hover:border-purple-500/30 transition-all duration-300`}>
         {children}
       </div>
     </motion.div>
