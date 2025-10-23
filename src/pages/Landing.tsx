@@ -1,13 +1,33 @@
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, memo } from 'react';
 import { ArrowRight, Users, DollarSign, TrendingUp, Clock, CheckCircle, Star, Zap, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Orb from '@/components/Orb';
 import useEmblaCarousel from 'embla-carousel-react';
 
-// Orb Background - Main background animation
-const OrbBackgroundMain = () => {
+// Detect if mobile for performance optimizations
+const isMobile = () => window.innerWidth < 768;
+
+// Orb Background - Main background animation (disabled on mobile for performance)
+const OrbBackgroundMain = memo(() => {
+  const [showOrb, setShowOrb] = useState(!isMobile());
+
+  useEffect(() => {
+    const handleResize = () => {
+      setShowOrb(!isMobile());
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  if (!showOrb) {
+    // Fallback gradient for mobile
+    return (
+      <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-cyan-900/20" />
+    );
+  }
+
   return (
     <div className="absolute inset-0 w-full h-full opacity-60 pointer-events-auto">
       <Orb
@@ -18,7 +38,7 @@ const OrbBackgroundMain = () => {
       />
     </div>
   );
-};
+});
 
 
 
@@ -31,8 +51,8 @@ const AnimatedBackground = () => {
   );
 };
 
-// Glass Surface Component - Inspired by https://reactbits.dev/components/glass-surface
-const GlassSurface = ({ 
+// Glass Surface Component - Optimized for mobile performance
+const GlassSurface = memo(({ 
   children, 
   className = "", 
   blur = "xl",
@@ -47,25 +67,30 @@ const GlassSurface = ({
   border?: boolean;
   shadow?: boolean;
 }) => {
+  // Reduce blur on mobile for better performance
+  const mobile = isMobile();
+  const effectiveBlur = mobile && blur === "xl" ? "md" : mobile && blur === "2xl" ? "lg" : blur;
+  
   const blurClass = {
     sm: "backdrop-blur-sm",
     md: "backdrop-blur-md",
     lg: "backdrop-blur-lg",
     xl: "backdrop-blur-xl",
     "2xl": "backdrop-blur-2xl",
-  }[blur];
+  }[effectiveBlur];
 
   return (
     <div 
       className={`${blurClass} bg-white/${opacity} ${border ? 'border border-white/10' : ''} ${shadow ? 'shadow-2xl shadow-black/20' : ''} ${className}`}
       style={{
-        WebkitBackdropFilter: `blur(${blur === 'sm' ? '4px' : blur === 'md' ? '12px' : blur === 'lg' ? '16px' : blur === 'xl' ? '24px' : '40px'})`,
+        WebkitBackdropFilter: `blur(${effectiveBlur === 'sm' ? '4px' : effectiveBlur === 'md' ? '12px' : effectiveBlur === 'lg' ? '16px' : effectiveBlur === 'xl' ? '24px' : '40px'})`,
+        contain: 'layout style paint', // CSS containment for performance
       }}
     >
       {children}
     </div>
   );
-};
+});
 
 // Simplified Card Border for Performance
 const CardShapeBlur = ({ index = 0 }: { index?: number }) => {
@@ -83,31 +108,33 @@ const CardShapeBlur = ({ index = 0 }: { index?: number }) => {
   );
 };
 
-const GlassmorphicCard = ({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) => {
+const GlassmorphicCard = memo(({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
+  const mobile = isMobile();
 
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-      transition={{ duration: 0.5, delay }}
+      initial={{ opacity: 0, y: mobile ? 15 : 30 }} // Less movement on mobile
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: mobile ? 15 : 30 }}
+      transition={{ duration: mobile ? 0.3 : 0.5, delay: mobile ? 0 : delay }} // Faster, no stagger on mobile
       className={`relative ${className}`}
-      whileHover={{ y: -5 }}
+      whileHover={mobile ? {} : { y: -5 }} // Disable hover on mobile
+      style={{ contain: 'layout style paint' }} // CSS containment
     >
       {/* Simplified border */}
       <div className="absolute inset-0 rounded-3xl overflow-hidden">
         <CardShapeBlur index={Math.floor(delay * 10)} />
       </div>
       
-      {/* Glass card */}
-      <div className="relative backdrop-blur-xl bg-white/[0.07] border border-white/10 rounded-3xl p-8 hover:bg-white/[0.12] hover:border-purple-500/30 transition-all duration-300">
+      {/* Glass card - reduce blur on mobile */}
+      <div className={`relative ${mobile ? 'backdrop-blur-md' : 'backdrop-blur-xl'} bg-white/[0.07] border border-white/10 rounded-3xl p-8 hover:bg-white/[0.12] hover:border-purple-500/30 transition-all duration-300`}>
         {children}
       </div>
     </motion.div>
   );
-};
+});
 
 const GradientText = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
   return (
@@ -293,8 +320,8 @@ const ReviewCard = ({ name, role, company, review, rating, delay = 0 }: { name: 
   );
 };
 
-// Stats Carousel Component for Mobile
-const StatsCarousel = ({ stats }: { stats: any[] }) => {
+// Stats Carousel Component for Mobile - Memoized for performance
+const StatsCarousel = memo(({ stats }: { stats: any[] }) => {
   const [emblaRef] = useEmblaCarousel({ 
     loop: false, 
     align: 'start',
@@ -331,10 +358,10 @@ const StatsCarousel = ({ stats }: { stats: any[] }) => {
       <p className="text-center text-sm text-gray-500 mt-3">← Swipe to see more →</p>
     </div>
   );
-};
+});
 
-// Features Carousel Component for Mobile
-const FeaturesCarousel = ({ features }: { features: any[] }) => {
+// Features Carousel Component for Mobile - Memoized for performance
+const FeaturesCarousel = memo(({ features }: { features: any[] }) => {
   const [emblaRef] = useEmblaCarousel({ 
     loop: false, 
     align: 'start',
@@ -371,10 +398,10 @@ const FeaturesCarousel = ({ features }: { features: any[] }) => {
       <p className="text-center text-sm text-gray-500 mt-3">← Swipe to see more →</p>
     </div>
   );
-};
+});
 
-// Reviews Carousel Component for Mobile
-const ReviewsCarousel = ({ reviews }: { reviews: any[] }) => {
+// Reviews Carousel Component for Mobile - Memoized for performance
+const ReviewsCarousel = memo(({ reviews }: { reviews: any[] }) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -428,7 +455,7 @@ const ReviewsCarousel = ({ reviews }: { reviews: any[] }) => {
       </div>
     </div>
   );
-};
+});
 
 export default function Landing() {
   const navigate = useNavigate();
