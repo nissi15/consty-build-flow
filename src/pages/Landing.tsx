@@ -293,6 +293,86 @@ const ReviewCard = ({ name, role, company, review, rating, delay = 0 }: { name: 
   );
 };
 
+// Stats Carousel Component for Mobile
+const StatsCarousel = ({ stats }: { stats: any[] }) => {
+  const [emblaRef] = useEmblaCarousel({ 
+    loop: false, 
+    align: 'start',
+    dragFree: true,
+    containScroll: 'trimSnaps'
+  });
+
+  return (
+    <div className="md:hidden">
+      <div className="overflow-hidden -mx-4" ref={emblaRef}>
+        <div className="flex gap-4 px-4">
+          {stats.map((stat, index) => (
+            <div key={stat.label} className="flex-[0_0_85%] min-w-0">
+              <StatCard
+                icon={stat.icon}
+                value={stat.value}
+                label={stat.label}
+                delay={0}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Scroll indicator */}
+      <div className="flex justify-center gap-1.5 mt-6">
+        {stats.map((_, index) => (
+          <div
+            key={index}
+            className="h-1 w-8 rounded-full bg-gray-700/50"
+          />
+        ))}
+      </div>
+      <p className="text-center text-sm text-gray-500 mt-3">← Swipe to see more →</p>
+    </div>
+  );
+};
+
+// Features Carousel Component for Mobile
+const FeaturesCarousel = ({ features }: { features: any[] }) => {
+  const [emblaRef] = useEmblaCarousel({ 
+    loop: false, 
+    align: 'start',
+    dragFree: true,
+    containScroll: 'trimSnaps'
+  });
+
+  return (
+    <div className="md:hidden">
+      <div className="overflow-hidden -mx-4" ref={emblaRef}>
+        <div className="flex gap-4 px-4">
+          {features.map((feature, index) => (
+            <div key={feature.title} className="flex-[0_0_90%] min-w-0">
+              <FeatureCard
+                icon={feature.icon}
+                title={feature.title}
+                description={feature.description}
+                delay={0}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Scroll indicator */}
+      <div className="flex justify-center gap-1.5 mt-6">
+        {features.map((_, index) => (
+          <div
+            key={index}
+            className="h-1 w-8 rounded-full bg-gray-700/50"
+          />
+        ))}
+      </div>
+      <p className="text-center text-sm text-gray-500 mt-3">← Swipe to see more →</p>
+    </div>
+  );
+};
+
 // Reviews Carousel Component for Mobile
 const ReviewsCarousel = ({ reviews }: { reviews: any[] }) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
@@ -635,7 +715,7 @@ export default function Landing() {
       >
         <div className="relative z-10 max-w-6xl mx-auto">
           <motion.div
-            className="text-center mb-16"
+            className="text-center mb-12 md:mb-16"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -650,7 +730,11 @@ export default function Landing() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          {/* Mobile Carousel */}
+          <StatsCarousel stats={stats} />
+
+          {/* Desktop Grid */}
+          <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {stats.map((stat, index) => (
               <StatCard
                 key={stat.label}
@@ -675,7 +759,7 @@ export default function Landing() {
       >
         <div className="max-w-6xl mx-auto">
           <motion.div
-            className="text-center mb-16"
+            className="text-center mb-12 md:mb-16"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -690,7 +774,11 @@ export default function Landing() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          {/* Mobile Carousel */}
+          <FeaturesCarousel features={features} />
+
+          {/* Desktop Grid */}
+          <div className="hidden md:grid grid-cols-2 gap-6 max-w-4xl mx-auto">
             {features.map((feature, index) => (
               <FeatureCard
                 key={feature.title}
