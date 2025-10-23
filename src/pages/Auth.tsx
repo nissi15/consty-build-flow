@@ -63,7 +63,7 @@ const Auth = () => {
             {isLogin ? 'Welcome Back' : 'Get Started'}
           </h1>
           <p className="text-muted-foreground text-center mb-8">
-            {isLogin ? 'Sign in to your account' : 'Create your Consty account'}
+            {isLogin ? 'Sign in to your account' : 'Create your Constry account'}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">

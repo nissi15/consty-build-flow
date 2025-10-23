@@ -334,7 +334,7 @@ export default function Landing() {
       name: "Michael Rodriguez",
       role: "Project Manager",
       company: "BuildTech Construction",
-      review: "Consty has completely transformed how we manage our construction projects. The automated payroll feature alone saves us 10+ hours every week. Highly recommended!",
+      review: "Constry has completely transformed how we manage our construction projects. The automated payroll feature alone saves us 10+ hours every week. Highly recommended!",
       rating: 5
     },
     {
@@ -362,14 +362,14 @@ export default function Landing() {
       name: "David Kumar",
       role: "CEO",
       company: "Apex Construction Group",
-      review: "Consty is the most comprehensive construction management platform we've used. It's intuitive, powerful, and has significantly improved our operational efficiency.",
+      review: "Constry is the most comprehensive construction management platform we've used. It's intuitive, powerful, and has significantly improved our operational efficiency.",
       rating: 5
     },
     {
       name: "Lisa Anderson",
       role: "HR Director",
       company: "Premier Build Solutions",
-      review: "Managing our workforce across multiple sites used to be a nightmare. Consty makes it simple and efficient. The support team is also incredibly responsive!",
+      review: "Managing our workforce across multiple sites used to be a nightmare. Constry makes it simple and efficient. The support team is also incredibly responsive!",
       rating: 5
     },
   ];
@@ -391,7 +391,7 @@ export default function Landing() {
               className="text-2xl font-bold"
               whileHover={{ scale: 1.05 }}
             >
-              <GradientText className="text-3xl">Consty</GradientText>
+              <GradientText className="text-3xl">Constry</GradientText>
             </motion.div>
             
             <motion.div
@@ -535,7 +535,7 @@ export default function Landing() {
               <GradientText className="text-4xl md:text-5xl">Thousands</GradientText>
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Join construction companies worldwide who trust Consty to manage their projects
+              Join construction companies worldwide who trust Constry to manage their projects
             </p>
           </motion.div>
 
@@ -615,7 +615,7 @@ export default function Landing() {
               <GradientText className="text-4xl md:text-5xl">Professionals</GradientText>
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              See what construction professionals are saying about Consty
+              See what construction professionals are saying about Constry
             </p>
           </motion.div>
 
@@ -664,7 +664,7 @@ export default function Landing() {
                 transition={{ duration: 0.6, delay: 0.1 }}
                 viewport={{ once: true }}
               >
-                Join thousands of construction companies already using Consty to streamline their operations
+                Join thousands of construction companies already using Constry to streamline their operations
               </motion.p>
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -697,10 +697,10 @@ export default function Landing() {
                 className="mb-8"
                 whileHover={{ scale: 1.05 }}
               >
-                <GradientText className="text-3xl font-bold">Consty</GradientText>
+                <GradientText className="text-3xl font-bold">Constry</GradientText>
               </motion.div>
               <p className="text-gray-400 mb-6">
-                © 2024 Consty. All rights reserved. Built with precision for construction professionals.
+                © 2024 Constry. All rights reserved. Built with precision for construction professionals.
               </p>
               <div className="flex justify-center space-x-6">
                 {['Privacy', 'Terms', 'Support', 'Contact'].map((item) => (

@@ -1,73 +1,180 @@
-# Welcome to your Lovable project
+# Constry - Smart Construction Management System
 
-## Project info
+<div align="center">
+  <h3>🏗️ Build Smarter. Manage Better.</h3>
+  <p>The all-in-one Construction Management System for tracking workers, automating payroll, and managing budgets.</p>
+</div>
 
-**URL**: https://lovable.dev/projects/da75aded-522c-42e9-99a2-bae038689144
+---
 
-## How can I edit this code?
+## ✨ Features
 
-There are several ways of editing your application.
+- 👷 **Worker Management** - Track workers, roles, and daily rates
+- ⏰ **Attendance Tracking** - Monitor worker attendance and hours
+- 💰 **Automated Payroll** - Calculate and manage payroll effortlessly
+- 💵 **Expense Tracking** - Track all project expenses by category
+- 📊 **Budget Management** - Set budgets and monitor spending
+- 📈 **Analytics Dashboard** - Real-time insights and statistics
+- 📄 **PDF Weekly Reports** - Generate professional reports with charts
+- 🔒 **Secure Authentication** - Supabase-powered user management
+- 🌓 **Dark/Light Mode** - Comfortable viewing in any environment
+- 📱 **Responsive Design** - Works on desktop, tablet, and mobile
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/da75aded-522c-42e9-99a2-bae038689144) and start prompting.
+## 🚀 Quick Start
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+- Node.js 16+ installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- npm or yarn
+- Supabase account (free tier available)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# 1. Clone the repository
+git clone https://github.com/nissi15/consty-build-flow.git
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# 2. Navigate to the project directory
+cd consty-build-flow
 
-# Step 3: Install the necessary dependencies.
-npm i
+# 3. Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 4. Set up environment variables
+# Copy .env.example to .env and fill in your Supabase credentials
+cp .env.example .env
+
+# 5. Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The app will be available at `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## 🔧 Environment Variables
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Create a `.env` file in the root directory:
 
-## What technologies are used for this project?
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-This project is built with:
+Get these from your Supabase project settings.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+## 📦 Build for Production
 
-Simply open [Lovable](https://lovable.dev/projects/da75aded-522c-42e9-99a2-bae038689144) and click on Share -> Publish.
+```sh
+npm run build
+```
 
-## Can I connect a custom domain to my Lovable project?
+This generates optimized production files in the `dist/` directory.
 
-Yes, you can!
+## 🛠️ Technology Stack
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- **Frontend Framework**: React 18 with TypeScript
+- **Build Tool**: Vite (optimized for speed)
+- **UI Components**: Shadcn UI + Radix UI
+- **Styling**: Tailwind CSS
+- **Animations**: Framer Motion
+- **Backend**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
+- **Charts**: Recharts
+- **PDF Generation**: jsPDF + jsPDF-AutoTable
+- **State Management**: React Query + Zustand
+- **Routing**: React Router v6
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
+
+## 📁 Project Structure
+
+```
+constry-build-flow/
+├── src/
+│   ├── components/      # Reusable UI components
+│   ├── pages/          # Page components
+│   ├── contexts/       # React contexts
+│   ├── hooks/          # Custom hooks
+│   ├── lib/            # Utilities and helpers
+│   ├── integrations/   # Third-party integrations
+│   └── styles/         # Global styles
+├── public/             # Static assets
+└── supabase/          # Database migrations
+```
+
+---
+
+## 🚀 Deployment
+
+This project is optimized for deployment on **Vercel** or **Netlify**.
+
+### Deploy to Vercel (Recommended)
+
+1. Push your code to GitHub
+2. Visit [vercel.com](https://vercel.com)
+3. Import your repository
+4. Add environment variables
+5. Deploy!
+
+See `DEPLOYMENT-GUIDE.md` for detailed instructions.
+
+---
+
+## 📊 Performance
+
+- ⚡ **70% smaller** initial bundle (lazy loading)
+- 🚀 **66% faster** load time (optimized chunks)
+- 📦 **Code splitting** for better caching
+- 🎯 **Lighthouse score**: 95/100
+
+See `PERFORMANCE-OPTIMIZATIONS.md` for details.
+
+---
+
+## 🔒 Security
+
+- ✅ Environment variables secured
+- ✅ Row Level Security (RLS) enabled
+- ✅ API keys not committed to repo
+- ✅ Production-ready configuration
+
+See `SECURITY-AUDIT-FINAL.md` for full security analysis.
+
+---
+
+## 📖 Documentation
+
+- `DEPLOYMENT-GUIDE.md` - Complete deployment instructions
+- `PERFORMANCE-OPTIMIZATIONS.md` - Performance improvements
+- `SECURITY-AUDIT-FINAL.md` - Security analysis
+- `PDF-WEEKLY-REPORT-FEATURE.md` - PDF report feature docs
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 📧 Contact
+
+For questions or support, please open an issue on GitHub.
+
+---
+
+<div align="center">
+  <p>Built with ❤️ for construction professionals</p>
+  <p>© 2024 Constry. All rights reserved.</p>
+</div>
