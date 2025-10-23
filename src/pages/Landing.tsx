@@ -1,9 +1,10 @@
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { ArrowRight, Users, DollarSign, TrendingUp, Clock, CheckCircle, Star, Zap, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Orb from '@/components/Orb';
+import useEmblaCarousel from 'embla-carousel-react';
 
 // Orb Background - Main background animation
 const OrbBackgroundMain = () => {
@@ -289,6 +290,63 @@ const ReviewCard = ({ name, role, company, review, rating, delay = 0 }: { name: 
         </div>
       </GlassmorphicCard>
     </motion.div>
+  );
+};
+
+// Reviews Carousel Component for Mobile
+const ReviewsCarousel = ({ reviews }: { reviews: any[] }) => {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on('select', onSelect);
+    return () => {
+      emblaApi.off('select', onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
+  return (
+    <div className="md:hidden">
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex">
+          {reviews.map((review, index) => (
+            <div key={review.name} className="flex-[0_0_100%] min-w-0 px-3">
+              <ReviewCard
+                name={review.name}
+                role={review.role}
+                company={review.company}
+                review={review.review}
+                rating={review.rating}
+                delay={0}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Carousel Dots */}
+      <div className="flex justify-center gap-2 mt-6">
+        {reviews.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => emblaApi?.scrollTo(index)}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              index === selectedIndex 
+                ? 'w-8 bg-gradient-to-r from-purple-500 to-cyan-500' 
+                : 'w-2 bg-gray-600 hover:bg-gray-500'
+            }`}
+            aria-label={`Go to review ${index + 1}`}
+          />
+        ))}
+      </div>
+    </div>
   );
 };
 
@@ -657,7 +715,7 @@ export default function Landing() {
       >
         <div className="max-w-6xl mx-auto">
           <motion.div
-            className="text-center mb-16"
+            className="text-center mb-12 md:mb-16"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -672,7 +730,11 @@ export default function Landing() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {/* Mobile Carousel */}
+          <ReviewsCarousel reviews={reviews} />
+
+          {/* Desktop Grid */}
+          <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {reviews.map((review, index) => (
               <ReviewCard
                 key={review.name}
