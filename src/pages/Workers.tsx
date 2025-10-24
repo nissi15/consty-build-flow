@@ -407,6 +407,8 @@ export default function Workers() {
                       message: `Worker deleted: ${worker.name}`,
                       action_type: 'worker',
                     });
+                    // Refresh the workers list
+                    refetchWorkers();
                   }
                 }}
               />
