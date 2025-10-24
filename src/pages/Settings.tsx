@@ -31,6 +31,7 @@ const Settings = () => {
   const [ownerCodes, setOwnerCodes] = useState<OwnerCode[]>([]);
   const [loading, setLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [newOwner, setNewOwner] = useState({
     name: '',
@@ -64,6 +65,13 @@ const Settings = () => {
       return;
     }
 
+    // Check if there's already an active code
+    const hasActiveCode = ownerCodes.some(code => code.is_active);
+    if (hasActiveCode) {
+      toast.error('You already have an active code. Please revoke it first to generate a new one.');
+      return;
+    }
+
     setIsGenerating(true);
     try {
       // Generate 6-digit code
@@ -81,8 +89,9 @@ const Settings = () => {
 
       if (error) throw error;
 
-      toast.success(`Code generated for ${newOwner.name}!`);
+      toast.success(`Code ${code} generated for ${newOwner.name}!`);
       setNewOwner({ name: '', phone: '' });
+      setIsDialogOpen(false); // Auto-close dialog
       fetchOwnerCodes();
     } catch (error: any) {
       console.error('Error generating code:', error);
@@ -282,11 +291,14 @@ const Settings = () => {
                 </div>
               </div>
               
-              <Dialog>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="gap-2 bg-purple-500 hover:bg-purple-600">
+                  <Button 
+                    className="gap-2 bg-purple-500 hover:bg-purple-600"
+                    disabled={ownerCodes.some(code => code.is_active)}
+                  >
                     <Plus className="h-4 w-4" />
-                    Generate Code
+                    {ownerCodes.some(code => code.is_active) ? 'Code Already Active' : 'Generate Code'}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
