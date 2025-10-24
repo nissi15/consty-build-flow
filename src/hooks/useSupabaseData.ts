@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -12,22 +12,7 @@ export const useWorkers = () => {
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchWorkers();
-
-    const channel = supabase
-      .channel('workers-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'workers' }, () => {
-        fetchWorkers();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  const fetchWorkers = async () => {
+  const fetchWorkers = useCallback(async () => {
     try {
       console.log('Fetching workers...');
       const { data, error } = await supabase
@@ -49,7 +34,25 @@ export const useWorkers = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchWorkers();
+
+    const channel = supabase
+      .channel('workers-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'workers' }, (payload) => {
+        console.log('Workers changed:', payload);
+        fetchWorkers();
+      })
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchWorkers]);
 
   return { workers, loading, refetch: fetchWorkers };
 };
