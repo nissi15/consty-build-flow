@@ -74,5 +74,5 @@ END;
 $$;
 
 -- Enable realtime
-ALTER PUBLICATION supabase_realtime ADD TABLE IF NOT EXISTS public.owner_access_codes;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.owner_access_codes;
 
