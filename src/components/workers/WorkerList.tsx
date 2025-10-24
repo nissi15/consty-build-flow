@@ -73,8 +73,8 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
               </div>
 
               <div>
-                <p className="font-medium">${worker.daily_rate}</p>
-                <p className="text-sm text-muted-foreground">+ ${worker.lunch_allowance} lunch</p>
+                <p className="font-medium">RWF {worker.daily_rate}</p>
+                <p className="text-sm text-muted-foreground">+ RWF {worker.lunch_allowance} lunch</p>
               </div>
 
               <div>
