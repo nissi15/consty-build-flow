@@ -262,11 +262,6 @@ INSERT INTO public.budget (total_budget, used_budget, budget_remaining)
 VALUES (100000, 0, 100000)
 ON CONFLICT DO NOTHING;
 
--- Insert sample worker
-INSERT INTO public.workers (name, role, daily_rate, lunch_allowance, contact_info, join_date, status)
-VALUES ('John Doe', 'Foreman', 150.00, 25.00, '+1234567890', CURRENT_DATE, 'active')
-ON CONFLICT DO NOTHING;
-
 -- Enable realtime
 ALTER PUBLICATION supabase_realtime ADD TABLE public.workers;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.attendance;

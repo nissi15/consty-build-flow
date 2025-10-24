@@ -128,15 +128,6 @@ CREATE TRIGGER on_attendance_create
 INSERT INTO public.budget (total_budget, used_budget) 
 VALUES (500000, 0);
 
--- Insert sample workers
-INSERT INTO public.workers (name, role, daily_rate, lunch_allowance) VALUES
-  ('John Smith', 'Foreman', 350, 50),
-  ('Sarah Johnson', 'Electrician', 420, 50),
-  ('Mike Davis', 'Plumber', 380, 50),
-  ('Emily Brown', 'Carpenter', 320, 50),
-  ('David Wilson', 'Mason', 400, 50),
-  ('Lisa Anderson', 'Painter', 360, 50);
-
 -- Enable realtime for all tables
 ALTER PUBLICATION supabase_realtime ADD TABLE public.workers;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.attendance;

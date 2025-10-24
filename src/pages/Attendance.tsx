@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AttendanceStats } from '@/components/attendance/AttendanceStats';
 import { PendingAttendance } from '@/components/attendance/PendingAttendance';
+import { AttendanceTrendChart } from '@/components/attendance/AttendanceTrendChart';
 
 const Attendance = () => {
   const [date] = useState<Date>(new Date());
@@ -114,6 +115,14 @@ const Attendance = () => {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
+      >
+        <AttendanceTrendChart attendance={attendance} />
+      </motion.div>
+
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.3 }}
       >
         <PendingAttendance
           workers={pendingWorkers}
