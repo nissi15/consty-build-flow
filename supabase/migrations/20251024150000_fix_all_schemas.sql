@@ -185,12 +185,38 @@ CREATE POLICY "allow_anon_read_activity_log" ON public.activity_log
     FOR SELECT TO anon USING (true);
 
 -- Ensure realtime is enabled for all tables
-ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS public.workers;
-ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS public.attendance;
-ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS public.expenses;
-ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS public.budget;
-ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS public.activity_log;
+-- Drop tables from publication (ignore errors if they don't exist)
+DO $$ 
+BEGIN
+    ALTER PUBLICATION supabase_realtime DROP TABLE public.workers;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
 
+DO $$ 
+BEGIN
+    ALTER PUBLICATION supabase_realtime DROP TABLE public.attendance;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+DO $$ 
+BEGIN
+    ALTER PUBLICATION supabase_realtime DROP TABLE public.expenses;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+DO $$ 
+BEGIN
+    ALTER PUBLICATION supabase_realtime DROP TABLE public.budget;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+DO $$ 
+BEGIN
+    ALTER PUBLICATION supabase_realtime DROP TABLE public.activity_log;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+-- Add tables to publication
 ALTER PUBLICATION supabase_realtime ADD TABLE public.workers;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.attendance;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.expenses;
