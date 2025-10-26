@@ -13,7 +13,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { BarChart, Bar, LineChart, Line, Cell, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 interface ChartClickData {
   activePayload?: Array<{
     payload: any;
@@ -344,41 +344,50 @@ const Dashboard = () => {
           >
             <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
               <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Payroll Trend</h3>
-              <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart 
-                    data={payrollTrendData}
-                    margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="week" 
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                    />
-                    <YAxis 
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                    />
-                    <Tooltip 
-                      formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Payroll']}
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--background))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                      }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="payroll" 
-                      stroke="#f97316" 
-                      strokeWidth={2}
-                      dot={{ fill: '#f97316', r: 4 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartContainer>
+              {payrollTrendData.every(d => d.payroll === 0) ? (
+                <div className="h-[250px] sm:h-[300px] flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="text-slate-500 dark:text-slate-400 mb-2">No payroll data yet</p>
+                    <p className="text-sm text-slate-400 dark:text-slate-500">Generate payroll from the Payroll page</p>
+                  </div>
+                </div>
+              ) : (
+                <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart 
+                      data={payrollTrendData}
+                      margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis 
+                        dataKey="week" 
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={12}
+                      />
+                      <YAxis 
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={12}
+                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                      />
+                      <Tooltip 
+                        formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Payroll']}
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--background))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px',
+                        }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="payroll" 
+                        stroke="#f97316" 
+                        strokeWidth={2}
+                        dot={{ fill: '#f97316', r: 4 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              )}
             </Card>
           </motion.div>
 
@@ -389,53 +398,62 @@ const Dashboard = () => {
           >
             <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
               <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Budget vs Actual</h3>
-              <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart 
-                    data={budgetVsActualData}
-                    margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="week" 
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                    />
-                    <YAxis 
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                    />
-                    <Tooltip 
-                      formatter={(value: number) => [`RWF ${value.toLocaleString()}`, '']}
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--background))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                      }}
-                    />
-                    <Legend 
-                      wrapperStyle={{ fontSize: '12px' }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="budget" 
-                      stroke="#22c55e" 
-                      strokeWidth={2}
-                      dot={{ fill: '#22c55e', r: 4 }}
-                      name="Budget"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="actual" 
-                      stroke="#f97316" 
-                      strokeWidth={2}
-                      dot={{ fill: '#f97316', r: 4 }}
-                      name="Actual"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartContainer>
+              {budgetVsActualData.every(d => d.budget === 0 && d.actual === 0) ? (
+                <div className="h-[250px] sm:h-[300px] flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="text-slate-500 dark:text-slate-400 mb-2">No budget data yet</p>
+                    <p className="text-sm text-slate-400 dark:text-slate-500">Set a budget from the Budget page</p>
+                  </div>
+                </div>
+              ) : (
+                <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart 
+                      data={budgetVsActualData}
+                      margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis 
+                        dataKey="week" 
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={12}
+                      />
+                      <YAxis 
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={12}
+                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                      />
+                      <Tooltip 
+                        formatter={(value: number) => [`RWF ${value.toLocaleString()}`, '']}
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--background))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px',
+                        }}
+                      />
+                      <Legend 
+                        wrapperStyle={{ fontSize: '12px' }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="budget" 
+                        stroke="#22c55e" 
+                        strokeWidth={2}
+                        dot={{ fill: '#22c55e', r: 4 }}
+                        name="Budget"
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="actual" 
+                        stroke="#f97316" 
+                        strokeWidth={2}
+                        dot={{ fill: '#f97316', r: 4 }}
+                        name="Actual"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              )}
             </Card>
           </motion.div>
         </div>
@@ -447,58 +465,60 @@ const Dashboard = () => {
         >
           <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
             <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Expense Categories</h3>
-            <ChartContainer config={chartConfig} className="h-[300px] sm:h-[350px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
+            {expenseData.length === 0 ? (
+              <div className="h-[300px] flex items-center justify-center">
+                <p className="text-slate-500 dark:text-slate-400">No expense data available</p>
+              </div>
+            ) : (
+              <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart 
                     data={expenseData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={2}
-                    dataKey="value"
-                    fill="#8884d8"
-                    label={(props: any) => {
-                      // Only show label if there's enough space (hide on very small screens)
-                      const percentValue = (props.percent || 0) * 100;
-                      const percent = percentValue.toFixed(0);
-                      return percentValue > 5 ? `${props.name} ${percent}%` : '';
-                    }}
-                    labelLine={false}
-                    onClick={(data) => {
-                      setDetailModal({
-                        open: true,
-                        title: `${data.name} Expenses`,
-                        description: `Detailed breakdown of ${data.name} expenses`,
-                        data: expenses.filter(e => e.category === data.name),
-                        type: 'expenses',
-                      });
+                    margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                    onClick={(data: ChartClickData) => {
+                      if (data && data.activePayload) {
+                        const category = data.activePayload[0].payload.name;
+                        setDetailModal({
+                          open: true,
+                          title: `${category} Expenses`,
+                          description: `Detailed breakdown of ${category} expenses`,
+                          data: expenses.filter(e => e.category === category),
+                          type: 'expenses',
+                        });
+                      }
                     }}
                   >
-                    {expenseData.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={entry.color}
-                        className="hover:opacity-80 transition-opacity cursor-pointer"
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Amount']}
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--background))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                    }}
-                  />
-                  <Legend 
-                    wrapperStyle={{ fontSize: '12px' }}
-                    iconSize={10}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="name" 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                    />
+                    <YAxis 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Amount']}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                    />
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]} cursor="pointer">
+                      {expenseData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            )}
           </Card>
         </motion.div>
       </div>
