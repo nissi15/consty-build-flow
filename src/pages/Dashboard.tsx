@@ -22,9 +22,11 @@ interface ChartClickData {
   [key: string]: any;
 }
 import { useWorkers, useAttendance, useExpenses, useBudget } from '@/hooks/useSupabaseData';
+import { usePayroll } from '@/hooks/usePayroll';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMemo } from 'react';
-import { format } from 'date-fns';
+import { format, startOfWeek, endOfWeek, subWeeks, eachDayOfInterval } from 'date-fns';
+import { getCategoryColor } from '@/constants/expenseCategories';
 
 const chartConfig = {
   attendance: { label: 'Attendance %', color: 'hsl(var(--chart-1))' },
@@ -48,6 +50,7 @@ const Dashboard = () => {
   const { attendance, loading: attendanceLoading } = useAttendance();
   const { expenses, loading: expensesLoading } = useExpenses();
   const { budget, loading: budgetLoading } = useBudget();
+  const { payrolls, loading: payrollLoading } = usePayroll();
 
   const [detailModal, setDetailModal] = useState<{
     open: boolean;
@@ -114,20 +117,27 @@ const Dashboard = () => {
   }, [workers, expenses, budget]);
 
   const weeklyData = useMemo(() => {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return days.map(day => {
+    const currentWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
+    const currentWeekEnd = endOfWeek(new Date(), { weekStartsOn: 1 }); // Sunday
+    const daysOfWeek = eachDayOfInterval({ start: currentWeekStart, end: currentWeekEnd });
+
+    return daysOfWeek.map(day => {
+      const dateStr = format(day, 'yyyy-MM-dd');
+      const dayName = format(day, 'EEE'); // Mon, Tue, etc.
+      
       const dayExpenses = expenses
-        .filter(e => new Date(e.date).getDay() === days.indexOf(day) + 1)
+        .filter(e => e.date === dateStr)
         .reduce((sum, e) => sum + Number(e.amount), 0);
       
       const dayAttendance = attendance
-        .filter(a => new Date(a.date).getDay() === days.indexOf(day) + 1 && a.status === 'present')
+        .filter(a => a.date === dateStr && a.status === 'present')
         .length;
       
-      const attendancePercent = workers.length > 0 ? Math.round((dayAttendance / workers.length) * 100) : 0;
+      const activeWorkers = workers.filter(w => w.is_active).length;
+      const attendancePercent = activeWorkers > 0 ? Math.round((dayAttendance / activeWorkers) * 100) : 0;
 
       return {
-        day,
+        day: dayName,
         attendance: attendancePercent,
         expenses: dayExpenses,
       };
@@ -135,23 +145,75 @@ const Dashboard = () => {
   }, [expenses, attendance, workers]);
 
   const expenseData = useMemo(() => {
-    const categories = ['Labor', 'Materials', 'Equipment', 'Other'];
-    const colors = ['#8B5CF6', '#06B6D4', '#3B82F6', '#6366F1'];
+    // Group expenses by category dynamically
+    const categoryTotals = expenses.reduce((acc, expense) => {
+      acc[expense.category] = (acc[expense.category] || 0) + Number(expense.amount);
+      return acc;
+    }, {} as Record<string, number>);
     
-    return categories.map((category, idx) => {
-      const categoryExpenses = expenses
-        .filter(e => e.category === category)
-        .reduce((sum, e) => sum + Number(e.amount), 0);
-      
-      return {
-        name: category,
-        value: categoryExpenses,
-        color: colors[idx],
-      };
-    }).filter(item => item.value > 0);
+    // Convert to array format for chart
+    return Object.entries(categoryTotals)
+      .map(([name, value], index) => ({
+        name,
+        value,
+        color: getCategoryColor(name, index), // Use category color or fallback
+      }))
+      .filter(item => item.value > 0)
+      .sort((a, b) => b.value - a.value); // Sort by value descending
   }, [expenses]);
 
-  if (workersLoading || attendanceLoading || expensesLoading || budgetLoading) {
+  const payrollTrendData = useMemo(() => {
+    // Group payrolls by week for the last 4 weeks
+    const weeksData = [];
+    for (let i = 3; i >= 0; i--) {
+      const weekStart = startOfWeek(subWeeks(new Date(), i), { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(subWeeks(new Date(), i), { weekStartsOn: 1 });
+      const weekStartStr = format(weekStart, 'yyyy-MM-dd');
+      const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
+      
+      const weekPayrolls = payrolls.filter(p => 
+        p.period_start >= weekStartStr && p.period_end <= weekEndStr
+      );
+      
+      const totalPayroll = weekPayrolls.reduce((sum, p) => sum + Number(p.net_amount), 0);
+      
+      weeksData.push({
+        week: `Week ${4 - i}`,
+        payroll: totalPayroll,
+        fullDate: format(weekStart, 'MMM d'),
+      });
+    }
+    
+    return weeksData;
+  }, [payrolls]);
+
+  const budgetVsActualData = useMemo(() => {
+    // Calculate budget and actual spending for the last 4 weeks
+    const weeklyBudget = (budget?.total_budget || 0) / 4; // Divide total budget by 4 weeks
+    const weeksData = [];
+    
+    for (let i = 3; i >= 0; i--) {
+      const weekStart = startOfWeek(subWeeks(new Date(), i), { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(subWeeks(new Date(), i), { weekStartsOn: 1 });
+      const weekStartStr = format(weekStart, 'yyyy-MM-dd');
+      const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
+      
+      const weekExpenses = expenses.filter(e => 
+        e.date >= weekStartStr && e.date <= weekEndStr
+      ).reduce((sum, e) => sum + Number(e.amount), 0);
+      
+      weeksData.push({
+        week: `Week ${4 - i}`,
+        budget: weeklyBudget,
+        actual: weekExpenses,
+        fullDate: format(weekStart, 'MMM d'),
+      });
+    }
+    
+    return weeksData;
+  }, [expenses, budget]);
+
+  if (workersLoading || attendanceLoading || expensesLoading || budgetLoading || payrollLoading) {
     return (
       <div className="p-6 space-y-6">
         <Skeleton className="h-20 w-full" />
@@ -227,15 +289,16 @@ const Dashboard = () => {
         >
           <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
             <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Weekly Expenses Breakdown</h3>
-            <ChartContainer config={chartConfig} className="h-[300px]">
+            <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart 
                   data={weeklyData}
+                  margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
                   onClick={(data: ChartClickData) => {
                     if (data && data.activePayload) {
                       const day = data.activePayload[0].payload.day;
                       const dayExpenses = expenses.filter(e => 
-                        format(new Date(e.date), 'E') === day
+                        format(new Date(e.date), 'EEE') === day
                       );
                       setDetailModal({
                         open: true,
@@ -248,9 +311,24 @@ const Dashboard = () => {
                   }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip />
+                  <XAxis 
+                    dataKey="day" 
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                  />
+                  <YAxis 
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip 
+                    formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Expenses']}
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
                   <Bar dataKey="expenses" fill="#f97316" radius={[4, 4, 0, 0]} cursor="pointer" />
                 </BarChart>
               </ResponsiveContainer>
@@ -264,51 +342,39 @@ const Dashboard = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            <Card className="p-6 glass">
-              <h3 className="text-lg font-semibold mb-4">Payroll Trend</h3>
-              <ChartContainer config={chartConfig} className="h-[300px]">
+            <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
+              <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Payroll Trend</h3>
+              <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart 
-                    data={[
-                      { week: 'Week 1', payroll: 3200 },
-                      { week: 'Week 2', payroll: 3800 },
-                      { week: 'Week 3', payroll: 4200 },
-                      { week: 'Week 4', payroll: 4000 },
-                    ]}
-                    onClick={(data: ChartClickData) => {
-                      if (data && data.activePayload) {
-                        const week = data.activePayload[0].payload.week;
-                        const weekStart = new Date();
-                        weekStart.setDate(weekStart.getDate() - 21 + parseInt(week.split(' ')[1]) * 7);
-                        const weekEnd = new Date(weekStart);
-                        weekEnd.setDate(weekEnd.getDate() + 6);
-                        
-                        const weekAttendance = attendance.filter(a => {
-                          const date = new Date(a.date);
-                          return date >= weekStart && date <= weekEnd;
-                        });
-                        
-                        setDetailModal({
-                          open: true,
-                          title: `Attendance for ${week}`,
-                          description: 'Detailed breakdown of attendance and payroll for the selected week',
-                          data: weekAttendance,
-                          type: 'attendance',
-                        });
-                      }
-                    }}
+                    data={payrollTrendData}
+                    margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" />
-                    <YAxis stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip />
+                    <XAxis 
+                      dataKey="week" 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
+                    <YAxis 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Payroll']}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                    />
                     <Line 
                       type="monotone" 
                       dataKey="payroll" 
                       stroke="#f97316" 
                       strokeWidth={2}
                       dot={{ fill: '#f97316', r: 4 }}
-                      cursor="pointer"
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -321,51 +387,43 @@ const Dashboard = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
-            <Card className="p-6 glass">
-              <h3 className="text-lg font-semibold mb-4">Budget vs Actual</h3>
-              <ChartContainer config={chartConfig} className="h-[300px]">
+            <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
+              <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Budget vs Actual</h3>
+              <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart 
-                    data={[
-                      { week: 'Week 1', budget: 5000, actual: 4000 },
-                      { week: 'Week 2', budget: 5000, actual: 4800 },
-                      { week: 'Week 3', budget: 5000, actual: 5100 },
-                      { week: 'Week 4', budget: 5000, actual: 4900 },
-                    ]}
-                    onClick={(data: ChartClickData) => {
-                      if (data && data.activePayload) {
-                        const week = data.activePayload[0].payload.week;
-                        const weekStart = new Date();
-                        weekStart.setDate(weekStart.getDate() - 21 + parseInt(week.split(' ')[1]) * 7);
-                        const weekEnd = new Date(weekStart);
-                        weekEnd.setDate(weekEnd.getDate() + 6);
-                        
-                        const weekData = [
-                          { week, budget: 5000, actual: data.activePayload[0].payload.actual },
-                        ];
-                        
-                        setDetailModal({
-                          open: true,
-                          title: `Budget vs Actual for ${week}`,
-                          description: 'Detailed breakdown of budget variance for the selected week',
-                          data: weekData,
-                          type: 'budget',
-                        });
-                      }
-                    }}
+                    data={budgetVsActualData}
+                    margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" />
-                    <YAxis stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip />
-                    <Legend />
+                    <XAxis 
+                      dataKey="week" 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
+                    <YAxis 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => [`RWF ${value.toLocaleString()}`, '']}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                    />
+                    <Legend 
+                      wrapperStyle={{ fontSize: '12px' }}
+                    />
                     <Line 
                       type="monotone" 
                       dataKey="budget" 
                       stroke="#22c55e" 
                       strokeWidth={2}
                       dot={{ fill: '#22c55e', r: 4 }}
-                      cursor="pointer"
+                      name="Budget"
                     />
                     <Line 
                       type="monotone" 
@@ -373,7 +431,7 @@ const Dashboard = () => {
                       stroke="#f97316" 
                       strokeWidth={2}
                       dot={{ fill: '#f97316', r: 4 }}
-                      cursor="pointer"
+                      name="Actual"
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -389,17 +447,11 @@ const Dashboard = () => {
         >
           <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
             <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Expense Categories</h3>
-            <ChartContainer config={chartConfig} className="h-[300px]">
+            <ChartContainer config={chartConfig} className="h-[300px] sm:h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={[
-                      { name: 'Payroll', value: 45, color: '#64748b' },
-                      { name: 'Materials', value: 25, color: '#f97316' },
-                      { name: 'Equipment', value: 18, color: '#22c55e' },
-                      { name: 'Transport', value: 8, color: '#3b82f6' },
-                      { name: 'Miscellaneous', value: 4, color: '#a855f7' },
-                    ]}
+                    data={expenseData}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -407,9 +459,43 @@ const Dashboard = () => {
                     paddingAngle={2}
                     dataKey="value"
                     fill="#8884d8"
+                    label={(props: any) => {
+                      // Only show label if there's enough space (hide on very small screens)
+                      const percentValue = (props.percent || 0) * 100;
+                      const percent = percentValue.toFixed(0);
+                      return percentValue > 5 ? `${props.name} ${percent}%` : '';
+                    }}
+                    labelLine={false}
+                    onClick={(data) => {
+                      setDetailModal({
+                        open: true,
+                        title: `${data.name} Expenses`,
+                        description: `Detailed breakdown of ${data.name} expenses`,
+                        data: expenses.filter(e => e.category === data.name),
+                        type: 'expenses',
+                      });
+                    }}
+                  >
+                    {expenseData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.color}
+                        className="hover:opacity-80 transition-opacity cursor-pointer"
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Amount']}
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
                   />
-                  <Tooltip />
-                  <Legend />
+                  <Legend 
+                    wrapperStyle={{ fontSize: '12px' }}
+                    iconSize={10}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </ChartContainer>
