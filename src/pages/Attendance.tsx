@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { AttendanceStats } from '@/components/attendance/AttendanceStats';
 import { PendingAttendance } from '@/components/attendance/PendingAttendance';
 import { AttendanceTrendChart } from '@/components/attendance/AttendanceTrendChart';
+import { AttendanceRecords } from '@/components/attendance/AttendanceRecords';
 
 const Attendance = () => {
   const [date] = useState<Date>(new Date());
@@ -129,6 +130,14 @@ const Attendance = () => {
           onMarkPresent={(workerId) => handleMarkAttendance(workerId, 'present')}
           onMarkAbsent={(workerId) => handleMarkAttendance(workerId, 'absent')}
         />
+      </motion.div>
+
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.4 }}
+      >
+        <AttendanceRecords attendance={attendance} />
       </motion.div>
     </div>
   );
