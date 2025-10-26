@@ -6,8 +6,7 @@ import { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line } from 'recharts';
 import { format, startOfWeek, endOfWeek, subDays } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
-
-const COLORS = ['#FF9F43', '#28C76F', '#EA5455', '#7367F0', '#00CFE8'];
+import { getCategoryColor } from '@/constants/expenseCategories';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -153,7 +152,11 @@ export default function Dashboard() {
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                     >
                       {expenseBreakdown.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={getCategoryColor(entry.name, index)}
+                          className="hover:opacity-80 transition-opacity cursor-pointer"
+                        />
                       ))}
                     </Pie>
                     <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Amount']} />

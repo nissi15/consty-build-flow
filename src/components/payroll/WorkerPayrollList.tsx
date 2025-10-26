@@ -216,3 +216,4 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod }: Worke
   );
 }
 
+

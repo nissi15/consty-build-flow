@@ -8,15 +8,21 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Building2, Users, DollarSign, TrendingUp, TrendingDown,
-  LogOut, Eye, Calendar, Activity, Wallet, ShoppingCart, Clock
+  LogOut, Eye, Activity, Wallet, ShoppingCart, Clock
 } from 'lucide-react';
-import { format, subDays } from 'date-fns';
+import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { getCategoryColor } from '@/constants/expenseCategories';
 
 export default function OwnerDashboard() {
   const { isOwner, ownerName, managerId, logoutOwner } = useOwner();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  // Date range state for filtering dashboard data
+  const [dateRange, setDateRange] = useState({
+    from: subDays(new Date(), 30),
+    to: new Date(),
+  });
   const [stats, setStats] = useState({
     totalBudget: 0,
     usedBudget: 0,
@@ -42,11 +48,14 @@ export default function OwnerDashboard() {
     // Refresh data every 30 seconds
     const interval = setInterval(fetchOwnerStats, 30000);
     return () => clearInterval(interval);
-  }, [isOwner, managerId, navigate]);
+  }, [isOwner, managerId, navigate, dateRange]);
 
   const fetchOwnerStats = async () => {
     try {
       setLoading(true);
+
+      const fromDate = format(startOfDay(dateRange.from), 'yyyy-MM-dd');
+      const toDate = format(endOfDay(dateRange.to), 'yyyy-MM-dd');
 
       // Fetch budget
       const { data: budgetData } = await supabase
@@ -61,26 +70,30 @@ export default function OwnerDashboard() {
         .from('workers')
         .select('*');
 
-      // Fetch last 30 days attendance
-      const thirtyDaysAgo = subDays(new Date(), 30);
+      // Fetch attendance in date range
       const { data: attendanceData } = await supabase
         .from('attendance')
         .select('*')
-        .gte('date', format(thirtyDaysAgo, 'yyyy-MM-dd'))
+        .gte('date', fromDate)
+        .lte('date', toDate)
         .order('date', { ascending: false });
 
-      // Fetch all expenses
+      // Fetch expenses in date range
       const { data: expensesData } = await supabase
         .from('expenses')
         .select('*')
+        .gte('created_at', fromDate)
+        .lte('created_at', toDate)
         .order('created_at', { ascending: false });
 
-      // Fetch recent activity
+      // Fetch activity in date range
       const { data: activityData } = await supabase
         .from('activity_log')
         .select('*')
+        .gte('created_at', fromDate)
+        .lte('created_at', toDate)
         .order('created_at', { ascending: false })
-        .limit(15);
+        .limit(50);
 
       // Calculate payroll
       const totalPayroll = expensesData
@@ -122,10 +135,12 @@ export default function OwnerDashboard() {
       breakdown[category] = (breakdown[category] || 0) + Number(expense.amount);
     });
 
-    return Object.entries(breakdown).map(([name, value]) => ({
-      name: name.charAt(0).toUpperCase() + name.slice(1),
-      value: Math.round(value),
-    }));
+    return Object.entries(breakdown)
+      .map(([name, value]) => ({
+        name: name.charAt(0).toUpperCase() + name.slice(1),
+        value: Math.round(value),
+      }))
+      .sort((a, b) => b.value - a.value); // Sort by value descending
   }, [stats.expenses]);
 
   // Calculate daily spending for last 7 days
@@ -181,7 +196,28 @@ export default function OwnerDashboard() {
     ? (stats.usedBudget / stats.totalBudget) * 100 
     : 0;
 
-  const COLORS = ['#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#10b981'];
+  // Custom label renderer for pie chart - only show labels for slices > 5%
+  const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
+    if (percent < 0.05) return null; // Don't show label if less than 5%
+    
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius + 25;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill="#475569" 
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        className="text-xs sm:text-sm font-medium"
+      >
+        {`${name} (${(percent * 100).toFixed(0)}%)`}
+      </text>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/20 to-cyan-50/20 dark:from-[#0B1120] dark:via-[#0B1120] dark:to-[#0B1120]">
@@ -208,15 +244,51 @@ export default function OwnerDashboard() {
                 </div>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="gap-1 sm:gap-2 px-2 sm:px-3 flex-shrink-0 text-xs sm:text-sm"
-            >
-              <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Logout</span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                className="gap-1 sm:gap-2 px-2 sm:px-3 flex-shrink-0 text-xs sm:text-sm"
+              >
+                <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Logout</span>
+              </Button>
+            </div>
+          </div>
+          
+          {/* Date Range Filter */}
+          <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700 flex items-center gap-2 flex-wrap">
+            <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Date Range:</span>
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                variant={dateRange.from.getTime() === subDays(new Date(), 7).setHours(0,0,0,0) ? "default" : "outline"}
+                size="sm"
+                onClick={() => setDateRange({ from: subDays(new Date(), 7), to: new Date() })}
+                className="text-xs h-7 px-2"
+              >
+                Last 7 Days
+              </Button>
+              <Button
+                variant={dateRange.from.getTime() === subDays(new Date(), 30).setHours(0,0,0,0) ? "default" : "outline"}
+                size="sm"
+                onClick={() => setDateRange({ from: subDays(new Date(), 30), to: new Date() })}
+                className="text-xs h-7 px-2"
+              >
+                Last 30 Days
+              </Button>
+              <Button
+                variant={dateRange.from.getTime() === subDays(new Date(), 90).setHours(0,0,0,0) ? "default" : "outline"}
+                size="sm"
+                onClick={() => setDateRange({ from: subDays(new Date(), 90), to: new Date() })}
+                className="text-xs h-7 px-2"
+              >
+                Last 90 Days
+              </Button>
+            </div>
+            <Badge variant="outline" className="text-[10px] sm:text-xs">
+              {format(dateRange.from, 'MMM dd, yyyy')} - {format(dateRange.to, 'MMM dd, yyyy')}
+            </Badge>
           </div>
         </div>
       </div>
@@ -347,27 +419,46 @@ export default function OwnerDashboard() {
                 Expense Breakdown
               </h3>
               {expenseBreakdown.length > 0 ? (
-                <ResponsiveContainer width="100%" height={180} className="sm:h-[200px]">
-                  <PieChart>
-                    <Pie
-                      data={expenseBreakdown}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={window.innerWidth < 640 ? 60 : 80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {expenseBreakdown.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value: number) => `RWF ${value.toLocaleString()}`} />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="h-[280px] sm:h-[320px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={expenseBreakdown}
+                        cx="50%"
+                        cy="45%"
+                        labelLine={true}
+                        label={renderCustomLabel}
+                        outerRadius={window.innerWidth < 640 ? 70 : 90}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {expenseBreakdown.map((entry, index) => (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={getCategoryColor(entry.name, index)}
+                            className="hover:opacity-80 transition-opacity cursor-pointer"
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Amount']}
+                        contentStyle={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '8px',
+                          fontSize: '12px'
+                        }}
+                      />
+                      <Legend 
+                        verticalAlign="bottom" 
+                        height={36}
+                        formatter={(value: string) => <span className="text-xs sm:text-sm">{value}</span>}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               ) : (
-                <p className="text-center text-slate-500 py-8 text-sm">No expenses yet</p>
+                <p className="text-center text-slate-500 py-8 text-sm">No expenses in selected date range</p>
               )}
             </Card>
           </motion.div>
