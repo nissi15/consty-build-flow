@@ -8,14 +8,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Building2, Users, DollarSign, TrendingUp, TrendingDown,
-  LogOut, Eye, Activity, Wallet, ShoppingCart, Clock
+  LogOut, Eye, Activity, Wallet, ShoppingCart, Clock, Moon, Sun
 } from 'lucide-react';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { getCategoryColor } from '@/constants/expenseCategories';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function OwnerDashboard() {
   const { isOwner, ownerName, managerId, logoutOwner } = useOwner();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   // Date range state for filtering dashboard data
@@ -245,6 +247,29 @@ export default function OwnerDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {/* Theme Toggle */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="relative overflow-hidden h-8 w-8 sm:h-9 sm:w-9"
+                title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+              >
+                <motion.div
+                  initial={false}
+                  animate={{ rotate: theme === 'dark' ? 180 : 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex items-center justify-center"
+                >
+                  {theme === 'light' ? (
+                    <Moon className="h-4 w-4 sm:h-5 sm:w-5 text-slate-700 dark:text-slate-300" />
+                  ) : (
+                    <Sun className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
+                  )}
+                </motion.div>
+              </Button>
+              
+              {/* Logout Button */}
               <Button
                 variant="outline"
                 size="sm"
