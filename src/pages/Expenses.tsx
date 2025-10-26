@@ -3,6 +3,7 @@ import { Plus, Calendar, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -306,10 +307,14 @@ export default function Expenses() {
             </div>
           </Card>
 
-          <ExpenseList 
-            expenses={filteredExpenses}
-            onDelete={handleDeleteExpense}
-          />
+          {loading ? (
+            <Skeleton className="h-[400px] w-full" />
+          ) : (
+            <ExpenseList 
+              expenses={filteredExpenses}
+              onDelete={handleDeleteExpense}
+            />
+          )}
         </motion.div>
       </div>
     </div>

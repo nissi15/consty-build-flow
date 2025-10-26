@@ -114,7 +114,7 @@ const Dashboard = () => {
       { title: 'Labor Expenses', value: `RWF ${laborExpenses.toFixed(0)}`, icon: Wrench, change: 'This week', changeType: 'neutral' },
       { title: 'Material Expenses', value: `RWF ${materialExpenses.toFixed(0)}`, icon: Truck, change: 'This week', changeType: 'neutral' },
     ];
-  }, [workers, expenses, budget]);
+  }, [workers, expenses, budget, attendance]);
 
   const weeklyData = useMemo(() => {
     const currentWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
