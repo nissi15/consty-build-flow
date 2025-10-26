@@ -4,14 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState } from 'react';
 import { usePayroll } from '@/hooks/usePayroll';
+import { useWorkers, useAttendance } from '@/hooks/useSupabaseData';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { PayrollStats } from '@/components/payroll/PayrollStats';
 import { PayrollChart } from '@/components/payroll/PayrollChart';
 import { PayrollHistory } from '@/components/payroll/PayrollHistory';
+import { WorkerPayrollList } from '@/components/payroll/WorkerPayrollList';
 
 export default function Payroll() {
   const { payrolls, loading, stats, generatePayroll, getPayrollTrend } = usePayroll();
+  const { workers, loading: workersLoading } = useWorkers();
+  const { attendance, loading: attendanceLoading } = useAttendance();
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGeneratePayroll = async () => {
@@ -81,7 +85,7 @@ export default function Payroll() {
         </div>
       </motion.div>
 
-      {loading ? (
+      {(loading || workersLoading || attendanceLoading) ? (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map(i => (
@@ -93,19 +97,30 @@ export default function Payroll() {
         </div>
       ) : (
         <>
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1 }}
-      >
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
             <PayrollStats {...stats} />
-      </motion.div>
+          </motion.div>
 
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <WorkerPayrollList 
+              workers={workers}
+              attendance={attendance}
+            />
+          </motion.div>
+
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
             <PayrollChart
               data={getPayrollTrend()}
               onExport={handleExport}
@@ -116,13 +131,13 @@ export default function Payroll() {
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.4 }}
           >
             <PayrollHistory
               onGeneratePayroll={handleGeneratePayroll}
               showNoData={payrolls.length === 0}
             />
-      </motion.div>
+          </motion.div>
         </>
       )}
     </div>
