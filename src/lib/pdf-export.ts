@@ -336,10 +336,8 @@ export function generateWeeklyPDFReport(data: WeeklyReportData) {
   // Average line
   const avgY = yPos + chartHeight - (avgDailyExpense / maxExpense) * chartHeight;
   doc.setDrawColor(245, 158, 11);
-  doc.setLineDash([2, 2]);
   doc.setLineWidth(0.5);
   doc.line(20, avgY, 20 + (7 * barWidth), avgY);
-  doc.setLineDash([]);
   
   // Average label
   doc.setFontSize(7);
@@ -375,7 +373,7 @@ export function generateWeeklyPDFReport(data: WeeklyReportData) {
   
   // Used budget bar
   const barColor = percentUsed > 90 ? [220, 38, 38] : percentUsed > 70 ? [245, 158, 11] : [34, 197, 94];
-  doc.setFillColor(...barColor);
+  doc.setFillColor(barColor[0], barColor[1], barColor[2]);
   doc.roundedRect(14, yPos, usedWidth, barHeight, 3, 3, 'F');
   
   // Percentage text on bar

@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkers, useAttendance } from '@/hooks/useSupabaseData';
-
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect, useMemo } from 'react';
 import { format } from 'date-fns';
@@ -15,10 +14,8 @@ import { WorkerStats } from '@/components/workers/WorkerStats';
 import { WorkerList } from '@/components/workers/WorkerList';
 import { WorkerFilters } from '@/components/workers/WorkerFilters';
 import { getTodayInRwanda } from '@/utils/dateUtils';
-import { formatCurrency } from '@/lib/utils';
 
 export default function Workers() {
-  
   const { workers, loading, refetch: refetchWorkers } = useWorkers();
   const { attendance, loading: attendanceLoading } = useAttendance();
 
@@ -202,9 +199,9 @@ export default function Workers() {
 
       await Promise.all(updates);
       
-      toast.success(`Auto-calculated rates for ${presentWorkers.length} present workers. Total lunch expense: ${formatCurrency(totalLunchExpense)}`);
+      toast.success(`Auto-calculated rates for ${presentWorkers.length} present workers. Total lunch expense: RWF ${totalLunchExpense}`);
       await supabase.from('activity_log').insert({
-        message: `Auto-calculated daily rates for ${presentWorkers.length} workers (Lunch: ${formatCurrency(totalLunchExpense)})`,
+        message: `Auto-calculated daily rates for ${presentWorkers.length} workers (Lunch: RWF ${totalLunchExpense})`,
         action_type: 'attendance',
       });
     } catch (error) {
@@ -524,13 +521,10 @@ export default function Workers() {
                     console.error(error);
                   } else {
                     toast.success(`Worker ${worker.name} deleted successfully`);
-                    if (currentProject?.id) {
-                      await supabase.from('activity_log').insert({
-                        message: `Worker deleted: ${worker.name}`,
-                        action_type: 'worker',
-                        project_id: currentProject.id,
-                      });
-                    }
+                    await supabase.from('activity_log').insert({
+                      message: `Worker deleted: ${worker.name}`,
+                      action_type: 'worker',
+                    });
                     // Refresh the workers list
                     refetchWorkers();
                   }

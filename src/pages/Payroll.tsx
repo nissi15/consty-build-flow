@@ -6,7 +6,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useState, useMemo } from 'react';
 import { usePayroll } from '@/hooks/usePayroll';
 import { useWorkers, useAttendance } from '@/hooks/useSupabaseData';
-
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { PayrollStats } from '@/components/payroll/PayrollStats';

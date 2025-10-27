@@ -31,9 +31,9 @@ interface AttendanceRecord {
   id: string;
   worker_id: string;
   date: string;
-  status: 'present' | 'absent' | 'late';
-  hours: number;
-  lunch_taken: boolean;
+  status: string;
+  hours: number | null;
+  lunch_taken: boolean | null;
   check_in_time: string | null;
   check_out_time: string | null;
   lunch_money: number | null;

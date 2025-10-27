@@ -3,7 +3,6 @@ import { Users, Clock, DollarSign, Package, Wrench, Truck } from 'lucide-react';
 import { ActivityLog } from '@/components/dashboard/ActivityLog';
 import { ExportButton } from '@/components/dashboard/ExportButton';
 import { ChartDetailModal } from '@/components/dashboard/ChartDetailModal';
-
 import { useState } from 'react';
 import { useDataRefresh } from '@/hooks/useDataRefresh';
 import { Card } from '@/components/ui/card';
@@ -25,12 +24,10 @@ interface ChartClickData {
 import { useWorkers, useAttendance, useExpenses, useBudget } from '@/hooks/useSupabaseData';
 import { usePayroll } from '@/hooks/usePayroll';
 import { useAuth } from '@/contexts/AuthContext';
-// removed: import { useProject } from '@/contexts/ProjectContext';
 import { useMemo } from 'react';
 import { format, startOfWeek, endOfWeek, subWeeks, eachDayOfInterval } from 'date-fns';
 import { getCategoryColor } from '@/constants/expenseCategories';
 import { getTodayInRwanda } from '@/utils/dateUtils';
-import { formatCurrency } from '@/lib/utils';
 
 const chartConfig = {
   attendance: { label: 'Attendance %', color: 'hsl(var(--chart-1))' },
@@ -50,7 +47,6 @@ const Dashboard = () => {
   useDataRefresh(30000);
   
   const { user } = useAuth();
-  // removed: const { currentProject } = useProject();
   const { workers, loading: workersLoading } = useWorkers();
   const { attendance, loading: attendanceLoading } = useAttendance();
   const { expenses, loading: expensesLoading } = useExpenses();
@@ -113,11 +109,11 @@ const Dashboard = () => {
 
     return [
       { title: 'Total Workers', value: totalWorkers.toString(), icon: Users, change: '+2 this week', changeType: 'positive' },
-      { title: 'Weekly Expenses', value: formatCurrency(weeklyExpenses), change: `${expenseChange.toFixed(1)}% from last week`, icon: DollarSign, changeType: expenseChange > 0 ? 'negative' : 'positive' as const },
-      { title: 'Remaining Budget', value: formatCurrency(remainingBudget), icon: Package, change: `${Math.round((remainingBudget / (budget?.total_budget || 1)) * 100)}% remaining`, changeType: remainingBudget > (budget?.total_budget || 1) * 0.2 ? 'positive' : 'negative' as const },
+      { title: 'Weekly Expenses', value: `RWF ${weeklyExpenses.toFixed(0)}`, change: `${expenseChange.toFixed(1)}% from last week`, icon: DollarSign, changeType: expenseChange > 0 ? 'negative' : 'positive' as const },
+      { title: 'Remaining Budget', value: `RWF ${remainingBudget.toFixed(0)}`, icon: Package, change: `${Math.round((remainingBudget / (budget?.total_budget || 1)) * 100)}% remaining`, changeType: remainingBudget > (budget?.total_budget || 1) * 0.2 ? 'positive' : 'negative' as const },
       { title: 'Attendance Rate', value: `${attendanceRate}%`, icon: Clock, change: `${todayAttendance} present today`, changeType: attendanceRate > 80 ? 'positive' : 'negative' as const },
-      { title: 'Labor Expenses', value: formatCurrency(laborExpenses), icon: Wrench, change: 'This week', changeType: 'neutral' },
-      { title: 'Material Expenses', value: formatCurrency(materialExpenses), icon: Truck, change: 'This week', changeType: 'neutral' },
+      { title: 'Labor Expenses', value: `RWF ${laborExpenses.toFixed(0)}`, icon: Wrench, change: 'This week', changeType: 'neutral' },
+      { title: 'Material Expenses', value: `RWF ${materialExpenses.toFixed(0)}`, icon: Truck, change: 'This week', changeType: 'neutral' },
     ];
   }, [workers, expenses, budget, attendance]);
 
@@ -260,7 +256,6 @@ const Dashboard = () => {
           <p className="text-sm opacity-80 mt-2">{format(new Date(), 'EEEE, MMM dd')}</p>
         </motion.div>
         <div className="flex items-end gap-3">
-          {/* ProjectSelector removed for single-project mode */}
           <ExportButton
             expenses={expenses}
             attendance={attendance}

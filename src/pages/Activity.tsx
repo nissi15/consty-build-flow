@@ -4,34 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useActivityLog } from '@/hooks/useSupabaseData';
-
 import { format } from 'date-fns';
-
-const getActionIcon = (actionType: string | null) => {
-  switch (actionType) {
-    case 'worker':
-      return <UserPlus className="h-5 w-5" />;
-    case 'attendance':
-      return <Calendar className="h-5 w-5" />;
-    case 'expense':
-      return <DollarSign className="h-5 w-5" />;
-    default:
-      return <ActivityIcon className="h-5 w-5" />;
-  }
-};
-
-const getActionColor = (actionType: string | null) => {
-  switch (actionType) {
-    case 'worker':
-      return 'bg-blue-500/10 text-blue-500';
-    case 'attendance':
-      return 'bg-green-500/10 text-green-500';
-    case 'expense':
-      return 'bg-orange-500/10 text-orange-500';
-    default:
-      return 'bg-gray-500/10 text-gray-500';
-  }
-};
 
 const Activity = () => {
   const { activityLog, loading } = useActivityLog();
@@ -99,3 +72,29 @@ const Activity = () => {
 };
 
 export default Activity;
+
+const getActionIcon = (actionType: string | null) => {
+  switch (actionType) {
+    case 'worker':
+      return <UserPlus className="h-5 w-5" />;
+    case 'attendance':
+      return <Calendar className="h-5 w-5" />;
+    case 'expense':
+      return <DollarSign className="h-5 w-5" />;
+    default:
+      return <ActivityIcon className="h-5 w-5" />;
+  }
+};
+
+const getActionColor = (actionType: string | null) => {
+  switch (actionType) {
+    case 'worker':
+      return 'bg-blue-500/10 text-blue-500';
+    case 'attendance':
+      return 'bg-green-500/10 text-green-500';
+    case 'expense':
+      return 'bg-orange-500/10 text-orange-500';
+    default:
+      return 'bg-gray-500/10 text-gray-500';
+  }
+};

@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
 import { Users, DollarSign, TrendingUp, Calendar, Clock, Package, Wrench } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useSyncSystem } from '@/hooks/useSyncSystem';
 import { useMemo } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line } from 'recharts';
 import { format, startOfWeek, endOfWeek, subDays } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCategoryColor } from '@/constants/expenseCategories';
@@ -149,7 +150,7 @@ export default function Dashboard() {
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name} ${(Number(percent) * 100).toFixed(0)}%`}
                     >
                       {expenseBreakdown.map((entry, index) => (
                         <Cell 

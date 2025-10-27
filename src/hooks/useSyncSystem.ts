@@ -7,62 +7,69 @@ interface Worker {
   role: string;
   daily_rate: number;
   lunch_allowance: number;
-  contact_info?: string;
-  join_date: string;
-  status: 'active' | 'inactive';
-  total_days_worked: number;
-  total_paid: number;
+  contact_info: string | null;
+  join_date: string | null;
+  is_active: boolean;
+  total_days_worked: number | null;
+  total_payable: number | null;
   created_at: string;
-  updated_at: string;
 }
 
 interface Attendance {
   id: string;
   worker_id: string;
   date: string;
-  status: 'present' | 'absent' | 'half-day';
-  lunch_taken: boolean;
-  daily_pay: number;
-  lunch_cost: number;
-  total_day_cost: number;
-  check_in_time?: string;
-  check_out_time?: string;
-  hours?: number;
+  status: string;
+  lunch_taken: boolean | null;
+  lunch_money: number | null;
+  check_in_time: string | null;
+  check_out_time: string | null;
+  hours: number | null;
   created_at: string;
-  updated_at: string;
-  worker?: Worker;
+  worker?: {
+    name: string;
+    role: string;
+  };
 }
 
 interface Expense {
   id: string;
-  type: 'salary' | 'lunch' | 'material' | 'misc' | 'payroll';
-  description: string;
+  category: string;
+  description: string | null;
   amount: number;
-  worker_id?: string;
-  attendance_id?: string;
-  budget_remaining?: number;
+  date: string;
+  type: string | null;
   created_at: string;
-  updated_at: string;
-  worker?: Worker;
-  attendance?: Attendance;
 }
 
 interface Budget {
   id: string;
   total_budget: number;
   used_budget: number;
-  budget_remaining: number;
+  budget_remaining: number | null;
   created_at: string;
-  updated_at: string;
 }
 
 interface ActivityLog {
   id: string;
   message: string;
-  action_type: string;
-  worker_id?: string;
+  action_type: string | null;
   created_at: string;
-  worker?: Worker;
+}
+
+interface Budget {
+  id: string;
+  total_budget: number;
+  used_budget: number;
+  budget_remaining: number | null;
+  created_at: string;
+}
+
+interface ActivityLog {
+  id: string;
+  message: string;
+  action_type: string | null;
+  created_at: string;
 }
 
 export function useSyncSystem() {
@@ -202,7 +209,7 @@ export function useSyncSystem() {
       const { data, error } = await supabase
         .from('expenses')
         .insert({
-          type,
+          category: type,
           description,
           amount,
         })
@@ -246,13 +253,13 @@ export function useSyncSystem() {
 
   // Get dashboard stats
   const getDashboardStats = useCallback(() => {
-    const activeWorkers = workers.filter(w => w.status === 'active');
+    const activeWorkers = workers.filter(w => w.is_active);
     const today = new Date().toISOString().split('T')[0];
     const todayAttendance = attendance.filter(a => a.date === today && a.status === 'present');
     
     const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-    const salaryExpenses = expenses.filter(e => e.type === 'salary').reduce((sum, e) => sum + e.amount, 0);
-    const materialExpenses = expenses.filter(e => e.type === 'material').reduce((sum, e) => sum + e.amount, 0);
+    const salaryExpenses = expenses.filter(e => e.category === 'Labor').reduce((sum, e) => sum + e.amount, 0);
+    const materialExpenses = expenses.filter(e => e.category === 'Materials').reduce((sum, e) => sum + e.amount, 0);
     const miscExpenses = expenses.filter(e => e.type === 'misc').reduce((sum, e) => sum + e.amount, 0);
 
     return {
@@ -292,7 +299,10 @@ export function useSyncSystem() {
     return last7Days.map(date => {
       const dayAttendance = attendance.filter(a => a.date === date);
       const presentCount = dayAttendance.filter(a => a.status === 'present').length;
-      const totalCost = dayAttendance.reduce((sum, a) => sum + a.total_day_cost, 0);
+      const totalCost = dayAttendance.reduce((sum, a) => {
+        const worker = workers.find(w => w.id === a.worker_id);
+        return sum + ((worker?.daily_rate || 0) + (a.lunch_money || 0));
+      }, 0);
 
       return {
         date,

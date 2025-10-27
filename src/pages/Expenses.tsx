@@ -11,14 +11,12 @@ import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-
 import { ExpenseStats } from '@/components/expenses/ExpenseStats';
 import { ExpenseBreakdown } from '@/components/expenses/ExpenseBreakdown';
 import { WeeklySpendingTrend } from '@/components/expenses/WeeklySpendingTrend';
 import { ExpenseList } from '@/components/expenses/ExpenseList';
 import { useExpenses } from '@/hooks/useExpenses';
 import { getTodayInRwanda } from '@/utils/dateUtils';
-import { formatCurrency } from '@/lib/utils';
 
 export default function Expenses() {
   const { expenses, loading, stats, refetchExpenses } = useExpenses();
@@ -73,7 +71,7 @@ export default function Expenses() {
       });
 
       await supabase.from('activity_log').insert({
-        message: `New expense added: ${formatCurrency(parseFloat(newExpense.amount))} for ${newExpense.category}`,
+        message: `New expense added: RWF ${newExpense.amount} for ${newExpense.category}`,
         action_type: 'expense',
       });
 
@@ -129,7 +127,7 @@ export default function Expenses() {
       }
 
       await supabase.from('activity_log').insert({
-        message: `Expense deleted: ${formatCurrency(expense.amount)} for ${expense.category}`,
+        message: `Expense deleted: RWF ${expense.amount} for ${expense.category}`,
         action_type: 'expense',
       });
 

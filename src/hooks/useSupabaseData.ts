@@ -8,23 +8,17 @@ type Expense = Database['public']['Tables']['expenses']['Row'];
 type Budget = Database['public']['Tables']['budget']['Row'];
 type ActivityLog = Database['public']['Tables']['activity_log']['Row'];
 
-export const useWorkers = (projectId?: string | null) => {
+export const useWorkers = () => {
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchWorkers = useCallback(async () => {
     try {
-      console.log('Fetching workers for project:', projectId);
-      let query = supabase
+      console.log('Fetching workers...');
+      const { data, error } = await supabase
         .from('workers')
-        .select('*');
-      
-      // Only filter by project_id if provided
-      if (projectId) {
-        query = query.eq('project_id', projectId);
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: false });
+        .select('*')
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching workers:', error);
@@ -40,7 +34,7 @@ export const useWorkers = (projectId?: string | null) => {
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, []);
 
   useEffect(() => {
     fetchWorkers();
@@ -63,27 +57,9 @@ export const useWorkers = (projectId?: string | null) => {
   return { workers, loading, refetch: fetchWorkers };
 };
 
-export const useAttendance = (projectId?: string | null) => {
+export const useAttendance = () => {
   const [attendance, setAttendance] = useState<(Attendance & { workers: Worker })[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const fetchAttendance = useCallback(async () => {
-    let query = supabase
-      .from('attendance')
-      .select('*, workers(*)');
-    
-    // Only filter by project_id if provided
-    if (projectId) {
-      query = query.eq('project_id', projectId);
-    }
-    
-    const { data, error } = await query.order('created_at', { ascending: false });
-    
-    if (!error && data) {
-      setAttendance(data as any);
-    }
-    setLoading(false);
-  }, [projectId]);
 
   useEffect(() => {
     fetchAttendance();
@@ -98,32 +74,26 @@ export const useAttendance = (projectId?: string | null) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchAttendance]);
+  }, []);
+
+  const fetchAttendance = async () => {
+    const { data, error } = await supabase
+      .from('attendance')
+      .select('*, workers(*)')
+      .order('created_at', { ascending: false });
+    
+    if (!error && data) {
+      setAttendance(data as any);
+    }
+    setLoading(false);
+  };
 
   return { attendance, loading, refetch: fetchAttendance };
 };
 
-export const useExpenses = (projectId?: string | null) => {
+export const useExpenses = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const fetchExpenses = useCallback(async () => {
-    let query = supabase
-      .from('expenses')
-      .select('*');
-    
-    // Only filter by project_id if provided
-    if (projectId) {
-      query = query.eq('project_id', projectId);
-    }
-    
-    const { data, error } = await query.order('created_at', { ascending: false });
-    
-    if (!error && data) {
-      setExpenses(data);
-    }
-    setLoading(false);
-  }, [projectId]);
 
   useEffect(() => {
     fetchExpenses();
@@ -138,35 +108,26 @@ export const useExpenses = (projectId?: string | null) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchExpenses]);
+  }, []);
+
+  const fetchExpenses = async () => {
+    const { data, error } = await supabase
+      .from('expenses')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (!error && data) {
+      setExpenses(data);
+    }
+    setLoading(false);
+  };
 
   return { expenses, loading, refetch: fetchExpenses };
 };
 
-export const useBudget = (projectId?: string | null) => {
+export const useBudget = () => {
   const [budget, setBudget] = useState<Budget | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const fetchBudget = useCallback(async () => {
-    let query = supabase
-      .from('budget')
-      .select('*');
-    
-    // Only filter by project_id if provided
-    if (projectId) {
-      query = query.eq('project_id', projectId);
-    }
-    
-    const { data, error } = await query
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-    
-    if (!error && data) {
-      setBudget(data);
-    }
-    setLoading(false);
-  }, [projectId]);
 
   useEffect(() => {
     fetchBudget();
@@ -181,34 +142,28 @@ export const useBudget = (projectId?: string | null) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchBudget]);
+  }, []);
+
+  const fetchBudget = async () => {
+    const { data, error } = await supabase
+      .from('budget')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+    
+    if (!error && data) {
+      setBudget(data);
+    }
+    setLoading(false);
+  };
 
   return { budget, loading, refetch: fetchBudget };
 };
 
-export const useActivityLog = (projectId?: string | null) => {
+export const useActivityLog = () => {
   const [activityLog, setActivityLog] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const fetchActivityLog = useCallback(async () => {
-    let query = supabase
-      .from('activity_log')
-      .select('*');
-    
-    // Only filter by project_id if provided
-    if (projectId) {
-      query = query.eq('project_id', projectId);
-    }
-    
-    const { data, error } = await query
-      .order('created_at', { ascending: false })
-      .limit(20);
-    
-    if (!error && data) {
-      setActivityLog(data);
-    }
-    setLoading(false);
-  }, [projectId]);
 
   useEffect(() => {
     fetchActivityLog();
@@ -223,7 +178,20 @@ export const useActivityLog = (projectId?: string | null) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchActivityLog]);
+  }, []);
+
+  const fetchActivityLog = async () => {
+    const { data, error } = await supabase
+      .from('activity_log')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(20);
+    
+    if (!error && data) {
+      setActivityLog(data);
+    }
+    setLoading(false);
+  };
 
   return { activityLog, loading, refetch: fetchActivityLog };
 };
