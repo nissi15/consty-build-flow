@@ -373,16 +373,13 @@ export default function OwnerDashboard() {
             <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-3 sm:p-4 shadow-lg hover:shadow-xl transition-shadow">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <div className="flex-1">
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Today's Expenses</p>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Total Payroll</p>
                   <p className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">
-                    RWF {stats.todayExpenses.toLocaleString()}
-                  </p>
-                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1">
-                    {stats.todayExpenseCount} transaction{stats.todayExpenseCount !== 1 ? 's' : ''} today
+                    RWF {stats.totalPayroll.toLocaleString()}
                   </p>
                 </div>
-                <div className="p-2 sm:p-3 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg self-end sm:self-auto">
-                  <Receipt className="h-4 w-4 sm:h-6 sm:w-6 text-cyan-600 dark:text-cyan-400" />
+                <div className="p-2 sm:p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg self-end sm:self-auto">
+                  <Wallet className="h-4 w-4 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
             </Card>
@@ -408,10 +405,42 @@ export default function OwnerDashboard() {
           </motion.div>
         </div>
 
+        {/* Today's Expenses Card */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-4 sm:p-6 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg">
+                    <Receipt className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+                  </div>
+                  <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100">
+                    Today's Expenses
+                  </h3>
+                </div>
+                <p className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100">
+                  RWF {stats.todayExpenses.toLocaleString()}
+                </p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+                  {stats.todayExpenseCount} transaction{stats.todayExpenseCount !== 1 ? 's' : ''} made today
+                </p>
+              </div>
+              <div className="hidden sm:block">
+                <div className="text-right">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Quick Summary</p>
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mt-1">
+                    {format(new Date(), 'EEEE, MMM dd')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+
         {/* Budget Progress & Expense Breakdown */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Budget Overview */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
             <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-4 sm:p-6 shadow-lg">
               <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 mb-3 sm:mb-4">
                 Budget Overview
@@ -453,7 +482,7 @@ export default function OwnerDashboard() {
           </motion.div>
 
           {/* Expense Breakdown */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
             <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-4 sm:p-6 shadow-lg">
               <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 mb-3 sm:mb-4">
                 Expense Breakdown
@@ -505,7 +534,7 @@ export default function OwnerDashboard() {
         </div>
 
         {/* Daily Spending Trend */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
           <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-4 sm:p-6 shadow-lg">
             <div className="flex items-center gap-2 mb-3 sm:mb-4">
               <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
@@ -534,7 +563,7 @@ export default function OwnerDashboard() {
         </motion.div>
 
         {/* Attendance Trend */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-4 sm:p-6 shadow-lg">
             <div className="flex items-center gap-2 mb-3 sm:mb-4">
               <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 dark:text-green-400" />
@@ -560,7 +589,7 @@ export default function OwnerDashboard() {
         </motion.div>
 
         {/* Recent Activity */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
           <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-4 sm:p-6 shadow-lg">
             <div className="flex items-center gap-2 mb-3 sm:mb-4">
               <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
