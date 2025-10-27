@@ -27,6 +27,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useMemo } from 'react';
 import { format, startOfWeek, endOfWeek, subWeeks, eachDayOfInterval } from 'date-fns';
 import { getCategoryColor } from '@/constants/expenseCategories';
+import { getTodayInRwanda } from '@/utils/dateUtils';
 
 const chartConfig = {
   attendance: { label: 'Attendance %', color: 'hsl(var(--chart-1))' },
@@ -68,7 +69,7 @@ const Dashboard = () => {
 
   const stats: StatItem[] = useMemo(() => {
     const totalWorkers = workers.filter(w => w.is_active).length;
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayInRwanda();
     
     // Calculate weekly expenses
     const weekStart = new Date();

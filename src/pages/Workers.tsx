@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { WorkerStats } from '@/components/workers/WorkerStats';
 import { WorkerList } from '@/components/workers/WorkerList';
 import { WorkerFilters } from '@/components/workers/WorkerFilters';
+import { getTodayInRwanda } from '@/utils/dateUtils';
 
 export default function Workers() {
   const { workers, loading, refetch: refetchWorkers } = useWorkers();
@@ -36,7 +37,7 @@ export default function Workers() {
 
   const stats = useMemo(() => {
     const activeWorkers = workers.filter(w => w.is_active);
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayInRwanda();
     const presentToday = attendance.filter(a => 
       a.date === today && a.status === 'present'
     ).length;
@@ -69,7 +70,7 @@ export default function Workers() {
     // Add attendance data to workers
     filtered = filtered.map(worker => {
       // Get today's attendance if a specific date is not selected
-      const targetDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : new Date().toISOString().split('T')[0];
+      const targetDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : getTodayInRwanda();
       const todayAttendance = attendance.find(a => 
         a.worker_id === worker.id && a.date === targetDate
       );
@@ -96,12 +97,12 @@ export default function Workers() {
     if (selectedStatus !== 'all') {
       if (selectedStatus === 'not_marked') {
         filtered = filtered.filter(w => {
-          const today = new Date().toISOString().split('T')[0];
+          const today = getTodayInRwanda();
           return !attendance.some(a => a.worker_id === w.id && a.date === today);
         });
       } else {
         filtered = filtered.filter(w => {
-          const today = new Date().toISOString().split('T')[0];
+          const today = getTodayInRwanda();
           return attendance.some(a => a.worker_id === w.id && a.date === today && a.status === selectedStatus);
         });
       }
@@ -151,7 +152,7 @@ export default function Workers() {
 
   const handleAutoCalculate = async () => {
     setIsCalculating(true);
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayInRwanda();
     
     try {
       // Get all present workers for today

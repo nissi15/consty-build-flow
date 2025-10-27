@@ -14,6 +14,7 @@ import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { getCategoryColor } from '@/constants/expenseCategories';
 import { useTheme } from '@/contexts/ThemeContext';
+import { getTodayInRwanda } from '@/utils/dateUtils';
 
 export default function OwnerDashboard() {
   const { isOwner, ownerName, managerId, logoutOwner } = useOwner();
@@ -104,7 +105,7 @@ export default function OwnerDashboard() {
         ?.filter(e => e.type === 'salary' || e.category === 'Labor')
         .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
 
-      const today = format(new Date(), 'yyyy-MM-dd');
+      const today = getTodayInRwanda();
       const todayExpenses = expensesData
         ?.filter(e => e.date === today || e.created_at?.startsWith(today))
         .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
