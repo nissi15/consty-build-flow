@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Plus, Calendar, Users } from 'lucide-react';
+import { Plus, Calendar, Users, Calculator } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -30,6 +30,9 @@ export default function Workers() {
     contact_info: '',
     join_date: format(new Date(), 'yyyy-MM-dd'),
   });
+  const [editingWorker, setEditingWorker] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isCalculating, setIsCalculating] = useState(false);
 
   const stats = useMemo(() => {
     const activeWorkers = workers.filter(w => w.is_active);
@@ -146,6 +149,86 @@ export default function Workers() {
     setIsAddingWorker(false);
   };
 
+  const handleAutoCalculate = async () => {
+    setIsCalculating(true);
+    const today = new Date().toISOString().split('T')[0];
+    
+    try {
+      // Get all present workers for today
+      const presentWorkers = attendance.filter(a => 
+        a.date === today && a.status === 'present'
+      );
+
+      if (presentWorkers.length === 0) {
+        toast.error('No workers marked as present today');
+        setIsCalculating(false);
+        return;
+      }
+
+      // Update each attendance record with worker's daily rate and lunch
+      const updates = presentWorkers.map(async (att) => {
+        const worker = workers.find(w => w.id === att.worker_id);
+        if (!worker) return;
+
+        return supabase
+          .from('attendance')
+          .update({
+            lunch_money: worker.lunch_allowance,
+            hours: att.hours || 8, // Default to 8 hours if not set
+          })
+          .eq('id', att.id);
+      });
+
+      await Promise.all(updates);
+      
+      toast.success(`Auto-calculated rates for ${presentWorkers.length} present workers`);
+      await supabase.from('activity_log').insert({
+        message: `Auto-calculated daily rates for ${presentWorkers.length} workers`,
+        action_type: 'attendance',
+      });
+    } catch (error) {
+      console.error('Auto-calculate error:', error);
+      toast.error('Failed to auto-calculate rates');
+    } finally {
+      setIsCalculating(false);
+    }
+  };
+
+  const handleEditWorker = async () => {
+    if (!editingWorker) return;
+
+    if (!editingWorker.name || !editingWorker.role || !editingWorker.daily_rate) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('workers')
+      .update({
+        name: editingWorker.name,
+        role: editingWorker.role,
+        daily_rate: parseFloat(editingWorker.daily_rate),
+        lunch_allowance: parseFloat(editingWorker.lunch_allowance),
+        contact_info: editingWorker.contact_info,
+      })
+      .eq('id', editingWorker.id);
+
+    if (error) {
+      console.error('Edit worker error:', error);
+      toast.error(`Failed to update worker: ${error.message}`);
+    } else {
+      toast.success(`Worker ${editingWorker.name} updated successfully!`);
+      setIsEditDialogOpen(false);
+      setEditingWorker(null);
+      
+      await supabase.from('activity_log').insert({
+        message: `Worker updated: ${editingWorker.name}`,
+        action_type: 'worker',
+      });
+      refetchWorkers();
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-6 space-y-6">
@@ -176,13 +259,22 @@ export default function Workers() {
               <h1 className="text-4xl font-bold mb-2">Worker Management</h1>
               <p className="text-muted-foreground">Manage your construction team and track their performance</p>
             </div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="gap-2 bg-purple-500 hover:bg-purple-600">
-                  <Plus className="h-4 w-4" />
-                  Add Worker
-                </Button>
-              </DialogTrigger>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleAutoCalculate}
+                disabled={isCalculating}
+                className="gap-2 bg-green-500 hover:bg-green-600"
+              >
+                <Calculator className="h-4 w-4" />
+                {isCalculating ? 'Calculating...' : 'Auto-Calculate Today'}
+              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="gap-2 bg-purple-500 hover:bg-purple-600">
+                    <Plus className="h-4 w-4" />
+                    Add Worker
+                  </Button>
+                </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Add New Worker</DialogTitle>
@@ -260,6 +352,7 @@ export default function Workers() {
                 </div>
               </DialogContent>
             </Dialog>
+            </div>
           </div>
         </motion.div>
 
@@ -389,8 +482,15 @@ export default function Workers() {
               <WorkerList 
                 workers={filteredWorkers}
                 onEdit={(worker) => {
-                  // TODO: Implement edit functionality
-                  console.log('Edit worker:', worker);
+                  setEditingWorker({
+                    id: worker.id,
+                    name: worker.name,
+                    role: worker.role,
+                    daily_rate: worker.daily_rate.toString(),
+                    lunch_allowance: worker.lunch_allowance.toString(),
+                    contact_info: worker.contact_info || '',
+                  });
+                  setIsEditDialogOpen(true);
                 }}
                 onDelete={async (worker) => {
                   const { error } = await supabase
@@ -416,6 +516,79 @@ export default function Workers() {
           </>
         )}
       </div>
+
+      {/* Edit Worker Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Worker</DialogTitle>
+          </DialogHeader>
+          {editingWorker && (
+            <div className="space-y-4 py-4">
+              <div>
+                <Label htmlFor="edit-name">Worker Name *</Label>
+                <Input
+                  id="edit-name"
+                  value={editingWorker.name}
+                  onChange={(e) => setEditingWorker({ ...editingWorker, name: e.target.value })}
+                  placeholder="e.g., John Smith"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-role">Role/Position *</Label>
+                <Input
+                  id="edit-role"
+                  value={editingWorker.role}
+                  onChange={(e) => setEditingWorker({ ...editingWorker, role: e.target.value })}
+                  placeholder="e.g., Foreman, Carpenter, Electrician"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-daily_rate">Daily Rate (RWF) *</Label>
+                  <Input
+                    id="edit-daily_rate"
+                    type="number"
+                    value={editingWorker.daily_rate}
+                    onChange={(e) => setEditingWorker({ ...editingWorker, daily_rate: e.target.value })}
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-lunch_allowance">Lunch Cost (RWF) *</Label>
+                  <Input
+                    id="edit-lunch_allowance"
+                    type="number"
+                    value={editingWorker.lunch_allowance}
+                    onChange={(e) => setEditingWorker({ ...editingWorker, lunch_allowance: e.target.value })}
+                    placeholder="50"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="edit-contact_info">Contact Information</Label>
+                <Input
+                  id="edit-contact_info"
+                  value={editingWorker.contact_info}
+                  onChange={(e) => setEditingWorker({ ...editingWorker, contact_info: e.target.value })}
+                  placeholder="Phone number or email"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => {
+                  setIsEditDialogOpen(false);
+                  setEditingWorker(null);
+                }}>
+                  Cancel
+                </Button>
+                <Button onClick={handleEditWorker}>
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

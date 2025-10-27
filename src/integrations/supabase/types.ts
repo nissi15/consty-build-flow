@@ -174,28 +174,34 @@ export type Database = {
       }
       workers: {
         Row: {
+          contact_info: string | null
           created_at: string
           daily_rate: number
           id: string
           is_active: boolean
+          join_date: string | null
           lunch_allowance: number
           name: string
           role: string
         }
         Insert: {
+          contact_info?: string | null
           created_at?: string
           daily_rate?: number
           id?: string
           is_active?: boolean
+          join_date?: string | null
           lunch_allowance?: number
           name: string
           role: string
         }
         Update: {
+          contact_info?: string | null
           created_at?: string
           daily_rate?: number
           id?: string
           is_active?: boolean
+          join_date?: string | null
           lunch_allowance?: number
           name?: string
           role?: string
