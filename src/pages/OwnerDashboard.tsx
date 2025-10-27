@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Building2, Users, DollarSign, TrendingUp, TrendingDown,
-  LogOut, Eye, Activity, Wallet, ShoppingCart, Clock, Moon, Sun
+  LogOut, Eye, Activity, Wallet, ShoppingCart, Clock, Moon, Sun, Receipt
 } from 'lucide-react';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
@@ -33,6 +33,8 @@ export default function OwnerDashboard() {
     activeWorkers: 0,
     presentToday: 0,
     totalPayroll: 0,
+    todayExpenses: 0,
+    todayExpenseCount: 0,
     expenses: [] as any[],
     attendance: [] as any[],
     workers: [] as any[],
@@ -103,6 +105,14 @@ export default function OwnerDashboard() {
         .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
 
       const today = format(new Date(), 'yyyy-MM-dd');
+      const todayExpenses = expensesData
+        ?.filter(e => e.date === today || e.created_at?.startsWith(today))
+        .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+      
+      const todayExpenseCount = expensesData?.filter(e => 
+        e.date === today || e.created_at?.startsWith(today)
+      ).length || 0;
+      
       const presentToday = attendanceData?.filter(a => 
         a.date === today && a.status === 'present'
       ).length || 0;
@@ -117,6 +127,8 @@ export default function OwnerDashboard() {
         activeWorkers,
         presentToday,
         totalPayroll,
+        todayExpenses,
+        todayExpenseCount,
         expenses: expensesData || [],
         attendance: attendanceData || [],
         workers: workersData || [],
@@ -361,13 +373,16 @@ export default function OwnerDashboard() {
             <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-3 sm:p-4 shadow-lg hover:shadow-xl transition-shadow">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <div className="flex-1">
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Total Payroll</p>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Today's Expenses</p>
                   <p className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">
-                    RWF {stats.totalPayroll.toLocaleString()}
+                    RWF {stats.todayExpenses.toLocaleString()}
+                  </p>
+                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1">
+                    {stats.todayExpenseCount} transaction{stats.todayExpenseCount !== 1 ? 's' : ''} today
                   </p>
                 </div>
-                <div className="p-2 sm:p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg self-end sm:self-auto">
-                  <Wallet className="h-4 w-4 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
+                <div className="p-2 sm:p-3 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg self-end sm:self-auto">
+                  <Receipt className="h-4 w-4 sm:h-6 sm:w-6 text-cyan-600 dark:text-cyan-400" />
                 </div>
               </div>
             </Card>
