@@ -15,6 +15,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Ba
 import { getCategoryColor } from '@/constants/expenseCategories';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getTodayInRwanda } from '@/utils/dateUtils';
+import { formatCurrency } from '@/lib/utils';
 
 export default function OwnerDashboard() {
   const { isOwner, ownerName, managerId, logoutOwner } = useOwner();
@@ -343,7 +344,7 @@ export default function OwnerDashboard() {
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] xs:text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">Total Budget</p>
                   <p className="text-base xs:text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">
-                    RWF {stats.totalBudget.toLocaleString()}
+                    {formatCurrency(stats.totalBudget)}
                   </p>
                 </div>
                 <div className="p-1.5 xs:p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
@@ -359,7 +360,7 @@ export default function OwnerDashboard() {
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] xs:text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">Total Spent</p>
                   <p className="text-base xs:text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">
-                    RWF {stats.usedBudget.toLocaleString()}
+                    {formatCurrency(stats.usedBudget)}
                   </p>
                   <p className="text-[9px] xs:text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1 truncate">
                     {budgetPercentage.toFixed(1)}% of budget
@@ -378,7 +379,7 @@ export default function OwnerDashboard() {
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] xs:text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">Total Payroll</p>
                   <p className="text-base xs:text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">
-                    RWF {stats.totalPayroll.toLocaleString()}
+                    {formatCurrency(stats.totalPayroll)}
                   </p>
                 </div>
                 <div className="p-1.5 xs:p-2 sm:p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0">
@@ -422,7 +423,7 @@ export default function OwnerDashboard() {
                   </h3>
                 </div>
                 <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-slate-100 break-all">
-                  RWF {stats.todayExpenses.toLocaleString()}
+                  {formatCurrency(stats.todayExpenses)}
                 </p>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 sm:mt-2">
                   {stats.todayExpenseCount} transaction{stats.todayExpenseCount !== 1 ? 's' : ''} made today
@@ -449,15 +450,15 @@ export default function OwnerDashboard() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Total Budget</span>
-                  <span className="font-semibold">RWF {stats.totalBudget.toLocaleString()}</span>
+                  <span className="font-semibold">{formatCurrency(stats.totalBudget)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Used</span>
-                  <span className="font-semibold text-orange-600">RWF {stats.usedBudget.toLocaleString()}</span>
+                  <span className="font-semibold text-orange-600">{formatCurrency(stats.usedBudget)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Remaining</span>
-                  <span className="font-semibold text-green-600">RWF {stats.remainingBudget.toLocaleString()}</span>
+                  <span className="font-semibold text-green-600">{formatCurrency(stats.remainingBudget)}</span>
                 </div>
                 
                 <div className="pt-2">
@@ -511,7 +512,7 @@ export default function OwnerDashboard() {
                         ))}
                       </Pie>
                       <Tooltip 
-                        formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Amount']}
+                        formatter={(value: number) => [formatCurrency(value), 'Amount']}
                         contentStyle={{
                           backgroundColor: 'rgba(255, 255, 255, 0.95)',
                           border: '1px solid #e2e8f0',
@@ -549,7 +550,7 @@ export default function OwnerDashboard() {
                 <XAxis dataKey="date" className="text-[10px] sm:text-xs" />
                 <YAxis className="text-[10px] sm:text-xs" />
                 <Tooltip 
-                  formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Amount']}
+                  formatter={(value: number) => [formatCurrency(value), 'Amount']}
                   contentStyle={{ 
                     backgroundColor: 'rgba(255, 255, 255, 0.95)', 
                     border: '1px solid #e2e8f0', 

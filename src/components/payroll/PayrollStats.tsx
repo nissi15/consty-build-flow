@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { DollarSign, Users, History } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/utils';
 
 interface PayrollStatsProps {
   weeklyPayroll: number;
@@ -12,7 +13,7 @@ export function PayrollStats({ weeklyPayroll, workersOnPayroll, payrollPeriods }
   const stats = [
     {
       title: "This Week's Payroll",
-      value: `RWF ${weeklyPayroll.toFixed(2)}`,
+      value: formatCurrency(weeklyPayroll),
       icon: DollarSign,
       iconClass: 'bg-purple-100 text-purple-600',
     },

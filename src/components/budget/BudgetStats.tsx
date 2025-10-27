@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { DollarSign, TrendingDown, Wallet, Percent } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { formatCurrency } from '@/lib/utils';
 
 interface BudgetStatsProps {
   stats: {
@@ -16,19 +17,19 @@ export function BudgetStats({ stats }: BudgetStatsProps) {
   const statItems = [
     {
       title: 'Total Budget',
-      value: `RWF ${stats.totalBudget.toLocaleString()}`,
+      value: formatCurrency(stats.totalBudget),
       icon: Wallet,
       iconClass: 'bg-purple-100 text-purple-600',
     },
     {
       title: 'Used Budget',
-      value: `RWF ${stats.usedBudget.toLocaleString()}`,
+      value: formatCurrency(stats.usedBudget),
       icon: DollarSign,
       iconClass: 'bg-blue-100 text-blue-600',
     },
     {
       title: 'Remaining',
-      value: `RWF ${stats.remainingBudget.toLocaleString()}`,
+      value: formatCurrency(stats.remainingBudget),
       icon: TrendingDown,
       iconClass: 'bg-green-100 text-green-600',
     },

@@ -15,6 +15,7 @@ import { WorkerStats } from '@/components/workers/WorkerStats';
 import { WorkerList } from '@/components/workers/WorkerList';
 import { WorkerFilters } from '@/components/workers/WorkerFilters';
 import { getTodayInRwanda } from '@/utils/dateUtils';
+import { formatCurrency } from '@/lib/utils';
 
 export default function Workers() {
   const { currentProject } = useProject();
@@ -209,10 +210,10 @@ export default function Workers() {
 
       await Promise.all(updates);
       
-      toast.success(`Auto-calculated rates for ${presentWorkers.length} present workers. Total lunch expense: RWF ${totalLunchExpense}`);
+      toast.success(`Auto-calculated rates for ${presentWorkers.length} present workers. Total lunch expense: ${formatCurrency(totalLunchExpense)}`);
       if (currentProject?.id) {
         await supabase.from('activity_log').insert({
-          message: `Auto-calculated daily rates for ${presentWorkers.length} workers (Lunch: RWF ${totalLunchExpense})`,
+          message: `Auto-calculated daily rates for ${presentWorkers.length} workers (Lunch: ${formatCurrency(totalLunchExpense)})`,
           action_type: 'attendance',
           project_id: currentProject.id,
         });

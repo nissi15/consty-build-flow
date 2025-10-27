@@ -30,6 +30,7 @@ import { useMemo } from 'react';
 import { format, startOfWeek, endOfWeek, subWeeks, eachDayOfInterval } from 'date-fns';
 import { getCategoryColor } from '@/constants/expenseCategories';
 import { getTodayInRwanda } from '@/utils/dateUtils';
+import { formatCurrency } from '@/lib/utils';
 
 const chartConfig = {
   attendance: { label: 'Attendance %', color: 'hsl(var(--chart-1))' },
@@ -112,11 +113,11 @@ const Dashboard = () => {
 
     return [
       { title: 'Total Workers', value: totalWorkers.toString(), icon: Users, change: '+2 this week', changeType: 'positive' },
-      { title: 'Weekly Expenses', value: `RWF ${weeklyExpenses.toFixed(0)}`, change: `${expenseChange.toFixed(1)}% from last week`, icon: DollarSign, changeType: expenseChange > 0 ? 'negative' : 'positive' as const },
-      { title: 'Remaining Budget', value: `RWF ${remainingBudget.toFixed(0)}`, icon: Package, change: `${Math.round((remainingBudget / (budget?.total_budget || 1)) * 100)}% remaining`, changeType: remainingBudget > (budget?.total_budget || 1) * 0.2 ? 'positive' : 'negative' as const },
+      { title: 'Weekly Expenses', value: formatCurrency(weeklyExpenses), change: `${expenseChange.toFixed(1)}% from last week`, icon: DollarSign, changeType: expenseChange > 0 ? 'negative' : 'positive' as const },
+      { title: 'Remaining Budget', value: formatCurrency(remainingBudget), icon: Package, change: `${Math.round((remainingBudget / (budget?.total_budget || 1)) * 100)}% remaining`, changeType: remainingBudget > (budget?.total_budget || 1) * 0.2 ? 'positive' : 'negative' as const },
       { title: 'Attendance Rate', value: `${attendanceRate}%`, icon: Clock, change: `${todayAttendance} present today`, changeType: attendanceRate > 80 ? 'positive' : 'negative' as const },
-      { title: 'Labor Expenses', value: `RWF ${laborExpenses.toFixed(0)}`, icon: Wrench, change: 'This week', changeType: 'neutral' },
-      { title: 'Material Expenses', value: `RWF ${materialExpenses.toFixed(0)}`, icon: Truck, change: 'This week', changeType: 'neutral' },
+      { title: 'Labor Expenses', value: formatCurrency(laborExpenses), icon: Wrench, change: 'This week', changeType: 'neutral' },
+      { title: 'Material Expenses', value: formatCurrency(materialExpenses), icon: Truck, change: 'This week', changeType: 'neutral' },
     ];
   }, [workers, expenses, budget, attendance]);
 

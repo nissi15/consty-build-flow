@@ -15,7 +15,7 @@ import { ExpenseOverTime } from '@/components/budget/ExpenseOverTime';
 import { BudgetStats } from '@/components/budget/BudgetStats';
 import { useBudget } from '@/hooks/useBudget';
 import { useExpenses } from '@/hooks/useSupabaseData';
-import { exportToCSV } from '@/lib/utils';
+import { exportToCSV, formatCurrency } from '@/lib/utils';
 
 export default function Budget() {
   const { currentProject } = useProject();
@@ -52,7 +52,7 @@ export default function Budget() {
 
       if (currentProject?.id) {
         await supabase.from('activity_log').insert({
-          message: `Budget adjusted to RWF ${parseFloat(newBudget).toLocaleString()}`,
+          message: `Budget adjusted to ${formatCurrency(parseFloat(newBudget))}`,
           action_type: 'budget',
           project_id: currentProject.id,
         });
@@ -87,7 +87,7 @@ export default function Budget() {
         Date: format(new Date(), 'yyyy-MM-dd'),
         Category: 'Budget Summary',
         Amount: budget?.total_budget,
-        Description: `Total Budget: RWF ${budget?.total_budget.toLocaleString()}, Used: RWF ${budget?.used_budget.toLocaleString()}, Remaining: RWF ${(budget?.total_budget - budget?.used_budget).toLocaleString()}`,
+        Description: `Total Budget: ${formatCurrency(budget?.total_budget || 0)}, Used: ${formatCurrency(budget?.used_budget || 0)}, Remaining: ${formatCurrency((budget?.total_budget || 0) - (budget?.used_budget || 0))}`,
       };
 
       reportData.unshift(budgetSummary);

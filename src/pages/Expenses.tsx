@@ -18,6 +18,7 @@ import { WeeklySpendingTrend } from '@/components/expenses/WeeklySpendingTrend';
 import { ExpenseList } from '@/components/expenses/ExpenseList';
 import { useExpenses } from '@/hooks/useExpenses';
 import { getTodayInRwanda } from '@/utils/dateUtils';
+import { formatCurrency } from '@/lib/utils';
 
 export default function Expenses() {
   const { currentProject } = useProject();
@@ -79,7 +80,7 @@ export default function Expenses() {
       });
 
       await supabase.from('activity_log').insert({
-        message: `New expense added: RWF ${newExpense.amount} for ${newExpense.category}`,
+        message: `New expense added: ${formatCurrency(parseFloat(newExpense.amount))} for ${newExpense.category}`,
         action_type: 'expense',
         project_id: currentProject.id,
       });
@@ -136,7 +137,7 @@ export default function Expenses() {
       }
 
       await supabase.from('activity_log').insert({
-        message: `Expense deleted: RWF ${expense.amount} for ${expense.category}`,
+        message: `Expense deleted: ${formatCurrency(expense.amount)} for ${expense.category}`,
         action_type: 'expense',
       });
 
