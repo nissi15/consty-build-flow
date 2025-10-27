@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Users, Clock, DollarSign, Package, Wrench, Truck } from 'lucide-react';
+import { Users, Clock, DollarSign, Package, Wrench, Truck, Receipt } from 'lucide-react';
 import { ActivityLog } from '@/components/dashboard/ActivityLog';
 import { ExportButton } from '@/components/dashboard/ExportButton';
 import { ChartDetailModal } from '@/components/dashboard/ChartDetailModal';
@@ -68,6 +68,14 @@ const Dashboard = () => {
 
   const stats: StatItem[] = useMemo(() => {
     const totalWorkers = workers.filter(w => w.is_active).length;
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Calculate today's expenses
+    const todayExpenses = expenses
+      .filter(e => e.date === today)
+      .reduce((sum, e) => sum + Number(e.amount), 0);
+    
+    const todayExpenseCount = expenses.filter(e => e.date === today).length;
     
     // Calculate weekly expenses
     const weekStart = new Date();
@@ -100,7 +108,6 @@ const Dashboard = () => {
       .reduce((sum, e) => sum + Number(e.amount), 0);
 
     // Calculate attendance rate
-    const today = new Date().toISOString().split('T')[0];
     const todayAttendance = attendance.filter(a => 
       a.date === today && a.status === 'present'
     ).length;
@@ -108,6 +115,7 @@ const Dashboard = () => {
 
     return [
       { title: 'Total Workers', value: totalWorkers.toString(), icon: Users, change: '+2 this week', changeType: 'positive' },
+      { title: "Today's Expenses", value: `RWF ${todayExpenses.toLocaleString()}`, icon: Receipt, change: `${todayExpenseCount} transaction${todayExpenseCount !== 1 ? 's' : ''} today`, changeType: 'neutral' as const },
       { title: 'Weekly Expenses', value: `RWF ${weeklyExpenses.toFixed(0)}`, change: `${expenseChange.toFixed(1)}% from last week`, icon: DollarSign, changeType: expenseChange > 0 ? 'negative' : 'positive' as const },
       { title: 'Remaining Budget', value: `RWF ${remainingBudget.toFixed(0)}`, icon: Package, change: `${Math.round((remainingBudget / (budget?.total_budget || 1)) * 100)}% remaining`, changeType: remainingBudget > (budget?.total_budget || 1) * 0.2 ? 'positive' : 'negative' as const },
       { title: 'Attendance Rate', value: `${attendanceRate}%`, icon: Clock, change: `${todayAttendance} present today`, changeType: attendanceRate > 80 ? 'positive' : 'negative' as const },
