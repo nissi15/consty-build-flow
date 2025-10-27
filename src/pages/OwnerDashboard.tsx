@@ -332,19 +332,19 @@ export default function OwnerDashboard() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
-        {/* Key Metrics */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Key Metrics - Mobile Responsive Grid */}
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-3 sm:p-4 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                <div className="flex-1">
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Total Budget</p>
-                  <p className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] xs:text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">Total Budget</p>
+                  <p className="text-base xs:text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">
                     RWF {stats.totalBudget.toLocaleString()}
                   </p>
                 </div>
-                <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg self-end sm:self-auto">
-                  <DollarSign className="h-4 w-4 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
+                <div className="p-1.5 xs:p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
+                  <DollarSign className="h-3.5 w-3.5 xs:h-4 xs:w-4 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
             </Card>
@@ -352,18 +352,18 @@ export default function OwnerDashboard() {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
             <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-3 sm:p-4 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                <div className="flex-1">
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Total Spent</p>
-                  <p className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] xs:text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">Total Spent</p>
+                  <p className="text-base xs:text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">
                     RWF {stats.usedBudget.toLocaleString()}
                   </p>
-                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1">
+                  <p className="text-[9px] xs:text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1 truncate">
                     {budgetPercentage.toFixed(1)}% of budget
                   </p>
                 </div>
-                <div className="p-2 sm:p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg self-end sm:self-auto">
-                  <TrendingDown className="h-4 w-4 sm:h-6 sm:w-6 text-orange-600 dark:text-orange-400" />
+                <div className="p-1.5 xs:p-2 sm:p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex-shrink-0">
+                  <TrendingDown className="h-3.5 w-3.5 xs:h-4 xs:w-4 sm:h-6 sm:w-6 text-orange-600 dark:text-orange-400" />
                 </div>
               </div>
             </Card>
@@ -371,15 +371,15 @@ export default function OwnerDashboard() {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-3 sm:p-4 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                <div className="flex-1">
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Total Payroll</p>
-                  <p className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] xs:text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">Total Payroll</p>
+                  <p className="text-base xs:text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">
                     RWF {stats.totalPayroll.toLocaleString()}
                   </p>
                 </div>
-                <div className="p-2 sm:p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg self-end sm:self-auto">
-                  <Wallet className="h-4 w-4 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
+                <div className="p-1.5 xs:p-2 sm:p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0">
+                  <Wallet className="h-3.5 w-3.5 xs:h-4 xs:w-4 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
             </Card>
@@ -387,51 +387,49 @@ export default function OwnerDashboard() {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
             <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-3 sm:p-4 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                <div className="flex-1">
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Workers Present</p>
-                  <p className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] xs:text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">Workers Present</p>
+                  <p className="text-base xs:text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate">
                     {stats.presentToday} / {stats.activeWorkers}
                   </p>
-                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1">
+                  <p className="text-[9px] xs:text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1 truncate">
                     Today's attendance
                   </p>
                 </div>
-                <div className="p-2 sm:p-3 bg-green-100 dark:bg-green-900/30 rounded-lg self-end sm:self-auto">
-                  <Users className="h-4 w-4 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
+                <div className="p-1.5 xs:p-2 sm:p-3 bg-green-100 dark:bg-green-900/30 rounded-lg flex-shrink-0">
+                  <Users className="h-3.5 w-3.5 xs:h-4 xs:w-4 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
                 </div>
               </div>
             </Card>
           </motion.div>
         </div>
 
-        {/* Today's Expenses Card */}
+        {/* Today's Expenses Card - Mobile Responsive */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-4 sm:p-6 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+              <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg">
-                    <Receipt className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+                  <div className="p-1.5 sm:p-2 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg">
+                    <Receipt className="h-4 w-4 sm:h-5 sm:w-5 text-cyan-600 dark:text-cyan-400" />
                   </div>
-                  <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 dark:text-slate-100">
                     Today's Expenses
                   </h3>
                 </div>
-                <p className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100">
+                <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-slate-100 break-all">
                   RWF {stats.todayExpenses.toLocaleString()}
                 </p>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 sm:mt-2">
                   {stats.todayExpenseCount} transaction{stats.todayExpenseCount !== 1 ? 's' : ''} made today
                 </p>
               </div>
-              <div className="hidden sm:block">
-                <div className="text-right">
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Quick Summary</p>
-                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mt-1">
-                    {format(new Date(), 'EEEE, MMM dd')}
-                  </p>
-                </div>
+              <div className="sm:text-right border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-slate-700 pt-3 sm:pt-0 sm:pl-4">
+                <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">Quick Summary</p>
+                <p className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mt-1">
+                  {format(new Date(), 'EEEE, MMM dd')}
+                </p>
               </div>
             </div>
           </Card>
