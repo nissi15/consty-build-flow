@@ -21,7 +21,7 @@ export default function Attendance() {
   const [isMarking, setIsMarking] = useState<string | null>(null);
 
   const stats = getDashboardStats();
-  const activeWorkers = workers.filter(w => w.status === 'active');
+  const activeWorkers = workers.filter(w => w.is_active);
   
   // Get today's attendance
   const todayAttendance = attendance.filter(a => a.date === selectedDate);
@@ -273,9 +273,9 @@ export default function Attendance() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold">RWF {att.total_day_cost.toFixed(2)}</p>
+                        <p className="font-semibold">RWF {((worker.daily_rate || 0) + (att.lunch_money || 0)).toFixed(2)}</p>
                         <p className="text-sm text-muted-foreground">
-                          RWF {att.daily_pay.toFixed(2)} + RWF {att.lunch_cost.toFixed(2)} lunch
+                          RWF {(worker.daily_rate || 0).toFixed(2)} + RWF {(att.lunch_money || 0).toFixed(2)} lunch
                         </p>
                       </div>
                     </div>

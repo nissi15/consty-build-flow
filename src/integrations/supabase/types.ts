@@ -44,6 +44,7 @@ export type Database = {
           hours: number | null
           id: string
           lunch_money: number | null
+          lunch_taken: boolean | null
           status: string
           worker_id: string
         }
@@ -55,6 +56,7 @@ export type Database = {
           hours?: number | null
           id?: string
           lunch_money?: number | null
+          lunch_taken?: boolean | null
           status: string
           worker_id: string
         }
@@ -66,6 +68,7 @@ export type Database = {
           hours?: number | null
           id?: string
           lunch_money?: number | null
+          lunch_taken?: boolean | null
           status?: string
           worker_id?: string
         }
@@ -81,18 +84,21 @@ export type Database = {
       }
       budget: {
         Row: {
+          budget_remaining: number | null
           created_at: string
           id: string
           total_budget: number
           used_budget: number
         }
         Insert: {
+          budget_remaining?: number | null
           created_at?: string
           id?: string
           total_budget?: number
           used_budget?: number
         }
         Update: {
+          budget_remaining?: number | null
           created_at?: string
           id?: string
           total_budget?: number
@@ -108,6 +114,7 @@ export type Database = {
           date: string
           description: string | null
           id: string
+          type: string | null
         }
         Insert: {
           amount: number
@@ -116,6 +123,7 @@ export type Database = {
           date?: string
           description?: string | null
           id?: string
+          type?: string | null
         }
         Update: {
           amount?: number
@@ -124,8 +132,104 @@ export type Database = {
           date?: string
           description?: string | null
           id?: string
+          type?: string | null
         }
         Relationships: []
+      }
+      owner_access_codes: {
+        Row: {
+          access_count: number | null
+          code: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_accessed_at: string | null
+          manager_id: string | null
+          owner_name: string
+          owner_phone: string
+          updated_at: string | null
+        }
+        Insert: {
+          access_count?: number | null
+          code: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_accessed_at?: string | null
+          manager_id?: string | null
+          owner_name: string
+          owner_phone: string
+          updated_at?: string | null
+        }
+        Update: {
+          access_count?: number | null
+          code?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_accessed_at?: string | null
+          manager_id?: string | null
+          owner_name?: string
+          owner_phone?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      payroll: {
+        Row: {
+          created_at: string | null
+          daily_rate: number
+          days_worked: number
+          gross_amount: number
+          id: string
+          lunch_deduction: number
+          lunch_total: number
+          net_amount: number
+          paid_at: string | null
+          period_end: string
+          period_start: string
+          status: string
+          worker_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          daily_rate?: number
+          days_worked?: number
+          gross_amount?: number
+          id?: string
+          lunch_deduction?: number
+          lunch_total?: number
+          net_amount?: number
+          paid_at?: string | null
+          period_end: string
+          period_start: string
+          status?: string
+          worker_id: string
+        }
+        Update: {
+          created_at?: string | null
+          daily_rate?: number
+          days_worked?: number
+          gross_amount?: number
+          id?: string
+          lunch_deduction?: number
+          lunch_total?: number
+          net_amount?: number
+          paid_at?: string | null
+          period_end?: string
+          period_start?: string
+          status?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -183,6 +287,8 @@ export type Database = {
           lunch_allowance: number
           name: string
           role: string
+          total_days_worked: number | null
+          total_payable: number | null
         }
         Insert: {
           contact_info?: string | null
@@ -194,6 +300,8 @@ export type Database = {
           lunch_allowance?: number
           name: string
           role: string
+          total_days_worked?: number | null
+          total_payable?: number | null
         }
         Update: {
           contact_info?: string | null
@@ -205,6 +313,8 @@ export type Database = {
           lunch_allowance?: number
           name?: string
           role?: string
+          total_days_worked?: number | null
+          total_payable?: number | null
         }
         Relationships: []
       }
@@ -213,6 +323,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_owner_code: { Args: never; Returns: string }
+      generate_payroll: {
+        Args: { end_date: string; start_date: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
