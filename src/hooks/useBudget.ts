@@ -9,16 +9,23 @@ interface Budget {
   created_at: string;
 }
 
-export function useBudget() {
+export function useBudget(projectId?: string | null) {
   const [budget, setBudget] = useState<Budget | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchBudget = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('budget')
-        .select('*')
+        .select('*');
+
+      // Only filter by project_id if provided
+      if (projectId) {
+        query = query.eq('project_id', projectId);
+      }
+
+      const { data, error } = await query
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
@@ -35,15 +42,22 @@ export function useBudget() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [projectId]);
 
   const recalculateTotals = useCallback(async () => {
     if (!budget) return;
 
     try {
-      const { data: expenses, error: expensesError } = await supabase
+      let query = supabase
         .from('expenses')
         .select('amount');
+
+      // Only filter by project_id if provided
+      if (projectId) {
+        query = query.eq('project_id', projectId);
+      }
+
+      const { data: expenses, error: expensesError } = await query;
 
       if (expensesError) throw expensesError;
 
@@ -56,17 +70,20 @@ export function useBudget() {
 
       if (updateError) throw updateError;
 
-      await supabase.from('activity_log').insert({
-        message: `Budget totals recalculated. Used budget: RWF ${usedBudget.toLocaleString()}`,
-        action_type: 'budget',
-      });
+      if (projectId) {
+        await supabase.from('activity_log').insert({
+          message: `Budget totals recalculated. Used budget: RWF ${usedBudget.toLocaleString()}`,
+          action_type: 'budget',
+          project_id: projectId,
+        });
+      }
 
       fetchBudget();
     } catch (error) {
       console.error('Error recalculating totals:', error);
       throw error;
     }
-  }, [budget, fetchBudget]);
+  }, [budget, fetchBudget, projectId]);
 
   useEffect(() => {
     fetchBudget();

@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useActivityLog } from '@/hooks/useSupabaseData';
+import { useProject } from '@/contexts/ProjectContext';
 import { format } from 'date-fns';
 
 const getActionIcon = (actionType: string | null) => {
@@ -33,7 +34,8 @@ const getActionColor = (actionType: string | null) => {
 };
 
 const Activity = () => {
-  const { activityLog, loading } = useActivityLog();
+  const { currentProject } = useProject();
+  const { activityLog, loading } = useActivityLog(currentProject?.id);
 
   if (loading) {
     return (

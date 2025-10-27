@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
+import { useProject } from '@/contexts/ProjectContext';
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -17,8 +18,9 @@ import { useExpenses } from '@/hooks/useSupabaseData';
 import { exportToCSV } from '@/lib/utils';
 
 export default function Budget() {
-  const { budget, loading, stats, refetchBudget, recalculateTotals } = useBudget();
-  const { expenses, loading: expensesLoading } = useExpenses();
+  const { currentProject } = useProject();
+  const { budget, loading, stats, refetchBudget, recalculateTotals } = useBudget(currentProject?.id);
+  const { expenses, loading: expensesLoading } = useExpenses(currentProject?.id);
   
   console.log('Budget component rendering, loading:', loading, 'budget:', budget);
 
@@ -48,10 +50,13 @@ export default function Budget() {
       toast.success('Budget updated successfully');
       refetchBudget();
 
-      await supabase.from('activity_log').insert({
-        message: `Budget adjusted to RWF ${parseFloat(newBudget).toLocaleString()}`,
-        action_type: 'budget',
-      });
+      if (currentProject?.id) {
+        await supabase.from('activity_log').insert({
+          message: `Budget adjusted to RWF ${parseFloat(newBudget).toLocaleString()}`,
+          action_type: 'budget',
+          project_id: currentProject.id,
+        });
+      }
     } catch (error) {
       console.error('Error adjusting budget:', error);
       toast.error('Failed to adjust budget');
@@ -189,10 +194,14 @@ export default function Budget() {
                 variant="outline" 
                 className="gap-2" 
                 onClick={async () => {
+                  if (!currentProject?.id) {
+                    toast.error('Please select a project first');
+                    return;
+                  }
                   try {
                     const { data, error } = await supabase
                       .from('budget')
-                      .insert([{ total_budget: 100000, used_budget: 0 }])
+                      .insert([{ total_budget: 100000, used_budget: 0, project_id: currentProject.id }])
                       .select()
                       .single();
                     

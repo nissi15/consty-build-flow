@@ -3,6 +3,7 @@ import { Users, Clock, DollarSign, Package, Wrench, Truck } from 'lucide-react';
 import { ActivityLog } from '@/components/dashboard/ActivityLog';
 import { ExportButton } from '@/components/dashboard/ExportButton';
 import { ChartDetailModal } from '@/components/dashboard/ChartDetailModal';
+import { ProjectSelector } from '@/components/layout/ProjectSelector';
 import { useState } from 'react';
 import { useDataRefresh } from '@/hooks/useDataRefresh';
 import { Card } from '@/components/ui/card';
@@ -24,6 +25,7 @@ interface ChartClickData {
 import { useWorkers, useAttendance, useExpenses, useBudget } from '@/hooks/useSupabaseData';
 import { usePayroll } from '@/hooks/usePayroll';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProject } from '@/contexts/ProjectContext';
 import { useMemo } from 'react';
 import { format, startOfWeek, endOfWeek, subWeeks, eachDayOfInterval } from 'date-fns';
 import { getCategoryColor } from '@/constants/expenseCategories';
@@ -47,11 +49,12 @@ const Dashboard = () => {
   useDataRefresh(30000);
   
   const { user } = useAuth();
-  const { workers, loading: workersLoading } = useWorkers();
-  const { attendance, loading: attendanceLoading } = useAttendance();
-  const { expenses, loading: expensesLoading } = useExpenses();
-  const { budget, loading: budgetLoading } = useBudget();
-  const { payrolls, loading: payrollLoading } = usePayroll();
+  const { currentProject } = useProject();
+  const { workers, loading: workersLoading } = useWorkers(currentProject?.id);
+  const { attendance, loading: attendanceLoading } = useAttendance(currentProject?.id);
+  const { expenses, loading: expensesLoading } = useExpenses(currentProject?.id);
+  const { budget, loading: budgetLoading } = useBudget(currentProject?.id);
+  const { payrolls, loading: payrollLoading } = usePayroll(currentProject?.id);
 
   const [detailModal, setDetailModal] = useState<{
     open: boolean;
@@ -256,6 +259,7 @@ const Dashboard = () => {
           <p className="text-sm opacity-80 mt-2">{format(new Date(), 'EEEE, MMM dd')}</p>
         </motion.div>
         <div className="flex items-end gap-3">
+          <ProjectSelector />
           <ExportButton
             expenses={expenses}
             attendance={attendance}

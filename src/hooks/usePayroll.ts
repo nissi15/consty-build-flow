@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfWeek, endOfWeek, format } from 'date-fns';
 
@@ -37,7 +37,7 @@ interface PayrollStats {
   payrollPeriods: number;
 }
 
-export function usePayroll() {
+export function usePayroll(projectId?: string | null) {
   const [payrolls, setPayrolls] = useState<PayrollRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<PayrollStats>({
@@ -46,27 +46,18 @@ export function usePayroll() {
     payrollPeriods: 0,
   });
 
-  useEffect(() => {
-    fetchPayrolls();
-
-    const channel = supabase
-      .channel('payroll-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'payroll' }, () => {
-        fetchPayrolls();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  const fetchPayrolls = async () => {
+  const fetchPayrolls = useCallback(async () => {
     try {
-      const { data: payrollData, error } = await supabase
+      let query = supabase
         .from('payroll')
-        .select('*, worker:workers(name, role)')
-        .order('created_at', { ascending: false });
+        .select('*, worker:workers(name, role)');
+
+      // Only filter by project_id if provided
+      if (projectId) {
+        query = query.eq('project_id', projectId);
+      }
+
+      const { data: payrollData, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
 
@@ -93,7 +84,22 @@ export function usePayroll() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId]);
+
+  useEffect(() => {
+    fetchPayrolls();
+
+    const channel = supabase
+      .channel('payroll-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payroll' }, () => {
+        fetchPayrolls();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchPayrolls]);
 
   const generatePayroll = async () => {
     try {
