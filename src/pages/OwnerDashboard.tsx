@@ -83,13 +83,13 @@ export default function OwnerDashboard() {
         .lte('date', toDate)
         .order('date', { ascending: false });
 
-      // Fetch expenses in date range
+      // Fetch expenses in date range (using date field, not created_at)
       const { data: expensesData } = await supabase
         .from('expenses')
         .select('*')
-        .gte('created_at', fromDate)
-        .lte('created_at', toDate)
-        .order('created_at', { ascending: false });
+        .gte('date', fromDate)
+        .lte('date', toDate)
+        .order('date', { ascending: false });
 
       // Fetch activity in date range
       const { data: activityData } = await supabase
