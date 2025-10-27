@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
-import { CalendarDays, Download } from 'lucide-react';
+import { CalendarDays, Download, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { usePayroll } from '@/hooks/usePayroll';
 import { useWorkers, useAttendance } from '@/hooks/useSupabaseData';
 import { format } from 'date-fns';
@@ -17,6 +18,20 @@ export default function Payroll() {
   const { workers, loading: workersLoading } = useWorkers();
   const { attendance, loading: attendanceLoading } = useAttendance();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState<{ start: Date; end: Date }>({
+    start: new Date(new Date().setDate(new Date().getDate() - 7)),
+    end: new Date(),
+  });
+
+  const filteredWorkers = useMemo(() => {
+    if (!searchQuery.trim()) return workers;
+    
+    return workers.filter(worker => 
+      worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      worker.role.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [workers, searchQuery]);
 
   const handleGeneratePayroll = async () => {
     try {
@@ -109,10 +124,33 @@ export default function Payroll() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
+            className="space-y-4"
           >
+            <div className="flex items-center gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search worker by name or role..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchQuery('')}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+            
             <WorkerPayrollList 
-              workers={workers}
+              workers={filteredWorkers}
               attendance={attendance}
+              selectedPeriod={selectedPeriod}
             />
           </motion.div>
 

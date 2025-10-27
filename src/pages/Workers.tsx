@@ -165,25 +165,40 @@ export default function Workers() {
         return;
       }
 
+      let totalLunchExpense = 0;
+
       // Update each attendance record with worker's daily rate and lunch
       const updates = presentWorkers.map(async (att) => {
         const worker = workers.find(w => w.id === att.worker_id);
         if (!worker) return;
 
-        return supabase
+        // Update attendance
+        await supabase
           .from('attendance')
           .update({
             lunch_money: worker.lunch_allowance,
             hours: att.hours || 8, // Default to 8 hours if not set
           })
           .eq('id', att.id);
+
+        // Create expense entry for lunch money
+        if (worker.lunch_allowance > 0) {
+          await supabase.from('expenses').insert({
+            category: 'Lunch',
+            amount: worker.lunch_allowance,
+            description: `Lunch allowance for ${worker.name} on ${today}`,
+            date: today,
+          });
+          
+          totalLunchExpense += worker.lunch_allowance;
+        }
       });
 
       await Promise.all(updates);
       
-      toast.success(`Auto-calculated rates for ${presentWorkers.length} present workers`);
+      toast.success(`Auto-calculated rates for ${presentWorkers.length} present workers. Total lunch expense: RWF ${totalLunchExpense}`);
       await supabase.from('activity_log').insert({
-        message: `Auto-calculated daily rates for ${presentWorkers.length} workers`,
+        message: `Auto-calculated daily rates for ${presentWorkers.length} workers (Lunch: RWF ${totalLunchExpense})`,
         action_type: 'attendance',
       });
     } catch (error) {
