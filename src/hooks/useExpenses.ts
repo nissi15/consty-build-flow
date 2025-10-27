@@ -11,23 +11,17 @@ interface Expense {
   created_at: string;
 }
 
-export function useExpenses(projectId?: string | null) {
+export function useExpenses() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchExpenses = useCallback(async () => {
     setLoading(true);
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from('expenses')
-        .select('*');
-
-      // Only filter by project_id if provided
-      if (projectId) {
-        query = query.eq('project_id', projectId);
-      }
-
-      const { data, error } = await query.order('date', { ascending: false });
+        .select('*')
+        .order('date', { ascending: false });
 
       if (error) {
         throw error;
@@ -39,7 +33,7 @@ export function useExpenses(projectId?: string | null) {
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, []);
 
   useEffect(() => {
     fetchExpenses();

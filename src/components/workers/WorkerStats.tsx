@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Users, Clock, DollarSign } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
 
 interface WorkerStatsProps {
   totalWorkers: number;
@@ -26,7 +25,7 @@ export function WorkerStats({ totalWorkers, presentToday, avgDailyRate, weeklyHo
     },
     {
       title: 'Avg Daily Rate',
-      value: formatCurrency(avgDailyRate),
+      value: `RWF ${avgDailyRate}`,
       icon: DollarSign,
       iconClass: 'bg-purple-100 text-purple-600',
     },

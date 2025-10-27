@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { DollarSign, TrendingUp, Calendar, PieChart } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
 
 interface ExpenseStatsProps {
   stats: {
@@ -16,19 +15,19 @@ export function ExpenseStats({ stats }: ExpenseStatsProps) {
   const statItems = [
     {
       title: 'Total Expenses',
-      value: formatCurrency(stats.totalExpenses),
+      value: `RWF ${stats.totalExpenses.toLocaleString()}`,
       icon: DollarSign,
       iconClass: 'bg-purple-100 text-purple-600',
     },
     {
       title: 'Monthly Average',
-      value: formatCurrency(stats.monthlyAverage),
+      value: `RWF ${stats.monthlyAverage.toLocaleString()}`,
       icon: TrendingUp,
       iconClass: 'bg-green-100 text-green-600',
     },
     {
       title: 'This Month',
-      value: formatCurrency(stats.thisMonth),
+      value: `RWF ${stats.thisMonth.toLocaleString()}`,
       icon: Calendar,
       iconClass: 'bg-blue-100 text-blue-600',
     },

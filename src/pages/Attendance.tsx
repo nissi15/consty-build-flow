@@ -6,7 +6,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState, useMemo } from 'react';
 import { useWorkers, useAttendance } from '@/hooks/useSupabaseData';
-import { useProject } from '@/contexts/ProjectContext';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -17,9 +16,8 @@ import { AttendanceRecords } from '@/components/attendance/AttendanceRecords';
 
 const Attendance = () => {
   const [date] = useState<Date>(new Date());
-  const { currentProject } = useProject();
-  const { workers, loading: workersLoading } = useWorkers(currentProject?.id);
-  const { attendance, loading: attendanceLoading, refetch: refetchAttendance } = useAttendance(currentProject?.id);
+  const { workers, loading: workersLoading } = useWorkers();
+  const { attendance, loading: attendanceLoading, refetch: refetchAttendance } = useAttendance();
 
   const stats = useMemo(() => {
     const today = format(date, 'yyyy-MM-dd');
@@ -48,11 +46,6 @@ const Attendance = () => {
   }, [workers, attendance, date]);
 
   const handleMarkAttendance = async (workerId: string, status: 'present' | 'absent') => {
-    if (!currentProject?.id) {
-      toast.error('Please select a project first');
-      return;
-    }
-
     const today = format(date, 'yyyy-MM-dd');
     
     try {
@@ -63,7 +56,6 @@ const Attendance = () => {
         lunch_taken: status === 'present',
         check_in_time: status === 'present' ? new Date().toISOString() : null,
         hours: status === 'present' ? 8.0 : 0,
-        project_id: currentProject.id,
       });
 
       if (error) {

@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { OwnerProvider } from "@/contexts/OwnerContext";
-import { ProjectProvider } from "@/contexts/ProjectContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 // Lazy load all pages for better performance
@@ -21,7 +20,6 @@ const Expenses = lazy(() => import("./pages/Expenses"));
 const Budget = lazy(() => import("./pages/Budget"));
 const Activity = lazy(() => import("./pages/Activity"));
 const Settings = lazy(() => import("./pages/Settings"));
-const Projects = lazy(() => import("./pages/Projects"));
 const DashboardLayout = lazy(() => import("./components/layout/DashboardLayout"));
 const OwnerDashboard = lazy(() => import("./pages/OwnerDashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -52,10 +50,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <ProjectProvider>
-              <OwnerProvider>
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
+            <OwnerProvider>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
                   <Route path="/" element={<Landing />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/owner-dashboard" element={<OwnerDashboard />} />
@@ -73,15 +70,13 @@ const App = () => (
                   <Route path="/expenses" element={<Expenses />} />
                   <Route path="/budget" element={<Budget />} />
                   <Route path="/activity" element={<Activity />} />
-                  <Route path="/projects" element={<Projects />} />
                   <Route path="/settings" element={<Settings />} />
                 </Route>
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-              </OwnerProvider>
-            </ProjectProvider>
+                </Routes>
+              </Suspense>
+            </OwnerProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

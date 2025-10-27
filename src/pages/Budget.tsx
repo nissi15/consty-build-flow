@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
-import { useProject } from '@/contexts/ProjectContext';
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -15,12 +14,11 @@ import { ExpenseOverTime } from '@/components/budget/ExpenseOverTime';
 import { BudgetStats } from '@/components/budget/BudgetStats';
 import { useBudget } from '@/hooks/useBudget';
 import { useExpenses } from '@/hooks/useSupabaseData';
-import { exportToCSV, formatCurrency } from '@/lib/utils';
+import { exportToCSV } from '@/lib/utils';
 
 export default function Budget() {
-  const { currentProject } = useProject();
-  const { budget, loading, stats, refetchBudget, recalculateTotals } = useBudget(currentProject?.id);
-  const { expenses, loading: expensesLoading } = useExpenses(currentProject?.id);
+  const { budget, loading, stats, refetchBudget, recalculateTotals } = useBudget();
+  const { expenses, loading: expensesLoading } = useExpenses();
   
   console.log('Budget component rendering, loading:', loading, 'budget:', budget);
 
@@ -50,13 +48,10 @@ export default function Budget() {
       toast.success('Budget updated successfully');
       refetchBudget();
 
-      if (currentProject?.id) {
-        await supabase.from('activity_log').insert({
-          message: `Budget adjusted to ${formatCurrency(parseFloat(newBudget))}`,
-          action_type: 'budget',
-          project_id: currentProject.id,
-        });
-      }
+      await supabase.from('activity_log').insert({
+        message: `Budget adjusted to RWF ${parseFloat(newBudget).toLocaleString()}`,
+        action_type: 'budget',
+      });
     } catch (error) {
       console.error('Error adjusting budget:', error);
       toast.error('Failed to adjust budget');
@@ -87,7 +82,7 @@ export default function Budget() {
         Date: format(new Date(), 'yyyy-MM-dd'),
         Category: 'Budget Summary',
         Amount: budget?.total_budget,
-        Description: `Total Budget: ${formatCurrency(budget?.total_budget || 0)}, Used: ${formatCurrency(budget?.used_budget || 0)}, Remaining: ${formatCurrency((budget?.total_budget || 0) - (budget?.used_budget || 0))}`,
+        Description: `Total Budget: RWF ${budget?.total_budget.toLocaleString()}, Used: RWF ${budget?.used_budget.toLocaleString()}, Remaining: RWF ${(budget?.total_budget - budget?.used_budget).toLocaleString()}`,
       };
 
       reportData.unshift(budgetSummary);
@@ -194,14 +189,10 @@ export default function Budget() {
                 variant="outline" 
                 className="gap-2" 
                 onClick={async () => {
-                  if (!currentProject?.id) {
-                    toast.error('Please select a project first');
-                    return;
-                  }
                   try {
                     const { data, error } = await supabase
                       .from('budget')
-                      .insert([{ total_budget: 100000, used_budget: 0, project_id: currentProject.id }])
+                      .insert([{ total_budget: 100000, used_budget: 0 }])
                       .select()
                       .single();
                     
