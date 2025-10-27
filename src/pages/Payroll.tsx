@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useState, useMemo } from 'react';
 import { usePayroll } from '@/hooks/usePayroll';
 import { useWorkers, useAttendance } from '@/hooks/useSupabaseData';
-import { useProject } from '@/contexts/ProjectContext';
+
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { PayrollStats } from '@/components/payroll/PayrollStats';
@@ -15,10 +15,9 @@ import { PayrollHistory } from '@/components/payroll/PayrollHistory';
 import { WorkerPayrollList } from '@/components/payroll/WorkerPayrollList';
 
 export default function Payroll() {
-  const { currentProject } = useProject();
-  const { payrolls, loading, stats, generatePayroll, getPayrollTrend } = usePayroll(currentProject?.id);
-  const { workers, loading: workersLoading } = useWorkers(currentProject?.id);
-  const { attendance, loading: attendanceLoading } = useAttendance(currentProject?.id);
+  const { payrolls, loading, stats, generatePayroll, getPayrollTrend } = usePayroll();
+  const { workers, loading: workersLoading } = useWorkers();
+  const { attendance, loading: attendanceLoading } = useAttendance();
   const [isGenerating, setIsGenerating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState<{ start: Date; end: Date }>({

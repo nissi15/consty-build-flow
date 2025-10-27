@@ -21,7 +21,7 @@ const Expenses = lazy(() => import("./pages/Expenses"));
 const Budget = lazy(() => import("./pages/Budget"));
 const Activity = lazy(() => import("./pages/Activity"));
 const Settings = lazy(() => import("./pages/Settings"));
-const Projects = lazy(() => import("./pages/Projects"));
+
 const DashboardLayout = lazy(() => import("./components/layout/DashboardLayout"));
 const OwnerDashboard = lazy(() => import("./pages/OwnerDashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -73,7 +73,7 @@ const App = () => (
                   <Route path="/expenses" element={<Expenses />} />
                   <Route path="/budget" element={<Budget />} />
                   <Route path="/activity" element={<Activity />} />
-                  <Route path="/projects" element={<Projects />} />
+
                   <Route path="/settings" element={<Settings />} />
                 </Route>
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

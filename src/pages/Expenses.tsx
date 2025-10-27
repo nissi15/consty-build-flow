@@ -11,7 +11,7 @@ import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useProject } from '@/contexts/ProjectContext';
+
 import { ExpenseStats } from '@/components/expenses/ExpenseStats';
 import { ExpenseBreakdown } from '@/components/expenses/ExpenseBreakdown';
 import { WeeklySpendingTrend } from '@/components/expenses/WeeklySpendingTrend';
@@ -21,8 +21,7 @@ import { getTodayInRwanda } from '@/utils/dateUtils';
 import { formatCurrency } from '@/lib/utils';
 
 export default function Expenses() {
-  const { currentProject } = useProject();
-  const { expenses, loading, stats, refetchExpenses } = useExpenses(currentProject?.id);
+  const { expenses, loading, stats, refetchExpenses } = useExpenses();
   const [isAddingExpense, setIsAddingExpense] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [dateRange, setDateRange] = useState({
@@ -53,18 +52,12 @@ export default function Expenses() {
       return;
     }
 
-    if (!currentProject?.id) {
-      toast.error('Please select a project first');
-      return;
-    }
-
     setIsAddingExpense(true);
     const { error } = await supabase.from('expenses').insert({
       category: newExpense.category,
       amount: parseFloat(newExpense.amount),
       description: newExpense.description,
       date: newExpense.date,
-      project_id: currentProject.id,
     });
 
     if (error) {
@@ -82,7 +75,6 @@ export default function Expenses() {
       await supabase.from('activity_log').insert({
         message: `New expense added: ${formatCurrency(parseFloat(newExpense.amount))} for ${newExpense.category}`,
         action_type: 'expense',
-        project_id: currentProject.id,
       });
 
       // Update budget used_budget

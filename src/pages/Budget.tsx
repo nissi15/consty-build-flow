@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
-import { useProject } from '@/contexts/ProjectContext';
+
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -18,9 +18,8 @@ import { useExpenses } from '@/hooks/useSupabaseData';
 import { exportToCSV, formatCurrency } from '@/lib/utils';
 
 export default function Budget() {
-  const { currentProject } = useProject();
-  const { budget, loading, stats, refetchBudget, recalculateTotals } = useBudget(currentProject?.id);
-  const { expenses, loading: expensesLoading } = useExpenses(currentProject?.id);
+  const { budget, loading, stats, refetchBudget, recalculateTotals } = useBudget();
+  const { expenses, loading: expensesLoading } = useExpenses();
   
   console.log('Budget component rendering, loading:', loading, 'budget:', budget);
 

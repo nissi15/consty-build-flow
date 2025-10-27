@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkers, useAttendance } from '@/hooks/useSupabaseData';
-import { useProject } from '@/contexts/ProjectContext';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect, useMemo } from 'react';
 import { format } from 'date-fns';
@@ -18,9 +18,9 @@ import { getTodayInRwanda } from '@/utils/dateUtils';
 import { formatCurrency } from '@/lib/utils';
 
 export default function Workers() {
-  const { currentProject } = useProject();
-  const { workers, loading, refetch: refetchWorkers } = useWorkers(currentProject?.id);
-  const { attendance, loading: attendanceLoading } = useAttendance(currentProject?.id);
+  
+  const { workers, loading, refetch: refetchWorkers } = useWorkers();
+  const { attendance, loading: attendanceLoading } = useAttendance();
 
   const [search, setSearch] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -120,11 +120,6 @@ export default function Workers() {
       return;
     }
 
-    if (!currentProject?.id) {
-      toast.error('Please select a project first');
-      return;
-    }
-
     setIsAddingWorker(true);
     const { error } = await supabase.from('workers').insert({
       name: newWorker.name,
@@ -134,7 +129,6 @@ export default function Workers() {
       contact_info: newWorker.contact_info,
       join_date: newWorker.join_date,
       is_active: true,
-      project_id: currentProject.id,
     });
 
     if (error) {
@@ -154,7 +148,6 @@ export default function Workers() {
       await supabase.from('activity_log').insert({
         message: `New worker added: ${newWorker.name}`,
         action_type: 'worker',
-        project_id: currentProject.id,
       });
     }
     setIsAddingWorker(false);
@@ -193,13 +186,12 @@ export default function Workers() {
           .eq('id', att.id);
 
         // Create expense entry for lunch money with correct date
-        if (worker.lunch_allowance > 0 && currentProject?.id) {
+        if (worker.lunch_allowance > 0) {
           const { error: expenseError } = await supabase.from('expenses').insert({
             category: 'Lunch',
             amount: worker.lunch_allowance,
             description: `Lunch allowance for ${worker.name} on ${today}`,
             date: today, // This is already in Rwanda timezone from getTodayInRwanda()
-            project_id: currentProject.id,
           });
           
           if (!expenseError) {
@@ -211,13 +203,10 @@ export default function Workers() {
       await Promise.all(updates);
       
       toast.success(`Auto-calculated rates for ${presentWorkers.length} present workers. Total lunch expense: ${formatCurrency(totalLunchExpense)}`);
-      if (currentProject?.id) {
-        await supabase.from('activity_log').insert({
-          message: `Auto-calculated daily rates for ${presentWorkers.length} workers (Lunch: ${formatCurrency(totalLunchExpense)})`,
-          action_type: 'attendance',
-          project_id: currentProject.id,
-        });
-      }
+      await supabase.from('activity_log').insert({
+        message: `Auto-calculated daily rates for ${presentWorkers.length} workers (Lunch: ${formatCurrency(totalLunchExpense)})`,
+        action_type: 'attendance',
+      });
     } catch (error) {
       console.error('Auto-calculate error:', error);
       toast.error('Failed to auto-calculate rates');
@@ -253,13 +242,10 @@ export default function Workers() {
       setIsEditDialogOpen(false);
       setEditingWorker(null);
       
-      if (currentProject?.id) {
-        await supabase.from('activity_log').insert({
-          message: `Worker updated: ${editingWorker.name}`,
-          action_type: 'worker',
-          project_id: currentProject.id,
-        });
-      }
+      await supabase.from('activity_log').insert({
+        message: `Worker updated: ${editingWorker.name}`,
+        action_type: 'worker',
+      });
       refetchWorkers();
     }
   };
