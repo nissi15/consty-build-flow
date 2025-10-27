@@ -106,13 +106,15 @@ export default function OwnerDashboard() {
         .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
 
       const today = getTodayInRwanda();
+      // Filter expenses by date field (DATE type in database)
       const todayExpenses = expensesData
-        ?.filter(e => e.date === today || e.created_at?.startsWith(today))
+        ?.filter(e => {
+          // The date field is a DATE type, so compare directly
+          return e.date === today;
+        })
         .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
       
-      const todayExpenseCount = expensesData?.filter(e => 
-        e.date === today || e.created_at?.startsWith(today)
-      ).length || 0;
+      const todayExpenseCount = expensesData?.filter(e => e.date === today).length || 0;
       
       const presentToday = attendanceData?.filter(a => 
         a.date === today && a.status === 'present'

@@ -16,6 +16,7 @@ import { ExpenseBreakdown } from '@/components/expenses/ExpenseBreakdown';
 import { WeeklySpendingTrend } from '@/components/expenses/WeeklySpendingTrend';
 import { ExpenseList } from '@/components/expenses/ExpenseList';
 import { useExpenses } from '@/hooks/useExpenses';
+import { getTodayInRwanda } from '@/utils/dateUtils';
 
 export default function Expenses() {
   const { expenses, loading, stats, refetchExpenses } = useExpenses();
@@ -29,7 +30,7 @@ export default function Expenses() {
     category: '',
     amount: '',
     description: '',
-    date: format(new Date(), 'yyyy-MM-dd'),
+    date: getTodayInRwanda(),
   });
 
   const filteredExpenses = useMemo(() => {
@@ -66,7 +67,7 @@ export default function Expenses() {
         category: '',
         amount: '',
         description: '',
-        date: format(new Date(), 'yyyy-MM-dd'),
+        date: getTodayInRwanda(),
       });
 
       await supabase.from('activity_log').insert({

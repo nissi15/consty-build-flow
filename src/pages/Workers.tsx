@@ -182,16 +182,18 @@ export default function Workers() {
           })
           .eq('id', att.id);
 
-        // Create expense entry for lunch money
+        // Create expense entry for lunch money with correct date
         if (worker.lunch_allowance > 0) {
-          await supabase.from('expenses').insert({
+          const { error: expenseError } = await supabase.from('expenses').insert({
             category: 'Lunch',
             amount: worker.lunch_allowance,
             description: `Lunch allowance for ${worker.name} on ${today}`,
-            date: today,
+            date: today, // This is already in Rwanda timezone from getTodayInRwanda()
           });
           
-          totalLunchExpense += worker.lunch_allowance;
+          if (!expenseError) {
+            totalLunchExpense += worker.lunch_allowance;
+          }
         }
       });
 
