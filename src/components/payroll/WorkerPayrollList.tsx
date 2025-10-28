@@ -48,7 +48,7 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod }: Worke
     const daysWorked = workerAttendance.length;
     const grossAmount = daysWorked * worker.daily_rate;
     const lunchTotal = workerAttendance.filter(a => a.lunch_taken).length * worker.lunch_allowance;
-    const netAmount = grossAmount + lunchTotal;
+    const netAmount = grossAmount - lunchTotal; // Lunch is DEDUCTED from salary
 
     return {
       daysWorked,
@@ -168,10 +168,10 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod }: Worke
                   <div className="text-center">
                     <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 mb-1">
                       <Clock className="h-3.5 w-3.5" />
-                      <p className="text-xs">Lunch</p>
+                      <p className="text-xs">Lunch Deduction</p>
                     </div>
-                    <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                      +RWF {payroll.lunchTotal.toLocaleString()}
+                    <p className="text-lg font-bold text-red-600 dark:text-red-400">
+                      -RWF {payroll.lunchTotal.toLocaleString()}
                     </p>
                   </div>
 
