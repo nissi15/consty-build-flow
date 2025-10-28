@@ -273,9 +273,9 @@ export default function Attendance() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold">RWF {((worker.daily_rate || 0) + (att.lunch_money || 0)).toFixed(2)}</p>
+                        <p className="font-semibold">RWF {((worker.daily_rate || 0) + (att.lunch_money || 0)).toLocaleString()}</p>
                         <p className="text-sm text-muted-foreground">
-                          RWF {(worker.daily_rate || 0).toFixed(2)} + RWF {(att.lunch_money || 0).toFixed(2)} lunch
+                          RWF {(worker.daily_rate || 0).toLocaleString()} + RWF {(att.lunch_money || 0).toLocaleString()} lunch
                         </p>
                       </div>
                     </div>

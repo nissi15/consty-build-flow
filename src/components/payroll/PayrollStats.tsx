@@ -12,7 +12,7 @@ export function PayrollStats({ weeklyPayroll, workersOnPayroll, payrollPeriods }
   const stats = [
     {
       title: "This Week's Payroll",
-      value: `RWF ${weeklyPayroll.toFixed(2)}`,
+      value: `RWF ${weeklyPayroll.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
       icon: DollarSign,
       iconClass: 'bg-purple-100 text-purple-600',
     },

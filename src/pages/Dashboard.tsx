@@ -109,11 +109,11 @@ const Dashboard = () => {
 
     return [
       { title: 'Total Workers', value: totalWorkers.toString(), icon: Users, change: '+2 this week', changeType: 'positive' },
-      { title: 'Weekly Expenses', value: `RWF ${weeklyExpenses.toFixed(0)}`, change: `${expenseChange.toFixed(1)}% from last week`, icon: DollarSign, changeType: expenseChange > 0 ? 'negative' : 'positive' as const },
-      { title: 'Remaining Budget', value: `RWF ${remainingBudget.toFixed(0)}`, icon: Package, change: `${Math.round((remainingBudget / (budget?.total_budget || 1)) * 100)}% remaining`, changeType: remainingBudget > (budget?.total_budget || 1) * 0.2 ? 'positive' : 'negative' as const },
+      { title: 'Weekly Expenses', value: `RWF ${weeklyExpenses.toLocaleString()}`, change: `${expenseChange.toFixed(1)}% from last week`, icon: DollarSign, changeType: expenseChange > 0 ? 'negative' : 'positive' as const },
+      { title: 'Remaining Budget', value: `RWF ${remainingBudget.toLocaleString()}`, icon: Package, change: `${Math.round((remainingBudget / (budget?.total_budget || 1)) * 100)}% remaining`, changeType: remainingBudget > (budget?.total_budget || 1) * 0.2 ? 'positive' : 'negative' as const },
       { title: 'Attendance Rate', value: `${attendanceRate}%`, icon: Clock, change: `${todayAttendance} present today`, changeType: attendanceRate > 80 ? 'positive' : 'negative' as const },
-      { title: 'Labor Expenses', value: `RWF ${laborExpenses.toFixed(0)}`, icon: Wrench, change: 'This week', changeType: 'neutral' },
-      { title: 'Material Expenses', value: `RWF ${materialExpenses.toFixed(0)}`, icon: Truck, change: 'This week', changeType: 'neutral' },
+      { title: 'Labor Expenses', value: `RWF ${laborExpenses.toLocaleString()}`, icon: Wrench, change: 'This week', changeType: 'neutral' },
+      { title: 'Material Expenses', value: `RWF ${materialExpenses.toLocaleString()}`, icon: Truck, change: 'This week', changeType: 'neutral' },
     ];
   }, [workers, expenses, budget, attendance]);
 
