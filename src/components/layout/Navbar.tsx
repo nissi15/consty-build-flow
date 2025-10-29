@@ -26,18 +26,18 @@ const Navbar = ({ onMenuClick, showMenuButton = false }: NavbarProps) => {
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="sticky top-0 z-50 glass border-b px-6 py-4"
+      className="sticky top-0 z-50 glass border-b px-4 sm:px-6 py-3 sm:py-4"
     >
       <div className="flex items-center justify-between max-w-7xl mx-auto">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           {showMenuButton && (
-            <Button variant="ghost" size="icon" onClick={onMenuClick}>
+            <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden">
               <Menu className="h-5 w-5" />
             </Button>
           )}
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-primary" />
-            <span className="text-2xl font-bold">Consty</span>
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-primary" />
+            <span className="text-xl sm:text-2xl font-bold">Consty</span>
           </div>
           {user && isAdmin && (
             <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">

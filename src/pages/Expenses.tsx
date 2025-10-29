@@ -136,7 +136,7 @@ export default function Expenses() {
   };
 
   return (
-    <div className="p-6 space-y-6 bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 min-h-screen">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 min-h-screen">
       <div className="space-y-6">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
@@ -144,8 +144,8 @@ export default function Expenses() {
         >
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Expense Management</h1>
-              <p className="text-muted-foreground">Track and analyze project expenses across all categories</p>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">Expense Management</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">Track and analyze project expenses across all categories</p>
             </div>
             <Dialog>
               <DialogTrigger asChild>

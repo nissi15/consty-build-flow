@@ -216,7 +216,7 @@ const Dashboard = () => {
 
   if (workersLoading || attendanceLoading || expensesLoading || budgetLoading || payrollLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         <Skeleton className="h-20 w-full" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32" />)}
@@ -230,7 +230,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="p-6 space-y-6 bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 min-h-screen">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 min-h-screen">
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -251,7 +251,7 @@ const Dashboard = () => {
             ease: "linear"
           }}
         >
-          <h1 className="text-2xl font-bold mb-2">Welcome back, {user?.user_metadata?.full_name || 'User'}!</h1>
+          <h1 className="text-xl sm:text-2xl font-bold mb-2">Welcome back, {user?.user_metadata?.full_name || 'User'}!</h1>
           <p className="opacity-90">Here's an overview of your construction site today.</p>
           <p className="text-sm opacity-80 mt-2">{format(new Date(), 'EEEE, MMM dd')}</p>
         </motion.div>

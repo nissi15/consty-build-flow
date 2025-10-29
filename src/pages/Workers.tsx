@@ -168,40 +168,33 @@ export default function Workers() {
 
       let totalLunchExpense = 0;
 
-      // Update each attendance record with worker's daily rate and lunch
+      // Update each attendance record and calculate total lunch money (for display only)
       const updates = presentWorkers.map(async (att) => {
         const worker = workers.find(w => w.id === att.worker_id);
         if (!worker) return;
 
-        // Update attendance
-        await supabase
-          .from('attendance')
-          .update({
-            lunch_money: worker.lunch_allowance,
-            hours: att.hours || 8, // Default to 8 hours if not set
-          })
-          .eq('id', att.id);
+        // Update attendance hours if not already set
+        if (!att.hours) {
+          await supabase
+            .from('attendance')
+            .update({
+              hours: 8, // Default to 8 hours if not set
+            })
+            .eq('id', att.id);
+        }
 
-        // Create expense entry for lunch money with correct date
+        // Calculate total lunch money for display purposes only (NOT adding to expenses)
         if (worker.lunch_allowance > 0) {
-          const { error: expenseError } = await supabase.from('expenses').insert({
-            category: 'Lunch',
-            amount: worker.lunch_allowance,
-            description: `Lunch allowance for ${worker.name} on ${today}`,
-            date: today, // This is already in Rwanda timezone from getTodayInRwanda()
-          });
-          
-          if (!expenseError) {
-            totalLunchExpense += worker.lunch_allowance;
-          }
+          totalLunchExpense += worker.lunch_allowance;
         }
       });
 
       await Promise.all(updates);
       
-      toast.success(`Auto-calculated rates for ${presentWorkers.length} present workers. Total lunch expense: RWF ${totalLunchExpense}`);
+      // Show popup with total lunch money (informational only, NOT added to expenses)
+      toast.success(`Auto-calculated rates for ${presentWorkers.length} present workers. Total lunch money: RWF ${totalLunchExpense.toLocaleString()}`);
       await supabase.from('activity_log').insert({
-        message: `Auto-calculated daily rates for ${presentWorkers.length} workers (Lunch: RWF ${totalLunchExpense})`,
+        message: `Auto-calculated daily rates for ${presentWorkers.length} workers (Total lunch money: RWF ${totalLunchExpense.toLocaleString()})`,
         action_type: 'attendance',
       });
     } catch (error) {
