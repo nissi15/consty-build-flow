@@ -198,6 +198,8 @@ export function generatePayrollPDF(data: PayrollReportData) {
   // ==================== PAYMENT STATUS SUMMARY ====================
   const paidWorkers = data.workers.filter(w => w.status === 'paid').length;
   const pendingWorkers = data.workers.filter(w => w.status === 'pending').length;
+  const paidAmount = data.workers.filter(w => w.status === 'paid').reduce((sum, w) => sum + w.netAmount, 0);
+  const pendingAmount = data.workers.filter(w => w.status === 'pending').reduce((sum, w) => sum + w.netAmount, 0);
   
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
@@ -209,8 +211,8 @@ export function generatePayrollPDF(data: PayrollReportData) {
     startY: yPos,
     head: [['Status', 'Count', 'Amount']],
     body: [
-      ['Paid', `${paidWorkers} workers`, `RWF ${data.workers.filter(w => w.status === 'paid').reduce((sum, w) => sum + w.netAmount, 0).toLocaleString()}`],
-      ['Pending', `${pendingWorkers} workers`, `RWF ${data.workers.filter(w => w.status === 'pending').reduce((sum, w) => sum + w.netAmount, 0).toLocaleString()}`],
+      ['Paid', `${paidWorkers} workers`, `RWF ${paidAmount.toLocaleString()}`],
+      ['Pending', `${pendingWorkers} workers`, `RWF ${pendingAmount.toLocaleString()}`],
       ['Total', `${data.workers.length} workers`, `RWF ${data.summary.netPayroll.toLocaleString()}`],
     ],
     theme: 'striped',
@@ -232,6 +234,30 @@ export function generatePayrollPDF(data: PayrollReportData) {
   });
   
   yPos = doc.lastAutoTable.finalY + 20;
+
+  // ==================== OUTSTANDING BALANCE HIGHLIGHT ====================
+  if (pendingAmount > 0) {
+    // Check if we need a new page
+    if (yPos > pageHeight - 60) {
+      doc.addPage();
+      yPos = 20;
+    }
+
+    // Highlight box for outstanding balance
+    doc.setFillColor(245, 158, 11); // Orange/Amber background
+    doc.roundedRect(14, yPos, pageWidth - 28, 25, 3, 3, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('OUTSTANDING BALANCE', pageWidth / 2, yPos + 8, { align: 'center' });
+    
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`RWF ${pendingAmount.toLocaleString()}`, pageWidth / 2, yPos + 18, { align: 'center' });
+    
+    yPos += 35;
+  }
   
   // ==================== FOOTER ====================
   const footerY = pageHeight - 15;
