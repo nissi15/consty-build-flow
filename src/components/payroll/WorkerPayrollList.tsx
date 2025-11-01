@@ -3,7 +3,8 @@ import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Users, DollarSign, Calendar, Clock, CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Users, DollarSign, Calendar, Clock, CheckCircle2, Trash2 } from 'lucide-react';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 
 interface Worker {
@@ -31,9 +32,10 @@ interface WorkerPayrollListProps {
   selectedPeriod?: { start: Date; end: Date };
   paidWorkers?: Set<string>;
   onTogglePaid?: (workerId: string) => void;
+  onDelete?: (workerId: string) => void;
 }
 
-export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWorkers = new Set(), onTogglePaid }: WorkerPayrollListProps) {
+export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWorkers = new Set(), onTogglePaid, onDelete }: WorkerPayrollListProps) {
   const periodStart = selectedPeriod?.start || startOfWeek(new Date());
   const periodEnd = selectedPeriod?.end || endOfWeek(new Date());
 
@@ -133,9 +135,21 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWor
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-900 dark:text-slate-100 truncate">
-                      {worker.name}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-slate-900 dark:text-slate-100 truncate">
+                        {worker.name}
+                      </p>
+                      {onDelete && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onDelete(worker.id)}
+                          className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant="outline" className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800">
                         {worker.role}

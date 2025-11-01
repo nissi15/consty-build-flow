@@ -26,15 +26,18 @@ export default function Payroll() {
     end: endOfWeek(new Date()),
   });
   const [paidWorkers, setPaidWorkers] = useState<Set<string>>(new Set());
+  const [excludedWorkers, setExcludedWorkers] = useState<Set<string>>(new Set());
 
   const filteredWorkers = useMemo(() => {
-    if (!searchQuery.trim()) return workers;
+    let filtered = workers.filter(w => !excludedWorkers.has(w.id));
     
-    return workers.filter(worker => 
+    if (!searchQuery.trim()) return filtered;
+    
+    return filtered.filter(worker => 
       worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       worker.role.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [workers, searchQuery]);
+  }, [workers, searchQuery, excludedWorkers]);
 
   const handleGeneratePayroll = async () => {
     try {
@@ -89,6 +92,18 @@ export default function Payroll() {
       }
       return newSet;
     });
+  };
+
+  const handleDeleteWorker = (workerId: string) => {
+    const worker = workers.find(w => w.id === workerId);
+    if (worker) {
+      setExcludedWorkers(prev => {
+        const newSet = new Set(prev);
+        newSet.add(workerId);
+        return newSet;
+      });
+      toast.success(`${worker.name} removed from payroll`);
+    }
   };
 
   const handleDateRangeChange = (period: 'week' | 'lastWeek' | 'month') => {
@@ -323,6 +338,7 @@ export default function Payroll() {
               selectedPeriod={selectedPeriod}
               paidWorkers={paidWorkers}
               onTogglePaid={handleTogglePaid}
+              onDelete={handleDeleteWorker}
             />
           </motion.div>
 
