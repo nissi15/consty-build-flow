@@ -1,17 +1,18 @@
 import { motion } from 'framer-motion';
-import { CalendarDays, Download, Search } from 'lucide-react';
+import { Search, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState, useMemo } from 'react';
 import { usePayroll } from '@/hooks/usePayroll';
 import { useWorkers, useAttendance } from '@/hooks/useSupabaseData';
-import { format } from 'date-fns';
+import { format, startOfWeek, endOfWeek, subWeeks, subMonths } from 'date-fns';
 import { toast } from 'sonner';
 import { PayrollStats } from '@/components/payroll/PayrollStats';
 import { PayrollChart } from '@/components/payroll/PayrollChart';
 import { PayrollHistory } from '@/components/payroll/PayrollHistory';
 import { WorkerPayrollList } from '@/components/payroll/WorkerPayrollList';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 export default function Payroll() {
   const { payrolls, loading, stats, generatePayroll, getPayrollTrend } = usePayroll();
@@ -20,9 +21,10 @@ export default function Payroll() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState<{ start: Date; end: Date }>({
-    start: new Date(new Date().setDate(new Date().getDate() - 7)),
-    end: new Date(),
+    start: startOfWeek(new Date()),
+    end: endOfWeek(new Date()),
   });
+  const [paidWorkers, setPaidWorkers] = useState<Set<string>>(new Set());
 
   const filteredWorkers = useMemo(() => {
     if (!searchQuery.trim()) return workers;
@@ -74,6 +76,46 @@ export default function Payroll() {
     document.body.removeChild(link);
   };
 
+  const handleTogglePaid = (workerId: string) => {
+    setPaidWorkers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(workerId)) {
+        newSet.delete(workerId);
+        toast.success('Worker marked as unpaid');
+      } else {
+        newSet.add(workerId);
+        toast.success('Worker marked as paid');
+      }
+      return newSet;
+    });
+  };
+
+  const handleDateRangeChange = (period: 'week' | 'lastWeek' | 'month') => {
+    const today = new Date();
+    switch (period) {
+      case 'week':
+        setSelectedPeriod({
+          start: startOfWeek(today),
+          end: endOfWeek(today),
+        });
+        break;
+      case 'lastWeek':
+        const lastWeekStart = startOfWeek(subWeeks(today, 1));
+        const lastWeekEnd = endOfWeek(subWeeks(today, 1));
+        setSelectedPeriod({
+          start: lastWeekStart,
+          end: lastWeekEnd,
+        });
+        break;
+      case 'month':
+        setSelectedPeriod({
+          start: subMonths(today, 1),
+          end: today,
+        });
+        break;
+    }
+  };
+
   return (
     <div className="p-6 space-y-6 bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 min-h-screen">
       <motion.div
@@ -85,11 +127,71 @@ export default function Payroll() {
           <h1 className="text-4xl font-bold mb-2">Payroll Management</h1>
           <p className="text-muted-foreground">Generate and track weekly payrolls with automated calculations</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">{format(new Date(), 'MM/dd/yyyy')}</span>
-          </div>
+        <div className="flex items-center gap-4 flex-wrap">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <CalendarIcon className="h-4 w-4" />
+                {format(selectedPeriod.start, 'MMM d')} - {format(selectedPeriod.end, 'MMM d, yyyy')}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-4" align="end">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium mb-2">Quick Filters</p>
+                  <div className="flex flex-col gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDateRangeChange('week')}
+                      className="justify-start"
+                    >
+                      This Week
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDateRangeChange('lastWeek')}
+                      className="justify-start"
+                    >
+                      Last Week
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDateRangeChange('month')}
+                      className="justify-start"
+                    >
+                      Last 30 Days
+                    </Button>
+                  </div>
+                </div>
+                <div className="border-t pt-4">
+                  <p className="text-sm font-medium mb-2">Custom Range</p>
+                  <div className="flex gap-2 items-center">
+                    <div className="flex-1">
+                      <label className="text-xs text-muted-foreground mb-1 block">Start Date</label>
+                      <Input
+                        type="date"
+                        value={format(selectedPeriod.start, 'yyyy-MM-dd')}
+                        onChange={(e) => setSelectedPeriod(prev => ({ ...prev, start: new Date(e.target.value) }))}
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-xs text-muted-foreground mb-1 block">End Date</label>
+                      <Input
+                        type="date"
+                        value={format(selectedPeriod.end, 'yyyy-MM-dd')}
+                        onChange={(e) => setSelectedPeriod(prev => ({ ...prev, end: new Date(e.target.value) }))}
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
           <Button 
             onClick={handleGeneratePayroll} 
             disabled={isGenerating}
@@ -151,6 +253,8 @@ export default function Payroll() {
               workers={filteredWorkers}
               attendance={attendance}
               selectedPeriod={selectedPeriod}
+              paidWorkers={paidWorkers}
+              onTogglePaid={handleTogglePaid}
             />
           </motion.div>
 

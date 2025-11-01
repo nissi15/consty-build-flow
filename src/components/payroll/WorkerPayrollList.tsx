@@ -2,7 +2,8 @@ import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Users, DollarSign, Calendar, Clock } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Users, DollarSign, Calendar, Clock, CheckCircle2 } from 'lucide-react';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 
 interface Worker {
@@ -28,9 +29,11 @@ interface WorkerPayrollListProps {
   workers: Worker[];
   attendance: Attendance[];
   selectedPeriod?: { start: Date; end: Date };
+  paidWorkers?: Set<string>;
+  onTogglePaid?: (workerId: string) => void;
 }
 
-export function WorkerPayrollList({ workers, attendance, selectedPeriod }: WorkerPayrollListProps) {
+export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWorkers = new Set(), onTogglePaid }: WorkerPayrollListProps) {
   const periodStart = selectedPeriod?.start || startOfWeek(new Date());
   const periodEnd = selectedPeriod?.end || endOfWeek(new Date());
 
@@ -181,6 +184,19 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod }: Worke
                       RWF {payroll.netAmount.toLocaleString()}
                     </p>
                   </div>
+
+                  {onTogglePaid && (
+                    <div className="text-center">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Paid</p>
+                      <div className="flex items-center justify-center gap-2">
+                        <Checkbox
+                          checked={paidWorkers.has(worker.id)}
+                          onCheckedChange={() => onTogglePaid(worker.id)}
+                          className="h-5 w-5"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -198,11 +214,17 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod }: Worke
 
       {activeWorkers.length > 0 && (
         <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-          <div className="flex justify-between items-center">
-            <div>
+          <div className="flex justify-between items-center flex-wrap gap-4">
+            <div className="space-y-1">
               <p className="text-sm text-slate-500 dark:text-slate-400">
                 {activeWorkers.filter(w => calculateWorkerPayroll(w).daysWorked > 0).length} of {activeWorkers.length} workers have attendance
               </p>
+              {onTogglePaid && paidWorkers.size > 0 && (
+                <p className="text-sm text-green-600 dark:text-green-400 font-medium">
+                  <CheckCircle2 className="inline h-3.5 w-3.5 mr-1" />
+                  {paidWorkers.size} worker{paidWorkers.size !== 1 ? 's' : ''} marked as paid
+                </p>
+              )}
             </div>
             <div className="text-right">
               <p className="text-sm text-slate-500 dark:text-slate-400">Total to be paid</p>
