@@ -39,6 +39,46 @@ export default function Payroll() {
     );
   }, [workers, searchQuery, excludedWorkers]);
 
+  // Calculate dynamic stats based on current attendance data for the selected period
+  const dynamicStats = useMemo(() => {
+    const periodStartStr = format(selectedPeriod.start, 'yyyy-MM-dd');
+    const periodEndStr = format(selectedPeriod.end, 'yyyy-MM-dd');
+
+    const activeWorkersList = filteredWorkers.filter(w => w.is_active);
+    
+    const totalPayroll = activeWorkersList.reduce((sum, worker) => {
+      const workerAttendance = attendance.filter(
+        a => a.worker_id === worker.id && 
+             a.date >= periodStartStr && 
+             a.date <= periodEndStr &&
+             a.status === 'present'
+      );
+      
+      const daysWorked = workerAttendance.length;
+      const grossAmount = daysWorked * worker.daily_rate;
+      const lunchTotal = workerAttendance.filter(a => a.lunch_taken).length * worker.lunch_allowance;
+      const netAmount = grossAmount - lunchTotal;
+      
+      return sum + netAmount;
+    }, 0);
+
+    const workersWithAttendance = activeWorkersList.filter(worker => {
+      const workerAttendance = attendance.filter(
+        a => a.worker_id === worker.id && 
+             a.date >= periodStartStr && 
+             a.date <= periodEndStr &&
+             a.status === 'present'
+      );
+      return workerAttendance.length > 0;
+    }).length;
+
+    return {
+      weeklyPayroll: totalPayroll,
+      workersOnPayroll: workersWithAttendance,
+      payrollPeriods: stats.payrollPeriods, // Keep from DB stats
+    };
+  }, [filteredWorkers, attendance, selectedPeriod, stats.payrollPeriods]);
+
   const handleGeneratePayroll = async () => {
     try {
       setIsGenerating(true);
@@ -302,7 +342,7 @@ export default function Payroll() {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 }}
           >
-            <PayrollStats {...stats} />
+            <PayrollStats {...dynamicStats} />
           </motion.div>
 
           <motion.div
