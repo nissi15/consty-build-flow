@@ -143,7 +143,7 @@ Check the deployment logs in Vercel dashboard if something goes wrong.
 
 Share your app:
 ```
-https://consty-build-flow.vercel.app
+https://constry.vercel.app
 ```
 
 **Deployment time: 2-3 minutes**

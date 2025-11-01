@@ -38,3 +38,5 @@ BEGIN
   RAISE NOTICE 'Cleanup complete: Removed lunch expenses totaling RWF %', total_lunch_amount;
 END $$;
 
+
+
