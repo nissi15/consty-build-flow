@@ -71,6 +71,15 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWor
     return sum + payroll.netAmount;
   }, 0);
 
+  // Calculate unpaid payroll (total minus paid workers)
+  const unpaidPayroll = activeWorkers.reduce((sum, worker) => {
+    if (paidWorkers.has(worker.id)) {
+      return sum; // Skip paid workers
+    }
+    const payroll = calculateWorkerPayroll(worker);
+    return sum + payroll.netAmount;
+  }, 0);
+
   if (activeWorkers.length === 0) {
     return (
       <Card className="bg-white dark:bg-[#111827] rounded-xl p-8 shadow-lg border border-slate-200 dark:border-slate-800">
@@ -243,7 +252,7 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWor
             <div className="text-right">
               <p className="text-sm text-slate-500 dark:text-slate-400">Total to be paid</p>
               <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                RWF {totalPayroll.toLocaleString()}
+                RWF {unpaidPayroll.toLocaleString()}
               </p>
             </div>
           </div>
