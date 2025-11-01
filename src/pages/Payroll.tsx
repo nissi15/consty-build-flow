@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Search, Calendar as CalendarIcon } from 'lucide-react';
+import { Search, Calendar as CalendarIcon, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -13,6 +13,7 @@ import { PayrollChart } from '@/components/payroll/PayrollChart';
 import { PayrollHistory } from '@/components/payroll/PayrollHistory';
 import { WorkerPayrollList } from '@/components/payroll/WorkerPayrollList';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { generatePayrollPDF } from '@/lib/payroll-pdf-export';
 
 export default function Payroll() {
   const { payrolls, loading, stats, generatePayroll, getPayrollTrend } = usePayroll();
@@ -116,6 +117,65 @@ export default function Payroll() {
     }
   };
 
+  const handleExportPayrollPDF = () => {
+    try {
+      const periodStartStr = format(selectedPeriod.start, 'yyyy-MM-dd');
+      const periodEndStr = format(selectedPeriod.end, 'yyyy-MM-dd');
+
+      // Calculate worker payroll for the selected period
+      const workerPayrollData = filteredWorkers
+        .filter(w => w.is_active)
+        .map(worker => {
+          const workerAttendance = attendance.filter(
+            a => a.worker_id === worker.id && 
+                 a.date >= periodStartStr && 
+                 a.date <= periodEndStr &&
+                 a.status === 'present'
+          );
+
+          const daysWorked = workerAttendance.length;
+          const grossAmount = daysWorked * worker.daily_rate;
+          const lunchTotal = workerAttendance.filter(a => a.lunch_taken).length * worker.lunch_allowance;
+          const netAmount = grossAmount - lunchTotal;
+          const isPaid = paidWorkers.has(worker.id);
+
+          return {
+            name: worker.name,
+            role: worker.role,
+            daysWorked,
+            dailyRate: worker.daily_rate,
+            grossAmount,
+            lunchDeductions: lunchTotal,
+            netAmount,
+            status: isPaid ? 'paid' as const : 'pending' as const,
+          };
+        });
+
+      // Calculate summary
+      const summary = {
+        totalWorkers: workerPayrollData.length,
+        totalGross: workerPayrollData.reduce((sum, w) => sum + w.grossAmount, 0),
+        totalLunchDeductions: workerPayrollData.reduce((sum, w) => sum + w.lunchDeductions, 0),
+        netPayroll: workerPayrollData.reduce((sum, w) => sum + w.netAmount, 0),
+        averagePerWorker: workerPayrollData.length > 0 
+          ? workerPayrollData.reduce((sum, w) => sum + w.netAmount, 0) / workerPayrollData.length 
+          : 0,
+      };
+
+      // Generate PDF
+      generatePayrollPDF({
+        period: selectedPeriod,
+        workers: workerPayrollData,
+        summary,
+      });
+
+      toast.success('Payroll PDF report generated successfully!');
+    } catch (error) {
+      console.error('Error generating payroll PDF:', error);
+      toast.error('Failed to generate payroll report');
+    }
+  };
+
   return (
     <div className="p-6 space-y-6 bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 min-h-screen">
       <motion.div
@@ -198,6 +258,14 @@ export default function Payroll() {
             className="bg-purple-500 hover:bg-purple-600 gap-2"
           >
             + Generate Payroll
+          </Button>
+          <Button 
+            onClick={handleExportPayrollPDF}
+            variant="outline"
+            className="gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Export PDF Report
           </Button>
         </div>
       </motion.div>
