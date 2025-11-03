@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { startOfWeek, endOfWeek, format } from 'date-fns';
+import { startOfWeek, endOfWeek, format, subWeeks } from 'date-fns';
 
 interface PayrollRecord {
   id: string;
@@ -116,18 +116,28 @@ export function usePayroll() {
   };
 
   const getPayrollTrend = () => {
-    const weeklyData = payrolls.reduce((acc, curr) => {
-      const weekKey = format(new Date(curr.period_start), 'MM/dd');
-      if (!acc[weekKey]) {
-        acc[weekKey] = { week: weekKey, amount: 0 };
-      }
-      acc[weekKey].amount += curr.net_amount;
-      return acc;
-    }, {} as Record<string, { week: string; amount: number }>);
+    if (payrolls.length === 0) {
+      return [];
+    }
 
-    return Object.values(weeklyData).sort((a, b) => 
-      new Date(a.week).getTime() - new Date(b.week).getTime()
-    );
+    // Group by week - get the week of the period_start for each payroll
+    const weeklyData = payrolls.reduce((acc, curr) => {
+      const periodStart = curr.period_start.split('T')[0]; // Remove time if present
+      const weekStart = startOfWeek(new Date(periodStart), { weekStartsOn: 1 });
+      const weekKey = format(weekStart, 'MMM d'); // Format like "Oct 26"
+      const weekDate = weekStart.getTime(); // Store timestamp for sorting
+      
+      if (!acc[weekKey]) {
+        acc[weekKey] = { week: weekKey, amount: 0, weekDate };
+      }
+      acc[weekKey].amount += Number(curr.net_amount || 0);
+      return acc;
+    }, {} as Record<string, { week: string; amount: number; weekDate: number }>);
+
+    // Sort by date timestamp
+    return Object.values(weeklyData)
+      .sort((a, b) => a.weekDate - b.weekDate)
+      .map(({ week, amount }) => ({ week, amount }));
   };
 
   return {

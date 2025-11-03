@@ -172,11 +172,16 @@ const Dashboard = () => {
       const weekStartStr = format(weekStart, 'yyyy-MM-dd');
       const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
       
-      const weekPayrolls = payrolls.filter(p => 
-        p.period_start >= weekStartStr && p.period_end <= weekEndStr
-      );
+      // Match payroll records that overlap with this week
+      // Remove time portion if present and compare dates
+      const weekPayrolls = payrolls.filter(p => {
+        const pStart = p.period_start.split('T')[0];
+        const pEnd = p.period_end.split('T')[0];
+        // Check if payroll period overlaps with week (period starts or ends within week, or week is within period)
+        return (pStart <= weekEndStr && pEnd >= weekStartStr);
+      });
       
-      const totalPayroll = weekPayrolls.reduce((sum, p) => sum + Number(p.net_amount), 0);
+      const totalPayroll = weekPayrolls.reduce((sum, p) => sum + Number(p.net_amount || 0), 0);
       
       weeksData.push({
         week: `Week ${4 - i}`,
