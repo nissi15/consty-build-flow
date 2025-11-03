@@ -192,24 +192,42 @@ export default function Payroll() {
         });
         toast.success('Worker marked as unpaid');
       } else {
-        // Mark as paid - first try to find existing record
-        const { data: existingData, error: findError } = await supabase
+        // Mark as paid - find ALL existing records (to handle duplicates)
+        const { data: existingRecords, error: findError } = await supabase
           .from('payroll')
-          .select('id, status')
+          .select('id, status, created_at')
           .eq('worker_id', workerId)
           .eq('period_start', periodStartStr)
           .eq('period_end', periodEndStr)
-          .maybeSingle();
+          .order('created_at', { ascending: false });
 
-        if (findError && findError.code !== 'PGRST116') { // PGRST116 = no rows returned
+        if (findError) {
           console.error('Find error:', findError);
           throw findError;
         }
 
         let result;
-        if (existingData) {
-          // Update existing record
-          console.log('Updating existing payroll record:', existingData.id, 'from status:', existingData.status);
+        if (existingRecords && existingRecords.length > 0) {
+          // Update the most recent record (or all if multiple exist)
+          const recordToUpdate = existingRecords[0]; // Update the most recent one
+          
+          console.log(`Found ${existingRecords.length} existing record(s), updating most recent:`, recordToUpdate.id);
+          
+          // If there are duplicates, delete the older ones first
+          if (existingRecords.length > 1) {
+            const idsToDelete = existingRecords.slice(1).map(r => r.id);
+            console.log('Deleting duplicate records:', idsToDelete);
+            const { error: deleteError } = await supabase
+              .from('payroll')
+              .delete()
+              .in('id', idsToDelete);
+            
+            if (deleteError) {
+              console.warn('Error deleting duplicates (non-critical):', deleteError);
+            }
+          }
+          
+          // Update the remaining record
           const { data, error } = await supabase
             .from('payroll')
             .update({
@@ -220,7 +238,7 @@ export default function Payroll() {
               lunch_total: lunchTotal,
               net_amount: netAmount
             })
-            .eq('id', existingData.id)
+            .eq('id', recordToUpdate.id)
             .select();
 
           if (error) {
@@ -238,7 +256,7 @@ export default function Payroll() {
           }
           result = data;
         } else {
-          // Insert new record
+          // No existing record, insert new one
           console.log('Creating new payroll record');
           const { data, error } = await supabase
             .from('payroll')

@@ -20,3 +20,9 @@ CREATE POLICY "Authenticated users can update payroll" ON public.payroll
   USING (auth.role() = 'authenticated')
   WITH CHECK (auth.role() = 'authenticated');
 
+-- Allow authenticated users to delete payroll records (for cleaning up duplicates)
+DROP POLICY IF EXISTS "Admins can delete payroll" ON public.payroll;
+CREATE POLICY "Authenticated users can delete payroll" ON public.payroll
+  FOR DELETE 
+  USING (auth.role() = 'authenticated');
+
