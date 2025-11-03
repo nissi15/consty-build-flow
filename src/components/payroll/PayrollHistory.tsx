@@ -68,7 +68,8 @@ export function PayrollHistory({ onGeneratePayroll, showNoData = true }: Payroll
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -143,6 +144,84 @@ export function PayrollHistory({ onGeneratePayroll, showNoData = true }: Payroll
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {payrolls.map((payroll, index) => (
+          <motion.div
+            key={payroll.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.02 }}
+            className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-slate-900 dark:text-slate-100 truncate">
+                  {payroll.worker?.name || 'Unknown'}
+                </p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {payroll.worker?.role || 'N/A'}
+                </p>
+              </div>
+              <Badge variant="outline" className={`${getStatusColor(payroll.status)} capitalize flex-shrink-0 ml-2`}>
+                {payroll.status}
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Period</p>
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                  <div className="text-sm">
+                    <div className="text-slate-900 dark:text-slate-100">
+                      {format(new Date(payroll.period_start), 'MMM d')} - {format(new Date(payroll.period_end), 'MMM d')}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Days Worked</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{payroll.days_worked}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mb-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Daily Rate</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                  RWF {payroll.daily_rate.toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Gross Amount</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                  RWF {payroll.gross_amount.toLocaleString()}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Lunch</p>
+                <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                  +RWF {payroll.lunch_total.toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Net Amount</p>
+                <div className="flex items-center gap-1">
+                  <DollarSign className="h-3.5 w-3.5 text-purple-500" />
+                  <p className="text-sm font-bold text-purple-600 dark:text-purple-400">
+                    RWF {payroll.net_amount.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
       </div>
     </Card>
   );
