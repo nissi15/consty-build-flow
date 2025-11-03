@@ -1,7 +1,32 @@
 -- Add UNIQUE constraint to prevent duplicate payroll records
 -- And clean up existing duplicates
 
--- Step 1: Add UNIQUE constraint
+-- Step 1: Clean up existing duplicates FIRST (before adding constraint)
+-- Strategy: Keep the most recent record, or if same date, keep the one with 'paid' status
+
+-- First pass: Delete older records, keeping the most recent one
+WITH ranked_payroll AS (
+    SELECT 
+        id,
+        worker_id,
+        period_start,
+        period_end,
+        created_at,
+        status,
+        ROW_NUMBER() OVER (
+            PARTITION BY worker_id, period_start, period_end 
+            ORDER BY created_at DESC, 
+                     CASE WHEN status = 'paid' THEN 1 ELSE 2 END,
+                     id ASC
+        ) as rn
+    FROM public.payroll
+)
+DELETE FROM public.payroll
+WHERE id IN (
+    SELECT id FROM ranked_payroll WHERE rn > 1
+);
+
+-- Step 2: Now add the UNIQUE constraint (after duplicates are cleaned)
 -- First, check if constraint already exists and drop if needed
 DO $$ 
 BEGIN
@@ -18,30 +43,4 @@ END $$;
 ALTER TABLE public.payroll 
 ADD CONSTRAINT payroll_worker_period_unique 
 UNIQUE (worker_id, period_start, period_end);
-
--- Step 2: Clean up existing duplicates
--- Keep only the most recent record for each worker+period combination
-DELETE FROM public.payroll p1
-WHERE EXISTS (
-    SELECT 1 FROM public.payroll p2
-    WHERE p2.worker_id = p1.worker_id
-      AND p2.period_start = p1.period_start
-      AND p2.period_end = p1.period_end
-      AND p2.created_at > p1.created_at
-);
-
--- If there are still duplicates with the same created_at, keep the one with 'paid' status
--- (prefer paid over pending)
-DELETE FROM public.payroll p1
-WHERE EXISTS (
-    SELECT 1 FROM public.payroll p2
-    WHERE p2.worker_id = p1.worker_id
-      AND p2.period_start = p1.period_start
-      AND p2.period_end = p1.period_end
-      AND p2.created_at = p1.created_at
-      AND (
-        (p2.status = 'paid' AND p1.status != 'paid')
-        OR (p2.id < p1.id AND p2.status = p1.status) -- If same status, keep smaller id
-      )
-);
 
