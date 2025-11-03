@@ -145,9 +145,28 @@ export default function Payroll() {
     const isCurrentlyPaid = paidWorkers.has(workerId);
     
     try {
+      const worker = workers.find(w => w.id === workerId);
+      if (!worker) {
+        toast.error('Worker not found');
+        return;
+      }
+
+      // Calculate payroll details
+      const workerAttendance = attendance.filter(
+        a => a.worker_id === workerId && 
+             a.date >= periodStartStr && 
+             a.date <= periodEndStr &&
+             a.status === 'present'
+      );
+      
+      const daysWorked = workerAttendance.length;
+      const grossAmount = daysWorked * worker.daily_rate;
+      const lunchTotal = workerAttendance.filter(a => a.lunch_taken).length * worker.lunch_allowance;
+      const netAmount = grossAmount - lunchTotal;
+
       if (isCurrentlyPaid) {
         // Mark as unpaid - update status to pending
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('payroll')
           .update({ 
             status: 'pending',
@@ -155,9 +174,15 @@ export default function Payroll() {
           })
           .eq('worker_id', workerId)
           .eq('period_start', periodStartStr)
-          .eq('period_end', periodEndStr);
+          .eq('period_end', periodEndStr)
+          .select();
 
         if (error) throw error;
+
+        // If no rows were updated, the record might not exist yet, but we'll just update state
+        if (!data || data.length === 0) {
+          console.warn('No payroll record found to update');
+        }
 
         setPaidWorkers(prev => {
           const newSet = new Set(prev);
@@ -165,56 +190,30 @@ export default function Payroll() {
           return newSet;
         });
         toast.success('Worker marked as unpaid');
-        // Refresh payroll data to update charts
-        await refetchPayrolls();
       } else {
-        // Mark as paid - update status to paid and set paid_at timestamp
-        const { error } = await supabase
+        // Mark as paid - use upsert to handle both insert and update
+        const { data, error } = await supabase
           .from('payroll')
-          .update({ 
+          .upsert({
+            worker_id: workerId,
+            period_start: periodStartStr,
+            period_end: periodEndStr,
+            days_worked: daysWorked,
+            daily_rate: worker.daily_rate,
+            lunch_deduction: worker.lunch_allowance,
+            gross_amount: grossAmount,
+            lunch_total: lunchTotal,
+            net_amount: netAmount,
             status: 'paid',
             paid_at: new Date().toISOString()
+          }, {
+            onConflict: 'worker_id,period_start,period_end'
           })
-          .eq('worker_id', workerId)
-          .eq('period_start', periodStartStr)
-          .eq('period_end', periodEndStr);
+          .select();
 
         if (error) {
-          // If payroll record doesn't exist, create it first
-          const worker = workers.find(w => w.id === workerId);
-          if (worker) {
-            const workerAttendance = attendance.filter(
-              a => a.worker_id === workerId && 
-                   a.date >= periodStartStr && 
-                   a.date <= periodEndStr &&
-                   a.status === 'present'
-            );
-            
-            const daysWorked = workerAttendance.length;
-            const grossAmount = daysWorked * worker.daily_rate;
-            const lunchTotal = workerAttendance.filter(a => a.lunch_taken).length * worker.lunch_allowance;
-            const netAmount = grossAmount - lunchTotal;
-
-            const { error: insertError } = await supabase
-              .from('payroll')
-              .insert({
-                worker_id: workerId,
-                period_start: periodStartStr,
-                period_end: periodEndStr,
-                days_worked: daysWorked,
-                daily_rate: worker.daily_rate,
-                lunch_deduction: worker.lunch_allowance,
-                gross_amount: grossAmount,
-                lunch_total: lunchTotal,
-                net_amount: netAmount,
-                status: 'paid',
-                paid_at: new Date().toISOString()
-              });
-
-            if (insertError) throw insertError;
-          } else {
-            throw error;
-          }
+          console.error('Upsert error:', error);
+          throw error;
         }
 
         setPaidWorkers(prev => {
@@ -223,12 +222,13 @@ export default function Payroll() {
           return newSet;
         });
         toast.success('Worker marked as paid');
-        // Refresh payroll data to update charts
-        await refetchPayrolls();
       }
-    } catch (error) {
+      
+      // Always refresh payroll data to update charts and history
+      await refetchPayrolls();
+    } catch (error: any) {
       console.error('Error updating payroll status:', error);
-      toast.error('Failed to update payment status');
+      toast.error(`Failed to update payment status: ${error.message || 'Unknown error'}`);
     }
   };
 
