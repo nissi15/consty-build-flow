@@ -209,7 +209,7 @@ export default function Payroll() {
         let result;
         if (existingData) {
           // Update existing record
-          console.log('Updating existing payroll record:', existingData.id);
+          console.log('Updating existing payroll record:', existingData.id, 'from status:', existingData.status);
           const { data, error } = await supabase
             .from('payroll')
             .update({
@@ -225,7 +225,16 @@ export default function Payroll() {
 
           if (error) {
             console.error('Update error:', error);
+            if (error.message && error.message.includes('row-level security')) {
+              throw new Error('RLS policy violation. Please run the migration in Supabase SQL Editor.');
+            }
             throw error;
+          }
+          
+          if (!data || data.length === 0) {
+            console.warn('Update returned no data - record might not have been updated');
+          } else {
+            console.log('Update successful, new status:', data[0].status);
           }
           result = data;
         } else {
@@ -268,10 +277,23 @@ export default function Payroll() {
       }
       
       // Always refresh payroll data to update charts and history
+      // Add a small delay to ensure DB transaction completes
+      await new Promise(resolve => setTimeout(resolve, 500));
       await refetchPayrolls();
+      
+      // Force a second refresh after a moment to ensure UI updates
+      setTimeout(() => {
+        refetchPayrolls();
+      }, 1000);
     } catch (error: any) {
       console.error('Error updating payroll status:', error);
-      toast.error(`Failed to update payment status: ${error.message || 'Unknown error'}`);
+      
+      // Check if it's an RLS error
+      if (error.message && error.message.includes('row-level security')) {
+        toast.error('Permission denied. Please apply the RLS migration in Supabase SQL Editor.');
+      } else {
+        toast.error(`Failed to update payment status: ${error.message || 'Unknown error'}`);
+      }
     }
   };
 
