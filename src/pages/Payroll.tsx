@@ -3,11 +3,12 @@ import { Search, Calendar as CalendarIcon, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { usePayroll } from '@/hooks/usePayroll';
 import { useWorkers, useAttendance } from '@/hooks/useSupabaseData';
 import { format, startOfWeek, endOfWeek, subWeeks, subMonths } from 'date-fns';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import { PayrollStats } from '@/components/payroll/PayrollStats';
 import { PayrollChart } from '@/components/payroll/PayrollChart';
 import { PayrollHistory } from '@/components/payroll/PayrollHistory';
@@ -16,7 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { generatePayrollPDF } from '@/lib/payroll-pdf-export';
 
 export default function Payroll() {
-  const { payrolls, loading, stats, generatePayroll, getPayrollTrend } = usePayroll();
+  const { payrolls, loading, stats, generatePayroll, getPayrollTrend, refetch: refetchPayrolls } = usePayroll();
   const { workers, loading: workersLoading } = useWorkers();
   const { attendance, loading: attendanceLoading } = useAttendance();
   const [isGenerating, setIsGenerating] = useState(false);
@@ -27,6 +28,22 @@ export default function Payroll() {
   });
   const [paidWorkers, setPaidWorkers] = useState<Set<string>>(new Set());
   const [excludedWorkers, setExcludedWorkers] = useState<Set<string>>(new Set());
+
+  // Sync paid workers from database when period changes or payrolls update
+  useEffect(() => {
+    const periodStartStr = format(selectedPeriod.start, 'yyyy-MM-dd');
+    const periodEndStr = format(selectedPeriod.end, 'yyyy-MM-dd');
+    
+    const paidWorkersFromDB = payrolls
+      .filter(p => 
+        p.period_start === periodStartStr && 
+        p.period_end === periodEndStr && 
+        p.status === 'paid'
+      )
+      .map(p => p.worker_id);
+    
+    setPaidWorkers(new Set(paidWorkersFromDB));
+  }, [selectedPeriod, payrolls]);
 
   const filteredWorkers = useMemo(() => {
     let filtered = workers.filter(w => !excludedWorkers.has(w.id));
@@ -83,6 +100,8 @@ export default function Payroll() {
     try {
       setIsGenerating(true);
       await generatePayroll();
+      // Refresh payroll data to update charts
+      await refetchPayrolls();
       toast.success('Payroll generated successfully');
     } catch (error) {
       console.error('Error generating payroll:', error);
@@ -120,18 +139,97 @@ export default function Payroll() {
     document.body.removeChild(link);
   };
 
-  const handleTogglePaid = (workerId: string) => {
-    setPaidWorkers(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(workerId)) {
-        newSet.delete(workerId);
+  const handleTogglePaid = async (workerId: string) => {
+    const periodStartStr = format(selectedPeriod.start, 'yyyy-MM-dd');
+    const periodEndStr = format(selectedPeriod.end, 'yyyy-MM-dd');
+    const isCurrentlyPaid = paidWorkers.has(workerId);
+    
+    try {
+      if (isCurrentlyPaid) {
+        // Mark as unpaid - update status to pending
+        const { error } = await supabase
+          .from('payroll')
+          .update({ 
+            status: 'pending',
+            paid_at: null
+          })
+          .eq('worker_id', workerId)
+          .eq('period_start', periodStartStr)
+          .eq('period_end', periodEndStr);
+
+        if (error) throw error;
+
+        setPaidWorkers(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(workerId);
+          return newSet;
+        });
         toast.success('Worker marked as unpaid');
+        // Refresh payroll data to update charts
+        await refetchPayrolls();
       } else {
-        newSet.add(workerId);
+        // Mark as paid - update status to paid and set paid_at timestamp
+        const { error } = await supabase
+          .from('payroll')
+          .update({ 
+            status: 'paid',
+            paid_at: new Date().toISOString()
+          })
+          .eq('worker_id', workerId)
+          .eq('period_start', periodStartStr)
+          .eq('period_end', periodEndStr);
+
+        if (error) {
+          // If payroll record doesn't exist, create it first
+          const worker = workers.find(w => w.id === workerId);
+          if (worker) {
+            const workerAttendance = attendance.filter(
+              a => a.worker_id === workerId && 
+                   a.date >= periodStartStr && 
+                   a.date <= periodEndStr &&
+                   a.status === 'present'
+            );
+            
+            const daysWorked = workerAttendance.length;
+            const grossAmount = daysWorked * worker.daily_rate;
+            const lunchTotal = workerAttendance.filter(a => a.lunch_taken).length * worker.lunch_allowance;
+            const netAmount = grossAmount - lunchTotal;
+
+            const { error: insertError } = await supabase
+              .from('payroll')
+              .insert({
+                worker_id: workerId,
+                period_start: periodStartStr,
+                period_end: periodEndStr,
+                days_worked: daysWorked,
+                daily_rate: worker.daily_rate,
+                lunch_deduction: worker.lunch_allowance,
+                gross_amount: grossAmount,
+                lunch_total: lunchTotal,
+                net_amount: netAmount,
+                status: 'paid',
+                paid_at: new Date().toISOString()
+              });
+
+            if (insertError) throw insertError;
+          } else {
+            throw error;
+          }
+        }
+
+        setPaidWorkers(prev => {
+          const newSet = new Set(prev);
+          newSet.add(workerId);
+          return newSet;
+        });
         toast.success('Worker marked as paid');
+        // Refresh payroll data to update charts
+        await refetchPayrolls();
       }
-      return newSet;
-    });
+    } catch (error) {
+      console.error('Error updating payroll status:', error);
+      toast.error('Failed to update payment status');
+    }
   };
 
   const handleDeleteWorker = (workerId: string) => {
