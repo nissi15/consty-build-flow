@@ -159,7 +159,7 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWor
               transition={{ delay: index * 0.05 }}
               className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200"
             >
-              <div className="flex items-start justify-between gap-4 md:gap-4">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Avatar className="h-12 w-12 ring-2 ring-slate-200 dark:ring-slate-700 flex-shrink-0">
                     <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold">
