@@ -5,6 +5,10 @@
 DROP POLICY IF EXISTS "Admins can insert payroll" ON public.payroll;
 DROP POLICY IF EXISTS "Admins can update payroll" ON public.payroll;
 
+-- Drop existing authenticated user policies if they exist (to avoid conflicts)
+DROP POLICY IF EXISTS "Authenticated users can insert payroll" ON public.payroll;
+DROP POLICY IF EXISTS "Authenticated users can update payroll" ON public.payroll;
+
 -- Allow authenticated users to insert payroll records
 CREATE POLICY "Authenticated users can insert payroll" ON public.payroll
   FOR INSERT 
