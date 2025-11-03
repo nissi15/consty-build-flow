@@ -34,12 +34,13 @@ export default function Payroll() {
     const periodStartStr = format(selectedPeriod.start, 'yyyy-MM-dd');
     const periodEndStr = format(selectedPeriod.end, 'yyyy-MM-dd');
     
+    // Match dates - they come from DB as strings and might have different formats
     const paidWorkersFromDB = payrolls
-      .filter(p => 
-        p.period_start === periodStartStr && 
-        p.period_end === periodEndStr && 
-        p.status === 'paid'
-      )
+      .filter(p => {
+        const pStart = p.period_start.split('T')[0]; // Remove time if present
+        const pEnd = p.period_end.split('T')[0];
+        return pStart === periodStartStr && pEnd === periodEndStr && p.status === 'paid';
+      })
       .map(p => p.worker_id);
     
     setPaidWorkers(new Set(paidWorkersFromDB));
@@ -191,29 +192,71 @@ export default function Payroll() {
         });
         toast.success('Worker marked as unpaid');
       } else {
-        // Mark as paid - use upsert to handle both insert and update
-        const { data, error } = await supabase
+        // Mark as paid - first try to find existing record
+        const { data: existingData, error: findError } = await supabase
           .from('payroll')
-          .upsert({
-            worker_id: workerId,
-            period_start: periodStartStr,
-            period_end: periodEndStr,
-            days_worked: daysWorked,
-            daily_rate: worker.daily_rate,
-            lunch_deduction: worker.lunch_allowance,
-            gross_amount: grossAmount,
-            lunch_total: lunchTotal,
-            net_amount: netAmount,
-            status: 'paid',
-            paid_at: new Date().toISOString()
-          }, {
-            onConflict: 'worker_id,period_start,period_end'
-          })
-          .select();
+          .select('id, status')
+          .eq('worker_id', workerId)
+          .eq('period_start', periodStartStr)
+          .eq('period_end', periodEndStr)
+          .maybeSingle();
 
-        if (error) {
-          console.error('Upsert error:', error);
-          throw error;
+        if (findError && findError.code !== 'PGRST116') { // PGRST116 = no rows returned
+          console.error('Find error:', findError);
+          throw findError;
+        }
+
+        let result;
+        if (existingData) {
+          // Update existing record
+          console.log('Updating existing payroll record:', existingData.id);
+          const { data, error } = await supabase
+            .from('payroll')
+            .update({
+              status: 'paid',
+              paid_at: new Date().toISOString(),
+              days_worked: daysWorked,
+              gross_amount: grossAmount,
+              lunch_total: lunchTotal,
+              net_amount: netAmount
+            })
+            .eq('id', existingData.id)
+            .select();
+
+          if (error) {
+            console.error('Update error:', error);
+            throw error;
+          }
+          result = data;
+        } else {
+          // Insert new record
+          console.log('Creating new payroll record');
+          const { data, error } = await supabase
+            .from('payroll')
+            .insert({
+              worker_id: workerId,
+              period_start: periodStartStr,
+              period_end: periodEndStr,
+              days_worked: daysWorked,
+              daily_rate: worker.daily_rate,
+              lunch_deduction: worker.lunch_allowance,
+              gross_amount: grossAmount,
+              lunch_total: lunchTotal,
+              net_amount: netAmount,
+              status: 'paid',
+              paid_at: new Date().toISOString()
+            })
+            .select();
+
+          if (error) {
+            console.error('Insert error:', error);
+            throw error;
+          }
+          result = data;
+        }
+
+        if (result && result.length > 0) {
+          console.log('Payroll updated successfully:', result[0]);
         }
 
         setPaidWorkers(prev => {
