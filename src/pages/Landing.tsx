@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform, useInView, useReducedMotion } from 'framer-motion';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { useState, useRef, useCallback, useEffect, memo } from 'react';
 import { ArrowRight, Users, DollarSign, TrendingUp, Clock, CheckCircle, Star, Zap, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -9,8 +9,6 @@ import useEmblaCarousel from 'embla-carousel-react';
 // Detect if mobile for performance optimizations
 const isMobile = () => window.innerWidth < 768;
 
-
-
 // Orb Background - Main background animation (disabled on mobile for performance)
 const OrbBackgroundMain = memo(() => {
   const [showOrb, setShowOrb] = useState(!isMobile());
@@ -19,7 +17,7 @@ const OrbBackgroundMain = memo(() => {
     const handleResize = () => {
       setShowOrb(!isMobile());
     };
-    window.addEventListener('resize', handleResize, { passive: true });
+    window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -31,7 +29,7 @@ const OrbBackgroundMain = memo(() => {
   }
 
   return (
-    <div className="absolute inset-0 w-full h-full opacity-60 pointer-events-auto" style={{ willChange: 'transform' }}>
+    <div className="absolute inset-0 w-full h-full opacity-60 pointer-events-auto">
       <Orb
         hue={270}
         hoverIntensity={1.5}
@@ -42,25 +40,27 @@ const OrbBackgroundMain = memo(() => {
   );
 });
 
-const AnimatedBackground = memo(() => {
+
+
+const AnimatedBackground = () => {
   return (
-    <div className="absolute inset-0 overflow-hidden" style={{ willChange: 'transform', transform: 'translate3d(0,0,0)' }}>
+    <div className="absolute inset-0 overflow-hidden">
       {/* Orb Background - Primary layer */}
       <OrbBackgroundMain />
     </div>
   );
-});
+};
 
 // Glass Surface Component - Optimized for mobile performance
 const GlassSurface = memo(({ 
-  children,
-  className = "",
+  children, 
+  className = "", 
   blur = "xl",
   opacity = 5,
   border = true,
   shadow = true 
-}: {
-  children: React.ReactNode;
+}: { 
+  children: React.ReactNode; 
   className?: string;
   blur?: "sm" | "md" | "lg" | "xl" | "2xl";
   opacity?: number;
@@ -70,7 +70,7 @@ const GlassSurface = memo(({
   // Slightly reduce blur on mobile for performance (xl → lg, not md)
   const mobile = isMobile();
   const effectiveBlur = mobile && blur === "xl" ? "lg" : mobile && blur === "2xl" ? "xl" : blur;
-
+  
   const blurClass = {
     sm: "backdrop-blur-sm",
     md: "backdrop-blur-md",
@@ -84,9 +84,7 @@ const GlassSurface = memo(({
       className={`${blurClass} bg-white/${opacity} ${border ? 'border border-white/10' : ''} ${shadow ? 'shadow-2xl shadow-black/20' : ''} ${className}`}
       style={{
         WebkitBackdropFilter: `blur(${effectiveBlur === 'sm' ? '4px' : effectiveBlur === 'md' ? '12px' : effectiveBlur === 'lg' ? '16px' : effectiveBlur === 'xl' ? '24px' : '40px'})`,
-        contain: 'layout style paint',
-        willChange: 'transform',
-        transform: 'translate3d(0,0,0)',
+        contain: 'layout style paint', // CSS containment for performance
       }}
     >
       {children}
@@ -112,26 +110,18 @@ const CardShapeBlur = ({ index = 0 }: { index?: number }) => {
 
 const GlassmorphicCard = memo(({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const isInView = useInView(ref, { once: true });
   const mobile = isMobile();
-  const prefersReducedMotion = useReducedMotion();
 
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: mobile ? 20 : 30 }}
+      initial={{ opacity: 0, y: mobile ? 20 : 30 }} // Slightly less movement on mobile
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: mobile ? 20 : 30 }}
-      transition={{ 
-        duration: prefersReducedMotion ? 0 : (mobile ? 0.4 : 0.5), 
-        delay: prefersReducedMotion ? 0 : (delay * 0.8),
-        ease: "easeOut"
-      }}
+      transition={{ duration: mobile ? 0.4 : 0.5, delay: delay * 0.8 }} // Slightly faster, reduced stagger
       className={`relative ${className}`}
-      whileHover={prefersReducedMotion ? {} : { y: -5, transition: { duration: 0.2 } }}
-      style={{ 
-        contain: 'layout style paint',
-        willChange: 'transform',
-      }}
+      whileHover={{ y: -5, transition: { duration: 0.2 } }} // Keep hover on mobile
+      style={{ contain: 'layout style paint' }} // CSS containment for performance
     >
       {/* Simplified border */}
       <div className="absolute inset-0 rounded-3xl overflow-hidden">
@@ -146,17 +136,7 @@ const GlassmorphicCard = memo(({ children, className = "", delay = 0 }: { childr
   );
 });
 
-const GradientText = memo(({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
-  const prefersReducedMotion = useReducedMotion();
-
-  if (prefersReducedMotion) {
-    return (
-      <span className={`bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent ${className}`}>
-        {children}
-      </span>
-    );
-  }
-
+const GradientText = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
   return (
     <motion.span
       className={`bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent ${className}`}
@@ -171,17 +151,15 @@ const GradientText = memo(({ children, className = "" }: { children: React.React
       style={{
         backgroundSize: '200% 200%',
         textShadow: '0 0 80px rgba(139, 92, 246, 0.3)',
-        willChange: 'background-position',
       }}
     >
       {children}
     </motion.span>
   );
-});
+};
 
-const FloatingButton = memo(({ children, onClick, className = "" }: { children: React.ReactNode; onClick?: () => void; className?: string }) => {
+const FloatingButton = ({ children, onClick, className = "" }: { children: React.ReactNode; onClick?: () => void; className?: string }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const prefersReducedMotion = useReducedMotion();
 
   return (
     <motion.button
@@ -189,37 +167,25 @@ const FloatingButton = memo(({ children, onClick, className = "" }: { children: 
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       className={`relative overflow-hidden rounded-xl px-10 py-5 font-semibold text-lg transition-all duration-300 ${className}`}
-      whileHover={prefersReducedMotion ? {} : { scale: 1.05, boxShadow: '0 20px 60px rgba(139, 92, 246, 0.4)' }}
-      whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
-      style={{ willChange: 'transform' }}
+      whileHover={{ scale: 1.05, boxShadow: '0 20px 60px rgba(139, 92, 246, 0.4)' }}
+      whileTap={{ scale: 0.98 }}
     >
       {/* Animated gradient background */}
-      {!prefersReducedMotion && (
-        <motion.div
-          className="absolute inset-0 rounded-xl"
-          style={{
-            background: 'linear-gradient(135deg, #8B5CF6, #06B6D4, #8B5CF6)',
-            backgroundSize: '200% 200%',
-            willChange: 'background-position',
-          }}
-          animate={{
-            backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-      )}
-      {prefersReducedMotion && (
-        <div 
-          className="absolute inset-0 rounded-xl"
-          style={{
-            background: 'linear-gradient(135deg, #8B5CF6, #06B6D4, #8B5CF6)',
-          }}
-        />
-      )}
+      <motion.div
+        className="absolute inset-0 rounded-xl"
+        style={{
+          background: 'linear-gradient(135deg, #8B5CF6, #06B6D4, #8B5CF6)',
+          backgroundSize: '200% 200%',
+        }}
+        animate={{
+          backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: "linear"
+        }}
+      />
       
       {/* Glow effect */}
       <motion.div
@@ -231,13 +197,12 @@ const FloatingButton = memo(({ children, onClick, className = "" }: { children: 
       />
       
       {/* Ripple effect */}
-      {isHovered && !prefersReducedMotion && (
+      {isHovered && (
         <motion.div
           className="absolute inset-0 bg-white/20 rounded-xl"
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1.2, opacity: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          style={{ willChange: 'transform, opacity' }}
         />
       )}
       
@@ -246,26 +211,20 @@ const FloatingButton = memo(({ children, onClick, className = "" }: { children: 
       </span>
     </motion.button>
   );
-});
+};
 
-const StatCard = memo(({ icon: Icon, value, label, delay = 0 }: { icon: any; value: string; label: string; delay?: number }) => {
+const StatCard = ({ icon: Icon, value, label, delay = 0 }: { icon: any; value: string; label: string; delay?: number }) => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const prefersReducedMotion = useReducedMotion();
+  const isInView = useInView(ref, { once: true });
 
   return (
     <motion.div
       ref={ref}
       initial={{ opacity: 0, y: 30 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-      transition={{ 
-        duration: prefersReducedMotion ? 0 : 0.5, 
-        delay: prefersReducedMotion ? 0 : delay,
-        ease: "easeOut"
-      }}
-      whileHover={prefersReducedMotion ? {} : { scale: 1.03, y: -3 }}
+      transition={{ duration: 0.5, delay }}
+      whileHover={{ scale: 1.03, y: -3 }}
       className="group cursor-pointer"
-      style={{ willChange: 'transform' }}
     >
       <GlassmorphicCard delay={delay}>
         <div className="flex flex-col items-center text-center space-y-4">
@@ -282,25 +241,19 @@ const StatCard = memo(({ icon: Icon, value, label, delay = 0 }: { icon: any; val
       </GlassmorphicCard>
     </motion.div>
   );
-});
+};
 
-const FeatureCard = memo(({ icon: Icon, title, description, delay = 0 }: { icon: any; title: string; description: string; delay?: number }) => {
+const FeatureCard = ({ icon: Icon, title, description, delay = 0 }: { icon: any; title: string; description: string; delay?: number }) => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const prefersReducedMotion = useReducedMotion();
+  const isInView = useInView(ref, { once: true });
 
   return (
     <motion.div
       ref={ref}
       initial={{ opacity: 0, y: 20 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{ 
-        duration: prefersReducedMotion ? 0 : 0.5, 
-        delay: prefersReducedMotion ? 0 : delay,
-        ease: "easeOut"
-      }}
+      transition={{ duration: 0.5, delay }}
       className="group"
-      style={{ willChange: 'transform' }}
     >
       <GlassmorphicCard delay={delay}>
         <div className="flex items-start space-x-4">
@@ -317,26 +270,20 @@ const FeatureCard = memo(({ icon: Icon, title, description, delay = 0 }: { icon:
       </GlassmorphicCard>
     </motion.div>
   );
-});
+};
 
-const ReviewCard = memo(({ name, role, company, review, rating, delay = 0 }: { name: string; role: string; company: string; review: string; rating: number; delay?: number }) => {
+const ReviewCard = ({ name, role, company, review, rating, delay = 0 }: { name: string; role: string; company: string; review: string; rating: number; delay?: number }) => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const prefersReducedMotion = useReducedMotion();
+  const isInView = useInView(ref, { once: true });
 
   return (
     <motion.div
       ref={ref}
       initial={{ opacity: 0, y: 20 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{ 
-        duration: prefersReducedMotion ? 0 : 0.5, 
-        delay: prefersReducedMotion ? 0 : delay,
-        ease: "easeOut"
-      }}
-      whileHover={prefersReducedMotion ? {} : { y: -3 }}
+      transition={{ duration: 0.5, delay }}
+      whileHover={{ y: -3 }}
       className="group"
-      style={{ willChange: 'transform' }}
     >
       <GlassmorphicCard delay={delay}>
         <div className="space-y-4">
@@ -371,7 +318,7 @@ const ReviewCard = memo(({ name, role, company, review, rating, delay = 0 }: { n
       </GlassmorphicCard>
     </motion.div>
   );
-});
+};
 
 // Stats Carousel Component for Mobile - Memoized for performance
 const StatsCarousel = memo(({ stats }: { stats: any[] }) => {
@@ -513,55 +460,10 @@ const ReviewsCarousel = memo(({ reviews }: { reviews: any[] }) => {
 export default function Landing() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const prefersReducedMotion = useReducedMotion();
-  const containerRef = useRef<HTMLDivElement>(null);
-  
-  // Optimized scroll progress with reduced parallax
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  });
-  
-  // Reduced parallax effect - only on desktop and when motion is preferred
-  // Reduced from 50% to 30% for better performance
-  const y = useTransform(
-    scrollYProgress, 
-    [0, 1], 
-    prefersReducedMotion || isMobile() ? ['0%', '0%'] : ['0%', '30%']
-  );
-  // Simplified opacity - removed debounce as MotionValue handles optimization internally
+  const { scrollYProgress } = useScroll();
+  const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isScrolling, setIsScrolling] = useState(false);
-
-  // Track scrolling state to reduce animations during scroll - using requestAnimationFrame for better performance
-  useEffect(() => {
-    let scrollTimer: NodeJS.Timeout;
-    let rafId: number;
-    let ticking = false;
-
-    const handleScroll = () => {
-      if (!ticking) {
-        rafId = requestAnimationFrame(() => {
-          setIsScrolling(true);
-          clearTimeout(scrollTimer);
-          scrollTimer = setTimeout(() => {
-            setIsScrolling(false);
-          }, 150);
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      clearTimeout(scrollTimer);
-      if (rafId) cancelAnimationFrame(rafId);
-    };
-  }, []);
 
   const stats = [
     { icon: TrendingUp, value: "500+", label: "Projects Managed" },
@@ -639,23 +541,15 @@ export default function Landing() {
   ];
 
   return (
-    <div 
-      ref={containerRef}
-      className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-x-hidden"
-      style={{ 
-        willChange: 'scroll-position',
-        transform: 'translate3d(0,0,0)',
-      }}
-    >
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-hidden">
       <AnimatedBackground />
       
       {/* Navigation - Glass Surface */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: prefersReducedMotion ? 0 : 0.6 }}
+        transition={{ duration: 0.6 }}
         className="sticky top-0 z-50 px-3 md:px-4 py-3 md:py-4"
-        style={{ willChange: 'transform' }}
       >
         <GlassSurface className="rounded-2xl" blur="2xl" opacity={3}>
           <nav className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
@@ -763,43 +657,36 @@ export default function Landing() {
         </GlassSurface>
       </motion.div>
 
-      {/* Hero Section - Reduced parallax */}
+      {/* Hero Section */}
       <motion.section
-        style={{ 
-          y: prefersReducedMotion ? undefined : y, 
-          opacity: prefersReducedMotion ? 1 : opacity,
-          willChange: prefersReducedMotion ? 'auto' : 'transform, opacity'
-        }}
+        style={{ y, opacity }}
         className="relative z-10 flex flex-col items-center justify-center min-h-[75vh] px-4 md:px-6 text-center pt-24 md:pt-20"
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: prefersReducedMotion ? 0 : 0.8 }}
+          transition={{ duration: 0.8 }}
           className="max-w-5xl mx-auto"
         >
-          {/* Glow effect behind hero - Only animate when not scrolling */}
-          {!prefersReducedMotion && !isScrolling && (
-            <motion.div
-              className="absolute -inset-40 bg-gradient-to-r from-purple-600/20 via-cyan-600/20 to-purple-600/20 rounded-full blur-3xl -z-10"
-              animate={{
-                scale: [1, 1.15, 1],
-                opacity: [0.3, 0.6, 0.3],
-              }}
-              transition={{
-                duration: 8,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              style={{ willChange: 'transform, opacity' }}
-            />
-          )}
+          {/* Glow effect behind hero */}
+          <motion.div
+            className="absolute -inset-40 bg-gradient-to-r from-purple-600/20 via-cyan-600/20 to-purple-600/20 rounded-full blur-3xl -z-10"
+            animate={{
+              scale: [1, 1.15, 1],
+              opacity: [0.3, 0.6, 0.3],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
           
           <motion.h1
             className="text-5xl md:text-7xl lg:text-8xl font-extrabold mb-8 leading-tight tracking-tight"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.8, delay: 0.2 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
             style={{ letterSpacing: '-0.02em' }}
           >
             Build{' '}
@@ -812,7 +699,7 @@ export default function Landing() {
                 className="absolute -bottom-2 md:-bottom-3 left-0 right-0 h-2 md:h-3 bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 rounded-full"
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
-                transition={{ duration: prefersReducedMotion ? 0 : 0.8, delay: 0.8 }}
+                transition={{ duration: 0.8, delay: 0.8 }}
                 style={{ filter: 'blur(3px)' }}
               />
             </motion.span>
@@ -822,7 +709,7 @@ export default function Landing() {
             className="text-lg md:text-xl lg:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed font-light"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.8, delay: 0.4 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
             style={{ letterSpacing: '-0.01em' }}
           >
             The all-in-one Construction Management System to track workers, automate payroll, 
@@ -834,7 +721,7 @@ export default function Landing() {
             className="flex flex-col sm:flex-row items-center justify-center gap-6"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.8, delay: 0.6 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
           >
             <FloatingButton onClick={() => navigate(user ? '/dashboard' : '/auth')}>
               {user ? 'Go to Dashboard' : 'Start Building'}
@@ -850,7 +737,7 @@ export default function Landing() {
         className="relative py-12 md:py-20 px-4 md:px-6"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        transition={{ duration: prefersReducedMotion ? 0 : 0.8 }}
+        transition={{ duration: 0.8 }}
         viewport={{ once: true }}
       >
         <div className="relative z-10 max-w-6xl mx-auto">
@@ -858,7 +745,7 @@ export default function Landing() {
             className="text-center mb-12 md:mb-16"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.6 }}
+            transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
@@ -894,7 +781,7 @@ export default function Landing() {
         className="relative z-10 py-12 md:py-20 px-4 md:px-6"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        transition={{ duration: prefersReducedMotion ? 0 : 0.8 }}
+        transition={{ duration: 0.8 }}
         viewport={{ once: true }}
       >
         <div className="max-w-6xl mx-auto">
@@ -902,7 +789,7 @@ export default function Landing() {
             className="text-center mb-12 md:mb-16"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.6 }}
+            transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
@@ -938,7 +825,7 @@ export default function Landing() {
         className="relative z-10 py-12 md:py-20 px-4 md:px-6"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        transition={{ duration: prefersReducedMotion ? 0 : 0.8 }}
+        transition={{ duration: 0.8 }}
         viewport={{ once: true }}
       >
         <div className="max-w-6xl mx-auto">
@@ -946,7 +833,7 @@ export default function Landing() {
             className="text-center mb-12 md:mb-16"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.6 }}
+            transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
@@ -983,7 +870,7 @@ export default function Landing() {
         className="relative py-12 md:py-20 px-4 md:px-6"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        transition={{ duration: prefersReducedMotion ? 0 : 0.8 }}
+        transition={{ duration: 0.8 }}
         viewport={{ once: true }}
       >
         <div className="relative z-10 max-w-4xl mx-auto text-center">
@@ -993,7 +880,7 @@ export default function Landing() {
                 className="text-4xl md:text-5xl font-bold mb-6"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: prefersReducedMotion ? 0 : 0.6 }}
+                transition={{ duration: 0.6 }}
                 viewport={{ once: true }}
               >
                 Ready to{' '}
@@ -1004,7 +891,7 @@ export default function Landing() {
                 className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: prefersReducedMotion ? 0 : 0.6, delay: 0.1 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
                 viewport={{ once: true }}
               >
                 Join thousands of construction companies already using Constry to streamline their operations
@@ -1012,7 +899,7 @@ export default function Landing() {
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: prefersReducedMotion ? 0 : 0.6, delay: 0.2 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
                 viewport={{ once: true }}
               >
                 <FloatingButton onClick={() => navigate(user ? '/dashboard' : '/auth')}>
@@ -1030,7 +917,7 @@ export default function Landing() {
         className="relative px-6 py-8"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        transition={{ duration: prefersReducedMotion ? 0 : 0.6 }}
+        transition={{ duration: 0.6 }}
         viewport={{ once: true }}
       >
         <div className="relative z-10 max-w-6xl mx-auto">
