@@ -1,23 +1,23 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+// These are public browser credentials, not server secrets. Keep the deployed app
+// connected even when a hosting provider has not injected its build-time env vars.
+// Vercel environment variables still take precedence, so the project can be moved
+// without another code change.
+const DEFAULT_SUPABASE_URL = 'https://jkzxdvyjhljzvuydnbap.supabase.co';
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImprenhkdnlqaGxqenZ1eWRuYmFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4NzQ1OTQsImV4cCI6MjA3NjQ1MDU5NH0.p0Z2wjP7t8_NiMfa5tATVyfVSf_VuLfQNMY0LSo-G-4';
 
-// For development: allow app to run without env vars, but log warning
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  console.warn('⚠️ Missing Supabase environment variables. Using placeholder values. Please check your .env file.');
-  console.warn('Expected variables: VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY');
-}
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  DEFAULT_SUPABASE_PUBLISHABLE_KEY;
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-// Use placeholder if env vars are missing (for development)
-const url = SUPABASE_URL || 'https://placeholder.supabase.co';
-const key = SUPABASE_PUBLISHABLE_KEY || 'placeholder_key';
-
-export const supabase = createClient<Database>(url, key, {
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     storage: localStorage,
     persistSession: true,
@@ -28,7 +28,10 @@ export const supabase = createClient<Database>(url, key, {
 // Log connection status in development
 if (import.meta.env.DEV) {
   console.log('🔌 Supabase client initialized:', {
-    hasUrl: !!SUPABASE_URL,
-    hasKey: !!SUPABASE_PUBLISHABLE_KEY,
+    projectUrl: SUPABASE_URL,
+    usingEnvironmentConfig: Boolean(
+      import.meta.env.VITE_SUPABASE_URL &&
+      (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY),
+    ),
   });
 }
