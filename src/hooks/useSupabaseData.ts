@@ -1,13 +1,16 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
-import { fetchAllPages } from '@/lib/supabase-pagination';
+import { fetchAllPagesInParallel, withDataTimeout } from '@/lib/supabase-pagination';
 
 type Worker = Database['public']['Tables']['workers']['Row'];
 type Attendance = Database['public']['Tables']['attendance']['Row'];
 type Expense = Database['public']['Tables']['expenses']['Row'];
 type Budget = Database['public']['Tables']['budget']['Row'];
 type ActivityLog = Database['public']['Tables']['activity_log']['Row'];
+type AttendanceWithWorker = Attendance & {
+  workers: Pick<Worker, 'id' | 'name' | 'role'>;
+};
 
 export const useWorkers = () => {
   const [workers, setWorkers] = useState<Worker[]>([]);
@@ -59,8 +62,45 @@ export const useWorkers = () => {
 };
 
 export const useAttendance = () => {
-  const [attendance, setAttendance] = useState<(Attendance & { workers: Worker })[]>([]);
+  const [attendance, setAttendance] = useState<AttendanceWithWorker[]>([]);
   const [loading, setLoading] = useState(true);
+  const requestInFlight = useRef<Promise<void> | null>(null);
+  const refetchQueued = useRef(false);
+  const realtimeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fetchAttendance = useCallback(async () => {
+    if (requestInFlight.current) {
+      refetchQueued.current = true;
+      return requestInFlight.current;
+    }
+
+    const run = async () => {
+      do {
+        refetchQueued.current = false;
+        try {
+          const { count, error: countError } = await withDataTimeout(
+            supabase.from('attendance').select('id', { count: 'exact', head: true }),
+          );
+          if (countError) throw countError;
+
+          const data = await fetchAllPagesInParallel<AttendanceWithWorker>(count || 0, (from, to) => supabase
+            .from('attendance')
+            .select('*, workers(id, name, role)')
+            .order('created_at', { ascending: false })
+            .range(from, to));
+          setAttendance(data);
+        } catch (error) {
+          console.error('Error fetching attendance:', error);
+        }
+      } while (refetchQueued.current);
+    };
+
+    requestInFlight.current = run().finally(() => {
+      requestInFlight.current = null;
+      setLoading(false);
+    });
+    return requestInFlight.current;
+  }, []);
 
   useEffect(() => {
     fetchAttendance();
@@ -68,28 +108,16 @@ export const useAttendance = () => {
     const channel = supabase
       .channel('attendance-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance' }, () => {
-        fetchAttendance();
+        if (realtimeTimer.current) clearTimeout(realtimeTimer.current);
+        realtimeTimer.current = setTimeout(fetchAttendance, 750);
       })
       .subscribe();
 
     return () => {
+      if (realtimeTimer.current) clearTimeout(realtimeTimer.current);
       supabase.removeChannel(channel);
     };
-  }, []);
-
-  const fetchAttendance = async () => {
-    try {
-      const data = await fetchAllPages<Attendance & { workers: Worker }>((from, to) => supabase
-        .from('attendance')
-        .select('*, workers(*)')
-        .order('created_at', { ascending: false })
-        .range(from, to));
-      setAttendance(data);
-    } catch (error) {
-      console.error('Error fetching attendance:', error);
-    }
-    setLoading(false);
-  };
+  }, [fetchAttendance]);
 
   return { attendance, loading, refetch: fetchAttendance };
 };
