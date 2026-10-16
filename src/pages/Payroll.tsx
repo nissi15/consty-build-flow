@@ -413,14 +413,14 @@ export default function Payroll() {
   };
 
   return (
-    <div className="p-6 space-y-6 bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 min-h-screen">
+    <div className="min-h-screen space-y-6 bg-[#f3f0e9] p-4 text-[#1a211d] dark:bg-[#0e1210] dark:text-[#f2eee6] sm:p-6 lg:p-8">
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
       >
         <div>
-          <h1 className="text-4xl font-bold mb-2">Payroll Management</h1>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Payroll</h1>
           <p className="text-muted-foreground">Generate and track weekly payrolls with automated calculations</p>
         </div>
         <div className="flex items-center gap-4 flex-wrap">
@@ -491,7 +491,7 @@ export default function Payroll() {
           <Button 
             onClick={handleGeneratePayroll} 
             disabled={isGenerating}
-            className="bg-purple-500 hover:bg-purple-600 gap-2"
+            className="gap-2 bg-[#2f493b] text-[#f7f3eb] hover:bg-[#24392e] dark:bg-[#d6ad83] dark:text-[#171a18]"
           >
             + Generate Payroll
           </Button>

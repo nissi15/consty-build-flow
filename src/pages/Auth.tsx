@@ -6,15 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Loader2, ArrowLeft, UserCircle, Crown } from 'lucide-react';
+import { HardHat, Loader2, ArrowLeft, UserCircle, Crown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import Orb from '@/components/Orb';
 
 // Gradient Text Component
 const GradientText = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
   return (
-    <span className={`bg-gradient-to-r from-purple-600 via-cyan-500 to-purple-600 bg-clip-text text-transparent ${className}`}>
+    <span className={`text-[#f2eee6] ${className}`}>
       {children}
     </span>
   );
@@ -24,10 +23,7 @@ const GradientText = ({ children, className = "" }: { children: React.ReactNode;
 const GlassSurface = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
   return (
     <div
-      className={`backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl shadow-black/20 ${className}`}
-      style={{
-        WebkitBackdropFilter: 'blur(24px)',
-      }}
+      className={`border border-white/10 bg-[#151918] shadow-[0_28px_80px_rgba(0,0,0,0.38)] ${className}`}
     >
       {children}
     </div>
@@ -93,16 +89,8 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gray-950">
-      {/* Orb Background */}
-      <div className="absolute inset-0 w-full h-full opacity-60">
-        <Orb
-          hue={270}
-          hoverIntensity={1.5}
-          rotateOnHover={true}
-          forceHoverState={false}
-        />
-      </div>
+    <div className="min-h-screen relative overflow-hidden bg-[#0c0f0e]">
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.018)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.018)_1px,transparent_1px)] bg-[size:72px_72px]" />
 
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4">
@@ -123,9 +111,10 @@ const Auth = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-8"
+          className="mb-8 flex items-center gap-3"
         >
-          <GradientText className="text-4xl font-bold">Constry</GradientText>
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#d6ad83] text-[#171a18]"><HardHat className="h-5 w-5" /></span>
+          <GradientText className="text-xl font-semibold tracking-[0.18em]">CONSTY</GradientText>
         </motion.div>
 
         {/* Auth Card */}
@@ -135,11 +124,10 @@ const Auth = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="w-full max-w-md"
         >
-          <GlassSurface className="rounded-3xl p-8 relative">
+          <GlassSurface className="relative rounded-2xl p-8">
             {/* Decorative gradient border */}
             <div className="absolute inset-0 rounded-3xl pointer-events-none" style={{
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              boxShadow: '0 0 40px rgba(139, 92, 246, 0.2)',
+              border: '1px solid rgba(255, 255, 255, 0.06)',
             }} />
 
             <div className="relative">
@@ -148,9 +136,9 @@ const Auth = () => {
                 <motion.div
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                  className="bg-gradient-to-r from-purple-600 to-cyan-500 p-4 rounded-2xl"
+                  className="rounded-xl bg-[#d6ad83] p-4"
                 >
-                  <Building2 className="h-8 w-8 text-white" />
+                  <HardHat className="h-8 w-8 text-[#171a18]" />
                 </motion.div>
               </div>
 
@@ -166,17 +154,17 @@ const Auth = () => {
 
               {/* User Type Toggle */}
               <Tabs value={userType} onValueChange={(v) => setUserType(v as 'manager' | 'owner')} className="w-full mb-6">
-                <TabsList className="grid w-full grid-cols-2 bg-white/5 border border-white/10">
+                <TabsList className="grid w-full grid-cols-2 border border-white/10 bg-white/[0.035]">
                   <TabsTrigger 
                     value="manager" 
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-cyan-500 text-gray-400 data-[state=active]:text-white"
+                    className="text-gray-400 data-[state=active]:bg-[#31483a] data-[state=active]:text-[#f2eee6]"
                   >
                     <UserCircle className="h-4 w-4 mr-2" />
                     Manager
                   </TabsTrigger>
                   <TabsTrigger 
                     value="owner"
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-cyan-500 text-gray-400 data-[state=active]:text-white"
+                    className="text-gray-400 data-[state=active]:bg-[#31483a] data-[state=active]:text-[#f2eee6]"
                   >
                     <Crown className="h-4 w-4 mr-2" />
                     Owner
@@ -205,7 +193,7 @@ const Auth = () => {
                       placeholder="000000"
                       maxLength={6}
                       required
-                      className="mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-purple-500 text-center text-2xl tracking-widest font-mono"
+                      className="mt-1.5 border-white/10 bg-white/[0.035] text-white placeholder:text-gray-500 focus:border-[#d6ad83] text-center text-2xl tracking-widest font-mono"
                     />
                     <p className="text-xs text-gray-500 mt-2 text-center">
                       Enter the 6-digit code provided by your site manager
@@ -228,7 +216,7 @@ const Auth = () => {
                           onChange={(e) => setFullName(e.target.value)}
                           placeholder="John Doe"
                           required={!isLogin}
-                          className="mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-purple-500"
+                          className="mt-1.5 border-white/10 bg-white/[0.035] text-white placeholder:text-gray-500 focus:border-[#d6ad83]"
                         />
                       </motion.div>
                     )}
@@ -242,7 +230,7 @@ const Auth = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@example.com"
                         required
-                        className="mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-purple-500"
+                        className="mt-1.5 border-white/10 bg-white/[0.035] text-white placeholder:text-gray-500 focus:border-[#d6ad83]"
                       />
                     </div>
 
@@ -256,7 +244,7 @@ const Auth = () => {
                         placeholder="••••••••"
                         required
                         minLength={6}
-                        className="mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-purple-500"
+                        className="mt-1.5 border-white/10 bg-white/[0.035] text-white placeholder:text-gray-500 focus:border-[#d6ad83]"
                       />
                       {!isLogin && (
                         <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
@@ -268,7 +256,7 @@ const Auth = () => {
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 text-white border-0 h-12 text-base font-medium"
+                    className="h-12 w-full border-0 bg-[#d6ad83] text-base font-semibold text-[#171a18] hover:bg-[#e2c49f]"
                     disabled={loading}
                   >
                     {loading ? (
@@ -296,12 +284,12 @@ const Auth = () => {
                     {isLogin ? (
                       <>
                         Don't have an account?{' '}
-                        <span className="text-purple-400 font-medium">Sign up</span>
+                        <span className="font-medium text-[#d6ad83]">Sign up</span>
                       </>
                     ) : (
                       <>
                         Already have an account?{' '}
-                        <span className="text-purple-400 font-medium">Sign in</span>
+                        <span className="font-medium text-[#d6ad83]">Sign in</span>
                       </>
                     )}
                   </button>

@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { format } from 'date-fns';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 interface Worker {
   id: string;
@@ -47,9 +47,11 @@ interface AttendanceRecordsProps {
 type SortDirection = 'asc' | 'desc';
 
 export function AttendanceRecords({ attendance }: AttendanceRecordsProps) {
+  const pageSize = 100;
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [page, setPage] = useState(1);
 
   // Filter and sort attendance records
   const filteredAndSortedRecords = useMemo(() => {
@@ -71,12 +73,24 @@ export function AttendanceRecords({ attendance }: AttendanceRecordsProps) {
     return records;
   }, [attendance, selectedDate, sortDirection]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredAndSortedRecords.length / pageSize));
+  const visibleRecords = useMemo(
+    () => filteredAndSortedRecords.slice((page - 1) * pageSize, page * pageSize),
+    [filteredAndSortedRecords, page],
+  );
+
+  useEffect(() => {
+    setPage(current => Math.min(current, totalPages));
+  }, [totalPages]);
+
   const toggleSort = () => {
     setSortDirection(prev => prev === 'desc' ? 'asc' : 'desc');
+    setPage(1);
   };
 
   const clearDateFilter = () => {
     setSelectedDate(undefined);
+    setPage(1);
   };
 
   const getStatusColor = (status: string) => {
@@ -127,6 +141,7 @@ export function AttendanceRecords({ attendance }: AttendanceRecordsProps) {
                 selected={selectedDate}
                 onSelect={(date) => {
                   setSelectedDate(date);
+                  setPage(1);
                   setIsCalendarOpen(false);
                 }}
                 initialFocus
@@ -186,7 +201,7 @@ export function AttendanceRecords({ attendance }: AttendanceRecordsProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAndSortedRecords.map((record, index) => (
+              {visibleRecords.map((record, index) => (
                 <motion.tr
                   key={record.id}
                   initial={{ opacity: 0, y: 10 }}
@@ -197,7 +212,7 @@ export function AttendanceRecords({ attendance }: AttendanceRecordsProps) {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-9 w-9 ring-2 ring-slate-200 dark:ring-slate-700">
-                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-semibold text-sm">
+                        <AvatarFallback className="bg-[#254b3b] text-white font-semibold text-sm">
                           {record.workers?.name?.split(' ').map(n => n[0]).join('') || '?'}
                         </AvatarFallback>
                       </Avatar>
@@ -256,6 +271,22 @@ export function AttendanceRecords({ attendance }: AttendanceRecordsProps) {
               ))}
             </TableBody>
           </Table>
+        </div>
+      )}
+      {filteredAndSortedRecords.length > pageSize && (
+        <div className="mt-5 flex flex-col gap-3 border-t border-[#e3ddcf] pt-4 text-sm text-muted-foreground dark:border-[#34453a] sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            Showing {((page - 1) * pageSize + 1).toLocaleString()}–{Math.min(page * pageSize, filteredAndSortedRecords.length).toLocaleString()} of {filteredAndSortedRecords.length.toLocaleString()}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setPage(value => Math.max(1, value - 1))} disabled={page === 1}>
+              Previous
+            </Button>
+            <span className="min-w-24 text-center">Page {page} of {totalPages}</span>
+            <Button variant="outline" size="sm" onClick={() => setPage(value => Math.min(totalPages, value + 1))} disabled={page === totalPages}>
+              Next
+            </Button>
+          </div>
         </div>
       )}
     </Card>

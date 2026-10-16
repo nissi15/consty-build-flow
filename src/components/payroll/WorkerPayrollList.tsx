@@ -162,7 +162,7 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWor
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Avatar className="h-12 w-12 ring-2 ring-slate-200 dark:ring-slate-700 flex-shrink-0">
-                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold">
+                    <AvatarFallback className="bg-[#254b3b] text-white font-semibold">
                       {worker.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
@@ -227,7 +227,7 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWor
 
                   <div className="text-center">
                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Total</p>
-                    <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                    <p className="text-xl font-bold text-[#254b3b] dark:text-[#d4b37c]">
                       RWF {payroll.netAmount.toLocaleString()}
                     </p>
                   </div>
@@ -280,7 +280,7 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWor
 
                   <div className="text-left">
                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Net Total</p>
-                    <p className="text-base font-bold text-purple-600 dark:text-purple-400">
+                    <p className="text-base font-bold text-[#254b3b] dark:text-[#d4b37c]">
                       RWF {payroll.netAmount.toLocaleString()}
                     </p>
                   </div>
@@ -329,7 +329,7 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWor
             </div>
             <div className="text-right">
               <p className="text-sm text-slate-500 dark:text-slate-400">Total to be paid</p>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+              <p className="text-2xl font-bold text-[#254b3b] dark:text-[#d4b37c]">
                 RWF {unpaidPayroll.toLocaleString()}
               </p>
             </div>
@@ -349,7 +349,7 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWor
             </div>
             <div className="text-left">
               <p className="text-sm text-slate-500 dark:text-slate-400">Total to be paid</p>
-              <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
+              <p className="text-xl font-bold text-[#254b3b] dark:text-[#d4b37c]">
                 RWF {unpaidPayroll.toLocaleString()}
               </p>
             </div>

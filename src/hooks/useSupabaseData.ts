@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
+import { fetchAllPages } from '@/lib/supabase-pagination';
 
 type Worker = Database['public']['Tables']['workers']['Row'];
 type Attendance = Database['public']['Tables']['attendance']['Row'];
@@ -77,13 +78,15 @@ export const useAttendance = () => {
   }, []);
 
   const fetchAttendance = async () => {
-    const { data, error } = await supabase
-      .from('attendance')
-      .select('*, workers(*)')
-      .order('created_at', { ascending: false });
-    
-    if (!error && data) {
-      setAttendance(data as any);
+    try {
+      const data = await fetchAllPages<Attendance & { workers: Worker }>((from, to) => supabase
+        .from('attendance')
+        .select('*, workers(*)')
+        .order('created_at', { ascending: false })
+        .range(from, to));
+      setAttendance(data);
+    } catch (error) {
+      console.error('Error fetching attendance:', error);
     }
     setLoading(false);
   };

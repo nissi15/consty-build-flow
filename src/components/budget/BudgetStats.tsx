@@ -18,7 +18,7 @@ export function BudgetStats({ stats }: BudgetStatsProps) {
       title: 'Total Budget',
       value: `RWF ${stats.totalBudget.toLocaleString()}`,
       icon: Wallet,
-      iconClass: 'bg-purple-100 text-purple-600',
+      iconClass: 'bg-[#e9e3d7] text-[#8b6b3e]',
     },
     {
       title: 'Used Budget',
@@ -36,7 +36,7 @@ export function BudgetStats({ stats }: BudgetStatsProps) {
       title: 'Usage',
       value: `${stats.usagePercentage.toFixed(1)}%`,
       icon: Percent,
-      iconClass: 'bg-purple-100 text-purple-600',
+      iconClass: 'bg-[#e9e3d7] text-[#8b6b3e]',
     },
   ];
 

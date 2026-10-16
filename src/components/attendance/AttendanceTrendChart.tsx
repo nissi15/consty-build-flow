@@ -42,8 +42,8 @@ export function AttendanceTrendChart({ attendance }: AttendanceTrendChartProps) 
   return (
     <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
       <div className="flex items-center gap-2 mb-6">
-        <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-          <TrendingUp className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+        <div className="rounded-lg bg-[#e9e3d7] p-2 dark:bg-[#26362c]">
+          <TrendingUp className="h-5 w-5 text-[#8b6b3e] dark:text-[#d4b37c]" />
         </div>
         <div>
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">

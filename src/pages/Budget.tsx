@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Download, RefreshCw, Calculator, Edit } from 'lucide-react';
+import { Download, RefreshCw, Calculator, Edit, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -132,7 +132,7 @@ export default function Budget() {
   }
 
   return (
-    <div className="p-6 space-y-6 bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 min-h-screen">
+    <div className="min-h-screen space-y-6 bg-[#f3f0e9] p-4 text-[#1a211d] dark:bg-[#0e1210] dark:text-[#f2eee6] sm:p-6 lg:p-8">
       <div className="space-y-6">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
@@ -140,8 +140,11 @@ export default function Budget() {
         >
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Budget Management</h1>
-              <p className="text-muted-foreground">Track and manage your project budget allocation</p>
+              <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8b6b3e]">
+                <MapPin className="h-3.5 w-3.5" /> Musanze Town Buildings · Finance
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Budget</h1>
+              <p className="mt-2 text-muted-foreground">Track commitments, spend and remaining project capital.</p>
             </div>
             <div className="flex gap-2">
               <Dialog>

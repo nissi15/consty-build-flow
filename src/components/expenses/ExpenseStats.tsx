@@ -17,7 +17,7 @@ export function ExpenseStats({ stats }: ExpenseStatsProps) {
       title: 'Total Expenses',
       value: `RWF ${stats.totalExpenses.toLocaleString()}`,
       icon: DollarSign,
-      iconClass: 'bg-purple-100 text-purple-600',
+      iconClass: 'bg-[#e9e3d7] text-[#8b6b3e]',
     },
     {
       title: 'Monthly Average',
@@ -35,7 +35,7 @@ export function ExpenseStats({ stats }: ExpenseStatsProps) {
       title: 'Categories',
       value: stats.categories,
       icon: PieChart,
-      iconClass: 'bg-purple-100 text-purple-600',
+      iconClass: 'bg-[#e9e3d7] text-[#8b6b3e]',
     },
   ];
 

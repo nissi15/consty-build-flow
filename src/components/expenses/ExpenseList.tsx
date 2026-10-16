@@ -35,9 +35,9 @@ export function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
     // Convert hex to tailwind classes
     switch (category) {
       case 'Labor':
-        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800';
+        return 'bg-[#eee7da] dark:bg-[#2d382f] text-[#765a35] dark:text-[#d4b37c] border-[#d8c7aa] dark:border-[#4b594e]';
       case 'Materials':
-        return 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800';
+        return 'bg-[#e2ebe5] dark:bg-[#20352a] text-[#254b3b] dark:text-[#a9c5b5] border-[#bfd0c5] dark:border-[#365445]';
       case 'Equipment':
         return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800';
       case 'Transport':
@@ -53,8 +53,8 @@ export function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
     return (
       <Card className="bg-white dark:bg-[#111827] rounded-xl p-8 shadow-lg border border-slate-200 dark:border-slate-800">
         <div className="text-center">
-          <div className="inline-flex p-3 rounded-full bg-purple-100 dark:bg-purple-900/30 mb-4">
-            <Receipt className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+          <div className="mb-4 inline-flex rounded-full bg-[#e9e3d7] p-3 dark:bg-[#26362c]">
+            <Receipt className="h-8 w-8 text-[#8b6b3e] dark:text-[#d4b37c]" />
           </div>
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
             No Expenses Found
@@ -73,8 +73,8 @@ export function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
     <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-            <Receipt className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+          <div className="rounded-lg bg-[#e9e3d7] p-2 dark:bg-[#26362c]">
+            <Receipt className="h-5 w-5 text-[#8b6b3e] dark:text-[#d4b37c]" />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
@@ -87,7 +87,7 @@ export function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
         </div>
         <div className="text-right">
           <p className="text-sm text-slate-500 dark:text-slate-400">Total</p>
-          <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+          <p className="text-2xl font-bold text-[#254b3b] dark:text-[#d4b37c]">
             RWF {totalAmount.toLocaleString()}
           </p>
         </div>
@@ -188,7 +188,7 @@ export function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
           </p>
           <div className="text-right">
             <p className="text-sm text-slate-500 dark:text-slate-400">Total Amount</p>
-            <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
+            <p className="text-xl font-bold text-[#254b3b] dark:text-[#d4b37c]">
               RWF {totalAmount.toLocaleString()}
             </p>
           </div>

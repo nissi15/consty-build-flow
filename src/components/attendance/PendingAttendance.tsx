@@ -63,7 +63,7 @@ export function PendingAttendance({ workers, onMarkPresent, onMarkAbsent }: Pend
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <Avatar className="h-10 w-10 ring-2 ring-slate-200 dark:ring-slate-700">
-                  <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold">
+                  <AvatarFallback className="bg-[#254b3b] text-white font-semibold">
                     {worker.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>

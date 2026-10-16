@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchAllPages } from '@/lib/supabase-pagination';
 
 interface Worker {
   id: string;
@@ -95,15 +96,11 @@ export function useSyncSystem() {
       if (workersError) throw workersError;
 
       // Fetch attendance with worker data
-      const { data: attendanceData, error: attendanceError } = await supabase
+      const attendanceData = await fetchAllPages<Attendance>((from, to) => supabase
         .from('attendance')
-        .select(`
-          *,
-          worker:workers(*)
-        `)
-        .order('date', { ascending: false });
-
-      if (attendanceError) throw attendanceError;
+        .select('*')
+        .order('date', { ascending: false })
+        .range(from, to));
 
       // Fetch expenses with worker and attendance data
       const { data: expensesData, error: expensesError } = await supabase
@@ -147,7 +144,7 @@ export function useSyncSystem() {
 
       console.log('Sync system data loaded:', {
         workers: workersData?.length || 0,
-        attendance: attendanceData?.length || 0,
+        attendance: attendanceData.length,
         expenses: expensesData?.length || 0,
         budget: budgetData ? 'loaded' : 'none',
         activityLog: activityData?.length || 0,

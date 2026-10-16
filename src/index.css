@@ -8,45 +8,45 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 10%;
+    --background: 42 24% 96%;
+    --foreground: 150 10% 11%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card: 40 25% 99%;
+    --card-foreground: 150 10% 11%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --popover: 40 25% 99%;
+    --popover-foreground: 150 10% 11%;
 
-    --primary: 33 100% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 145 20% 24%;
+    --primary-foreground: 42 28% 96%;
 
-    --secondary: 42 100% 64%;
-    --secondary-foreground: 0 0% 10%;
+    --secondary: 37 38% 84%;
+    --secondary-foreground: 150 10% 14%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 40 14% 92%;
+    --muted-foreground: 145 5% 42%;
 
-    --accent: 42 100% 64%;
-    --accent-foreground: 0 0% 10%;
+    --accent: 31 35% 58%;
+    --accent-foreground: 42 28% 97%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 33 100% 50%;
+    --border: 38 13% 83%;
+    --input: 38 13% 83%;
+    --ring: 145 20% 24%;
 
-    --radius: 1.25rem;
+    --radius: 0.75rem;
     
     --gradient-dark-1: 0 0% 5%;
     --gradient-dark-2: 0 0% 11%;
     --gradient-dark-3: 0 0% 15%;
     
-    --chart-1: 33 100% 50%;
-    --chart-2: 42 100% 64%;
-    --chart-3: 30 95% 55%;
-    --chart-4: 45 100% 70%;
-    --chart-5: 25 90% 48%;
+    --chart-1: 145 20% 28%;
+    --chart-2: 31 35% 52%;
+    --chart-3: 43 35% 62%;
+    --chart-4: 197 14% 39%;
+    --chart-5: 18 30% 48%;
 
     --sidebar-background: 0 0% 98%;
 
@@ -66,43 +66,43 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 0 0% 5%;
-    --foreground: 0 0% 98%;
+    --background: 150 10% 7%;
+    --foreground: 42 22% 94%;
 
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 98%;
+    --card: 150 8% 10%;
+    --card-foreground: 42 22% 94%;
 
     --popover: 0 0% 8%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 33 100% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 36 38% 68%;
+    --primary-foreground: 150 10% 10%;
 
-    --secondary: 42 100% 64%;
-    --secondary-foreground: 0 0% 10%;
+    --secondary: 145 18% 25%;
+    --secondary-foreground: 42 22% 94%;
 
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 65%;
 
-    --accent: 42 100% 64%;
-    --accent-foreground: 0 0% 10%;
+    --accent: 31 32% 52%;
+    --accent-foreground: 42 22% 96%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 0 0% 15%;
     --input: 0 0% 15%;
-    --ring: 33 100% 50%;
+    --ring: 36 38% 68%;
     
     --gradient-dark-1: 0 0% 5%;
     --gradient-dark-2: 0 0% 11%;
     --gradient-dark-3: 0 0% 15%;
     
-    --chart-1: 33 100% 50%;
-    --chart-2: 42 100% 64%;
-    --chart-3: 30 95% 55%;
-    --chart-4: 45 100% 70%;
-    --chart-5: 25 90% 48%;
+    --chart-1: 36 38% 68%;
+    --chart-2: 145 18% 48%;
+    --chart-3: 43 30% 60%;
+    --chart-4: 197 18% 55%;
+    --chart-5: 18 35% 58%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -123,22 +123,38 @@ All colors MUST be HSL.
     @apply bg-background text-foreground font-sans antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
 }
 
 @layer utilities {
   .glass {
-    @apply bg-white/10 backdrop-blur-lg border border-white/20;
+    @apply bg-card border border-border shadow-sm;
   }
   
   .dark .glass {
-    @apply bg-white/5 backdrop-blur-lg border border-white/10;
+    @apply bg-card border border-border shadow-sm;
   }
   
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
+    background: hsl(var(--primary));
   }
   
   .gradient-dark {
     background: linear-gradient(180deg, hsl(var(--gradient-dark-1)) 0%, hsl(var(--gradient-dark-2)) 50%, hsl(var(--gradient-dark-3)) 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

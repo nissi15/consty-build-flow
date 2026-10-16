@@ -129,8 +129,8 @@ export function PayrollHistory({ onGeneratePayroll, showNoData = true }: Payroll
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1.5">
-                    <DollarSign className="h-4 w-4 text-purple-500" />
-                    <span className="font-bold text-purple-600 dark:text-purple-400">
+                    <DollarSign className="h-4 w-4 text-[#8b6b3e]" />
+                    <span className="font-bold text-[#254b3b] dark:text-[#d4b37c]">
                       RWF {payroll.net_amount.toLocaleString()}
                     </span>
                   </div>
@@ -213,8 +213,8 @@ export function PayrollHistory({ onGeneratePayroll, showNoData = true }: Payroll
               <div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Net Amount</p>
                 <div className="flex items-center gap-1">
-                  <DollarSign className="h-3.5 w-3.5 text-purple-500" />
-                  <p className="text-sm font-bold text-purple-600 dark:text-purple-400">
+                  <DollarSign className="h-3.5 w-3.5 text-[#8b6b3e]" />
+                  <p className="text-sm font-bold text-[#254b3b] dark:text-[#d4b37c]">
                     RWF {payroll.net_amount.toLocaleString()}
                   </p>
                 </div>

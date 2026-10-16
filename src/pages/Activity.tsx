@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Activity as ActivityIcon, Clock, UserPlus, DollarSign, Calendar } from 'lucide-react';
+import { Activity as ActivityIcon, Clock, UserPlus, DollarSign, Calendar, MapPin } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,13 +19,16 @@ const Activity = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen space-y-6 bg-[#f3f0e9] p-4 text-[#1a211d] dark:bg-[#0e1210] dark:text-[#f2eee6] sm:p-6 lg:p-8">
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
       >
-        <h1 className="text-4xl font-bold mb-2">Activity Log</h1>
-        <p className="text-muted-foreground">Track all system activities and changes</p>
+        <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8b6b3e]">
+          <MapPin className="h-3.5 w-3.5" /> Musanze Town Buildings · Audit trail
+        </div>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Activity log</h1>
+        <p className="mt-2 text-muted-foreground">A chronological record of important project changes.</p>
       </motion.div>
 
       <motion.div
@@ -33,7 +36,7 @@ const Activity = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
-        <Card className="p-6 glass">
+        <Card className="border-[#ddd6c8] bg-[#fffdf8] p-6 shadow-sm dark:border-[#34453a] dark:bg-[#18231d]">
           <div className="space-y-4">
             {activityLog.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
@@ -46,7 +49,7 @@ const Activity = () => {
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: index * 0.05 }}
-                  className="flex items-start gap-4 p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all"
+                  className="flex items-start gap-4 rounded-lg border border-[#e7e0d3] bg-[#faf7f0] p-4 transition-colors hover:bg-[#f2ede2] dark:border-[#34453a] dark:bg-[#111814] dark:hover:bg-[#1d2a22]"
                 >
                   <div className={`p-3 rounded-xl ${getActionColor(log.action_type)}`}>
                     {getActionIcon(log.action_type)}

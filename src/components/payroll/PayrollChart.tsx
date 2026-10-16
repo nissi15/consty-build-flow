@@ -19,7 +19,7 @@ export function PayrollChart({ data, onExport, showNoData = false }: PayrollChar
       <Card className="p-6 glass">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-purple-500" />
+            <TrendingUp className="h-5 w-5 text-[#8b6b3e]" />
             <h2 className="text-lg font-semibold">Weekly Payroll Trend</h2>
           </div>
           {onExport && (
@@ -74,9 +74,9 @@ export function PayrollChart({ data, onExport, showNoData = false }: PayrollChar
             <Line
               type="monotone"
               dataKey="amount"
-              stroke="hsl(var(--purple-500))"
+              stroke="hsl(var(--primary))"
               strokeWidth={2}
-              dot={{ fill: 'hsl(var(--purple-500))', r: 4 }}
+              dot={{ fill: 'hsl(var(--primary))', r: 4 }}
             />
           </LineChart>
         </ResponsiveContainer>

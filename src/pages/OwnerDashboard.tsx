@@ -204,7 +204,7 @@ export default function OwnerDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0B1120]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[#254b3b]"></div>
       </div>
     );
   }
@@ -237,13 +237,13 @@ export default function OwnerDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/20 to-cyan-50/20 dark:from-[#0B1120] dark:via-[#0B1120] dark:to-[#0B1120]">
+    <div className="min-h-screen bg-[#f6f4ee] dark:bg-[#111814]">
       {/* Header */}
       <div className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
-              <div className="p-2 sm:p-2.5 bg-gradient-to-br from-purple-600 via-purple-500 to-cyan-500 rounded-xl shadow-lg flex-shrink-0">
+              <div className="flex-shrink-0 rounded-xl bg-[#254b3b] p-2 shadow-sm sm:p-2.5">
                 <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
               <div className="min-w-0 flex-1">
@@ -381,8 +381,8 @@ export default function OwnerDashboard() {
                     RWF {stats.totalPayroll.toLocaleString()}
                   </p>
                 </div>
-                <div className="p-1.5 xs:p-2 sm:p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0">
-                  <Wallet className="h-3.5 w-3.5 xs:h-4 xs:w-4 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
+                <div className="flex-shrink-0 rounded-lg bg-[#e9e3d7] p-1.5 dark:bg-[#26362c] xs:p-2 sm:p-3">
+                  <Wallet className="h-3.5 w-3.5 text-[#8b6b3e] dark:text-[#d4b37c] xs:h-4 xs:w-4 sm:h-6 sm:w-6" />
                 </div>
               </div>
             </Card>
@@ -414,8 +414,8 @@ export default function OwnerDashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="p-1.5 sm:p-2 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg">
-                    <Receipt className="h-4 w-4 sm:h-5 sm:w-5 text-cyan-600 dark:text-cyan-400" />
+                  <div className="rounded-lg bg-[#e2ebe5] p-1.5 dark:bg-[#20352a] sm:p-2">
+                    <Receipt className="h-4 w-4 text-[#254b3b] dark:text-[#a9c5b5] sm:h-5 sm:w-5" />
                   </div>
                   <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 dark:text-slate-100">
                     Today's Expenses
@@ -538,7 +538,7 @@ export default function OwnerDashboard() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
           <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-4 sm:p-6 shadow-lg">
             <div className="flex items-center gap-2 mb-3 sm:mb-4">
-              <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
+              <ShoppingCart className="h-4 w-4 text-[#8b6b3e] dark:text-[#d4b37c] sm:h-5 sm:w-5" />
               <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100">
                 Daily Spending (Last 7 Days)
               </h3>
@@ -593,7 +593,7 @@ export default function OwnerDashboard() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
           <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-4 sm:p-6 shadow-lg">
             <div className="flex items-center gap-2 mb-3 sm:mb-4">
-              <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
+              <Activity className="h-4 w-4 text-[#8b6b3e] dark:text-[#d4b37c] sm:h-5 sm:w-5" />
               <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100">
                 Recent Activity
               </h3>

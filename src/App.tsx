@@ -27,7 +27,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 // Loading component for suspense fallback
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+    <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#d6ad83]/30 border-t-[#2f493b] dark:border-t-[#d6ad83]"></div>
   </div>
 );
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfWeek, endOfWeek, format, subWeeks } from 'date-fns';
+import { fetchAllPages } from '@/lib/supabase-pagination';
 
 interface PayrollRecord {
   id: string;
@@ -63,12 +64,11 @@ export function usePayroll() {
 
   const fetchPayrolls = async () => {
     try {
-      const { data: payrollData, error } = await supabase
+      const payrollData = await fetchAllPages<PayrollRecord>((from, to) => supabase
         .from('payroll')
         .select('*, worker:workers(name, role)')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+        .order('created_at', { ascending: false })
+        .range(from, to));
 
       setPayrolls(payrollData as PayrollRecord[]);
 

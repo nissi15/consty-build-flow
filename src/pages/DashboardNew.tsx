@@ -57,7 +57,7 @@ export default function Dashboard() {
       icon: TrendingUp,
       change: `${Math.round((stats.budgetRemaining / stats.totalBudget) * 100)}% remaining`,
       changeType: stats.budgetRemaining > stats.totalBudget * 0.2 ? 'positive' : 'negative' as const,
-      iconClass: 'bg-purple-100 text-purple-600',
+      iconClass: 'bg-[#e9e3d7] text-[#8b6b3e]',
     },
   ];
 
@@ -236,7 +236,7 @@ export default function Dashboard() {
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
-                  className="bg-gradient-to-r from-green-500 to-orange-500 h-2 rounded-full transition-all duration-500"
+                  className="h-2 rounded-full bg-[#8b6b3e] transition-all duration-500"
                   style={{ 
                     width: `${Math.min(100, (stats.budgetUsed / stats.totalBudget) * 100)}%` 
                   }}

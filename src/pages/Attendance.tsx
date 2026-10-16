@@ -1,8 +1,5 @@
 import { motion } from 'framer-motion';
-import { Calendar as CalendarIcon, Download } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+import { MapPin } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState, useMemo } from 'react';
 import { useWorkers, useAttendance } from '@/hooks/useSupabaseData';
@@ -88,15 +85,18 @@ const Attendance = () => {
   }
 
   return (
-    <div className="p-6 space-y-6 bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 min-h-screen">
+    <div className="min-h-screen space-y-6 bg-[#f3f0e9] p-4 text-[#1a211d] dark:bg-[#0e1210] dark:text-[#f2eee6] sm:p-6 lg:p-8">
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
       >
         <div>
-          <h1 className="text-4xl font-bold mb-2">Attendance Tracking</h1>
-          <p className="text-muted-foreground">Mark worker attendance and track daily presence</p>
+          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8b6b3e]">
+            <MapPin className="h-3.5 w-3.5" /> Musanze Town Buildings · Workforce
+          </div>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Attendance</h1>
+          <p className="mt-2 text-muted-foreground">Mark daily presence and review the complete workforce history.</p>
         </div>
         <div className="flex items-center gap-2">
           <p className="text-sm text-muted-foreground">Today</p>

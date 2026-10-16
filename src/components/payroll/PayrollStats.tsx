@@ -14,7 +14,7 @@ export function PayrollStats({ weeklyPayroll, workersOnPayroll, payrollPeriods }
       title: "This Week's Payroll",
       value: `RWF ${weeklyPayroll.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
       icon: DollarSign,
-      iconClass: 'bg-purple-100 text-purple-600',
+      iconClass: 'bg-[#e9e3d7] text-[#8b6b3e]',
     },
     {
       title: 'Workers on Payroll',

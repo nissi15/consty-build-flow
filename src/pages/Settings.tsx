@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Bell, Shield, Palette, Crown, Copy, Check, Trash2, Plus } from 'lucide-react';
+import { Shield, Palette, Crown, Copy, Check, Trash2, Plus, Database, Loader2, MapPin } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { seedDemoPortfolio, type DemoSeedResult } from '@/lib/demo-data';
 
 interface OwnerCode {
   id: string;
@@ -33,6 +34,9 @@ const Settings = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [isSeedingDemo, setIsSeedingDemo] = useState(false);
+  const [demoProgress, setDemoProgress] = useState('');
+  const [demoResult, setDemoResult] = useState<DemoSeedResult | null>(null);
   const [newOwner, setNewOwner] = useState({
     name: '',
     phone: '',
@@ -93,9 +97,9 @@ const Settings = () => {
       setNewOwner({ name: '', phone: '' });
       setIsDialogOpen(false); // Auto-close dialog
       fetchOwnerCodes();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error generating code:', error);
-      toast.error(error.message || 'Failed to generate code');
+      toast.error(error instanceof Error ? error.message : 'Failed to generate code');
     } finally {
       setIsGenerating(false);
     }
@@ -125,14 +129,39 @@ const Settings = () => {
     }
   };
 
+  const loadDemoPortfolio = async () => {
+    const confirmed = window.confirm(
+      'Load an 11-month complexity demo? This adds 90 workers and thousands of linked records. Existing records will not be deleted.',
+    );
+    if (!confirmed) return;
+
+    setIsSeedingDemo(true);
+    setDemoResult(null);
+    setDemoProgress('Preparing the Musanze Town Buildings portfolio…');
+    try {
+      const result = await seedDemoPortfolio(setDemoProgress);
+      setDemoResult(result);
+      toast.success('The 11-month demo portfolio is ready.');
+    } catch (error: unknown) {
+      console.error('Error loading demo portfolio:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to load the demo portfolio');
+      setDemoProgress('The load stopped. You can safely retry; completed records will be reused.');
+    } finally {
+      setIsSeedingDemo(false);
+    }
+  };
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-full space-y-6 bg-[#f6f4ee] p-4 dark:bg-[#111814] sm:p-6 lg:p-8">
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
       >
-        <h1 className="text-4xl font-bold mb-2">Settings</h1>
-        <p className="text-muted-foreground">Manage your account and preferences</p>
+        <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8b6b3e]">
+          <MapPin className="h-3.5 w-3.5" /> Musanze Town Buildings · Administration
+        </div>
+        <h1 className="text-3xl font-semibold tracking-tight text-[#17231c] dark:text-[#f4f0e5] sm:text-4xl">Settings</h1>
+        <p className="mt-2 text-muted-foreground">Manage project access, appearance and demonstration data.</p>
       </motion.div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -140,29 +169,41 @@ const Settings = () => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.1 }}
+          className="lg:col-span-2"
         >
-          <Card className="p-6 glass">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-lg bg-gradient-primary">
-                <User className="h-5 w-5 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold">Profile Settings</h3>
-            </div>
-            
-            <div className="space-y-4">
+          <Card className="overflow-hidden border-[#d8d1c2] bg-[#17231c] text-[#f4f0e5] shadow-[0_18px_60px_rgba(23,35,28,0.16)] dark:border-[#34453a]">
+            <div className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-center lg:p-8">
               <div>
-                <Label>Full Name</Label>
-                <Input placeholder="John Doe" className="mt-2" />
+                <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-lg border border-[#97764a]/50 bg-[#97764a]/15">
+                  <Database className="h-5 w-5 text-[#d4b37c]" />
+                </div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#d4b37c]">Complexity demo</p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-tight">Load 11 months of realistic project operations</h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-[#c7cec9]">
+                  Adds 90 Rwandan workers, six-day attendance history, monthly payroll, construction materials,
+                  operating expenses and a complete project budget. Existing records remain untouched.
+                </p>
+                <div className="mt-5 flex flex-wrap gap-2 text-xs text-[#dce2de]">
+                  {['90 workers', '11 months', '≈25k attendance rows', '990 payroll rows', '242 cost entries'].map((item) => (
+                    <span key={item} className="rounded-full border border-[#46564c] px-3 py-1.5">{item}</span>
+                  ))}
+                </div>
+                {(demoProgress || demoResult) && (
+                  <div className="mt-5 border-l-2 border-[#b78a52] pl-3 text-sm text-[#dce2de]" aria-live="polite">
+                    {demoResult
+                      ? `${demoResult.workers} workers, ${demoResult.attendance.toLocaleString()} attendance records, ${demoResult.payroll.toLocaleString()} payroll records and ${demoResult.expenses} expenses are ready.`
+                      : demoProgress}
+                  </div>
+                )}
               </div>
-              <div>
-                <Label>Email</Label>
-                <Input type="email" placeholder="john@example.com" className="mt-2" />
-              </div>
-              <div>
-                <Label>Phone</Label>
-                <Input type="tel" placeholder="+1 (555) 000-0000" className="mt-2" />
-              </div>
-              <Button>Save Changes</Button>
+              <Button
+                onClick={loadDemoPortfolio}
+                disabled={isSeedingDemo}
+                className="h-12 min-w-56 bg-[#b78a52] px-6 font-semibold text-[#111814] hover:bg-[#c89c63]"
+              >
+                {isSeedingDemo ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
+                {isSeedingDemo ? 'Loading portfolio…' : 'Load demo portfolio'}
+              </Button>
             </div>
           </Card>
         </motion.div>
@@ -172,10 +213,10 @@ const Settings = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.15 }}
         >
-          <Card className="p-6 glass">
+          <Card className="h-full border-[#ddd6c8] bg-[#fffdf8] p-6 shadow-sm dark:border-[#34453a] dark:bg-[#18231d]">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-lg bg-gradient-primary">
-                <Palette className="h-5 w-5 text-white" />
+              <div className="rounded-lg bg-[#e9e3d7] p-2 dark:bg-[#26362c]">
+                <Palette className="h-5 w-5 text-[#254b3b] dark:text-[#d4b37c]" />
               </div>
               <h3 className="text-xl font-semibold">Appearance</h3>
             </div>
@@ -197,76 +238,22 @@ const Settings = () => {
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="p-6 glass">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-lg bg-gradient-primary">
-                <Bell className="h-5 w-5 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold">Notifications</h3>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Email Notifications</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Receive updates via email
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Payroll Alerts</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Get notified about payroll updates
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Budget Warnings</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Alert when approaching budget limits
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-            </div>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.25 }}
         >
-          <Card className="p-6 glass">
+          <Card className="h-full border-[#ddd6c8] bg-[#fffdf8] p-6 shadow-sm dark:border-[#34453a] dark:bg-[#18231d]">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-lg bg-gradient-primary">
-                <Shield className="h-5 w-5 text-white" />
+              <div className="rounded-lg bg-[#e9e3d7] p-2 dark:bg-[#26362c]">
+                <Shield className="h-5 w-5 text-[#254b3b] dark:text-[#d4b37c]" />
               </div>
-              <h3 className="text-xl font-semibold">Security</h3>
+              <h3 className="text-xl font-semibold">Signed-in account</h3>
             </div>
-            
-            <div className="space-y-4">
-              <div>
-                <Label>Current Password</Label>
-                <Input type="password" className="mt-2" />
-              </div>
-              <div>
-                <Label>New Password</Label>
-                <Input type="password" className="mt-2" />
-              </div>
-              <div>
-                <Label>Confirm Password</Label>
-                <Input type="password" className="mt-2" />
-              </div>
-              <Button>Update Password</Button>
+            <div className="rounded-lg border border-[#e3ddcf] bg-[#f7f3ea] p-4 dark:border-[#3b4b40] dark:bg-[#111814]">
+              <Label className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Email</Label>
+              <p className="mt-2 font-medium">{user?.email || 'No account email available'}</p>
             </div>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">
+              Password changes and recovery are handled through Supabase authentication so credentials are never stored in this interface.
+            </p>
           </Card>
         </motion.div>
 
@@ -277,11 +264,11 @@ const Settings = () => {
           transition={{ delay: 0.3 }}
           className="lg:col-span-2"
         >
-          <Card className="p-6 glass">
+          <Card className="border-[#ddd6c8] bg-[#fffdf8] p-6 shadow-sm dark:border-[#34453a] dark:bg-[#18231d]">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-gradient-to-r from-purple-600 to-cyan-500">
-                  <Crown className="h-5 w-5 text-white" />
+                <div className="rounded-lg bg-[#e9e3d7] p-2 dark:bg-[#26362c]">
+                  <Crown className="h-5 w-5 text-[#8b6b3e] dark:text-[#d4b37c]" />
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold">Owner Access Codes</h3>
@@ -294,7 +281,7 @@ const Settings = () => {
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button 
-                    className="gap-2 bg-purple-500 hover:bg-purple-600"
+                    className="gap-2 bg-[#254b3b] text-white hover:bg-[#1d3b2f]"
                     disabled={ownerCodes.some(code => code.is_active)}
                   >
                     <Plus className="h-4 w-4" />
@@ -355,12 +342,12 @@ const Settings = () => {
                     key={ownerCode.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
+                    className="rounded-lg border border-[#e3ddcf] bg-[#f7f3ea] p-4 dark:border-[#3b4b40] dark:bg-[#111814]"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-semibold text-slate-900 dark:text-slate-100">
+                          <h4 className="font-semibold text-[#17231c] dark:text-[#f4f0e5]">
                             {ownerCode.owner_name}
                           </h4>
                           <Badge
@@ -374,7 +361,7 @@ const Settings = () => {
                             {ownerCode.is_active ? 'Active' : 'Revoked'}
                           </Badge>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span>{ownerCode.owner_phone}</span>
                           <span>•</span>
                           <span>Accessed {ownerCode.access_count} times</span>
@@ -389,8 +376,8 @@ const Settings = () => {
 
                       <div className="flex items-center gap-2">
                         {/* Code Display */}
-                        <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
-                          <code className="text-2xl font-mono font-bold text-purple-600 dark:text-purple-400 tracking-widest">
+                        <div className="flex items-center gap-2 rounded-lg border border-[#d8d1c2] bg-[#fffdf8] px-4 py-2 dark:border-[#3b4b40] dark:bg-[#18231d]">
+                          <code className="font-mono text-2xl font-bold tracking-widest text-[#254b3b] dark:text-[#d4b37c]">
                             {ownerCode.code}
                           </code>
                           <Button

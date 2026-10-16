@@ -49,10 +49,10 @@ const Sidebar = ({ mobileMenuOpen = false, setMobileMenuOpen }: SidebarProps) =>
             onClick={onLinkClick}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
+                'flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition-colors duration-200',
                 isActive
-                  ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg'
-                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                  ? 'bg-[#2f493b] text-[#f7f3eb] dark:bg-[#d6ad83] dark:text-[#171a18]'
+                  : 'text-[#59635d] hover:bg-[#eee9df] hover:text-[#1c241f] dark:text-[#aeb7b1] dark:hover:bg-[#1b211e] dark:hover:text-white'
               )
             }
           >
@@ -68,7 +68,7 @@ const Sidebar = ({ mobileMenuOpen = false, setMobileMenuOpen }: SidebarProps) =>
   if (isMobile) {
     return (
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="left" className="w-64 p-6 bg-white dark:bg-[#111827] border-r border-slate-300 dark:border-slate-800">
+        <SheetContent side="left" className="w-72 border-r border-[#ded8cd] bg-[#f8f6f1] p-6 dark:border-[#27302c] dark:bg-[#111512]">
           <SheetHeader className="mb-6">
             <div className="flex items-center justify-between">
               <SheetTitle className="text-xl font-bold">Consty</SheetTitle>
@@ -94,7 +94,7 @@ const Sidebar = ({ mobileMenuOpen = false, setMobileMenuOpen }: SidebarProps) =>
       initial={{ x: -20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ delay: 0.1 }}
-      className="w-64 h-screen sticky top-0 bg-white dark:bg-[#111827] border-r border-slate-300 dark:border-slate-800 p-6 hidden lg:block shadow-sm z-40"
+      className="sticky top-0 z-40 hidden h-screen w-64 border-r border-[#ded8cd] bg-[#f8f6f1] p-5 dark:border-[#27302c] dark:bg-[#111512] lg:block"
     >
       <NavContent />
     </motion.aside>

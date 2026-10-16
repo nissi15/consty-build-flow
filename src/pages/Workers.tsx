@@ -259,29 +259,31 @@ export default function Workers() {
   }
 
   return (
-    <div className="p-6 space-y-6 bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 min-h-screen">
-      <div className="space-y-6">
+    <div className="min-h-screen bg-[#f3f0e9] px-4 py-6 text-[#1a211d] dark:bg-[#0e1210] dark:text-[#f2eee6] sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1600px] space-y-6">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
         >
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Worker Management</h1>
-              <p className="text-muted-foreground">Manage your construction team and track their performance</p>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8a603d] dark:text-[#d6ad83]">Musanze Town Buildings · Workforce</p>
+              <h1 className="text-3xl font-semibold tracking-[-0.025em] sm:text-4xl">Workers</h1>
+              <p className="mt-2 text-muted-foreground">Worker records, attendance status, and daily rates for the active site.</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex w-full flex-col-reverse gap-2 sm:w-auto sm:flex-row">
               <Button 
                 onClick={handleAutoCalculate}
                 disabled={isCalculating}
-                className="gap-2 bg-green-500 hover:bg-green-600"
+                variant="outline"
+                className="gap-2 border-[#cfc8bc] bg-[#fbfaf7] text-[#31483a] hover:bg-[#ebe7de] dark:border-[#344038] dark:bg-[#151a17] dark:text-[#cfdbd2] dark:hover:bg-[#1d251f]"
               >
                 <Calculator className="h-4 w-4" />
-                {isCalculating ? 'Calculating...' : 'Auto-Calculate Today'}
+                {isCalculating ? 'Calculating...' : 'Calculate today'}
               </Button>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button className="gap-2 bg-purple-500 hover:bg-purple-600">
+                  <Button className="gap-2 bg-[#2f493b] text-[#f7f3eb] hover:bg-[#24392e] dark:bg-[#d6ad83] dark:text-[#171a18] dark:hover:bg-[#e2c49f]">
                     <Plus className="h-4 w-4" />
                     Add Worker
                   </Button>
@@ -391,7 +393,7 @@ export default function Workers() {
             </p>
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="gap-2 bg-purple-500 hover:bg-purple-600">
+                <Button className="gap-2 bg-[#2f493b] text-[#f7f3eb] hover:bg-[#24392e]">
                   <Plus className="h-4 w-4" />
                   Add Your First Worker
                 </Button>
@@ -504,6 +506,9 @@ export default function Workers() {
                   setIsEditDialogOpen(true);
                 }}
                 onDelete={async (worker) => {
+                  const confirmed = window.confirm(`Delete ${worker.name}? This will also remove their linked attendance records.`);
+                  if (!confirmed) return;
+
                   const { error } = await supabase
                     .from('workers')
                     .delete()

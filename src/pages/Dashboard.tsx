@@ -235,30 +235,17 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 min-h-screen">
+    <div className="min-h-screen space-y-4 bg-[#f3f0e9] p-4 text-[#1a211d] dark:bg-[#0e1210] dark:text-[#f2eee6] sm:space-y-6 sm:p-6 lg:p-8">
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="flex flex-col sm:flex-row gap-6"
       >
-        <motion.div 
-          className="flex-1 bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-400 text-white p-6 rounded-2xl shadow-md"
-          animate={{
-            background: [
-              'linear-gradient(90deg, #6366F1, #3B82F6, #06B6D4)',
-              'linear-gradient(90deg, #3B82F6, #06B6D4, #6366F1)',
-              'linear-gradient(90deg, #06B6D4, #6366F1, #3B82F6)',
-            ],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        >
-          <h1 className="text-xl sm:text-2xl font-bold mb-2">Welcome back, {user?.user_metadata?.full_name || 'User'}!</h1>
-          <p className="opacity-90">Here's an overview of your construction site today.</p>
-          <p className="text-sm opacity-80 mt-2">{format(new Date(), 'EEEE, MMM dd')}</p>
+        <motion.div className="flex-1 rounded-xl border border-[#ded8cd] bg-[#fbfaf7] p-6 shadow-sm dark:border-[#28312c] dark:bg-[#151a17]">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8a603d] dark:text-[#d6ad83]">Musanze Town Buildings · Overview</p>
+          <h1 className="mt-3 text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">Welcome back, {user?.user_metadata?.full_name || 'Manager'}.</h1>
+          <p className="mt-2 text-muted-foreground">Today’s workforce, payroll, and project cost position.</p>
+          <p className="mt-4 text-sm text-[#66706a] dark:text-[#929c96]">{format(new Date(), 'EEEE, MMM dd')}</p>
         </motion.div>
         <div className="flex items-end gap-3">
           <ExportButton

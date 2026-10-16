@@ -1,953 +1,301 @@
-import { motion, useScroll, useTransform, useInView } from 'framer-motion';
-import { useState, useRef, useCallback, useEffect, memo } from 'react';
-import { ArrowRight, Users, DollarSign, TrendingUp, Clock, CheckCircle, Star, Zap, Menu, X } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  ArrowRight,
+  BarChart3,
+  Building2,
+  CalendarCheck2,
+  Check,
+  ChevronRight,
+  Clock3,
+  HardHat,
+  MapPin,
+  Menu,
+  ShieldCheck,
+  Users,
+  WalletCards,
+  X,
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import Orb from '@/components/Orb';
-import useEmblaCarousel from 'embla-carousel-react';
 
-// Detect if mobile for performance optimizations
-const isMobile = () => window.innerWidth < 768;
+const modules = [
+  {
+    icon: Users,
+    number: '01',
+    title: 'Workforce',
+    description: 'Keep worker records, roles, rates, contacts, and site assignments in one dependable register.',
+  },
+  {
+    icon: CalendarCheck2,
+    number: '02',
+    title: 'Attendance',
+    description: 'Mark the day quickly, see who is missing, and preserve a clear history for every worker.',
+  },
+  {
+    icon: WalletCards,
+    number: '03',
+    title: 'Payroll',
+    description: 'Turn approved attendance into transparent RWF wage calculations, allowances, and reports.',
+  },
+  {
+    icon: BarChart3,
+    number: '04',
+    title: 'Cost control',
+    description: 'Compare budgets with actual expenses and catch cost drift before it becomes a project problem.',
+  },
+];
 
-// Orb Background - Main background animation (disabled on mobile for performance)
-const OrbBackgroundMain = memo(() => {
-  const [showOrb, setShowOrb] = useState(!isMobile());
+const workflow = [
+  {
+    step: 'Start the day',
+    title: 'Know who is on site.',
+    description: 'Supervisors record attendance from a phone while management sees the same status immediately.',
+  },
+  {
+    step: 'Close the day',
+    title: 'Approve time and allowances.',
+    description: 'Review hours, lunch allowances, and exceptions before they become payroll entries.',
+  },
+  {
+    step: 'Run the week',
+    title: 'Pay accurately. Report clearly.',
+    description: 'Generate RWF payroll and keep labour spending visible alongside the project budget.',
+  },
+];
 
-  useEffect(() => {
-    const handleResize = () => {
-      setShowOrb(!isMobile());
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  if (!showOrb) {
-    // Fallback gradient for mobile
-    return (
-      <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-cyan-900/20" />
-    );
-  }
-
-  return (
-    <div className="absolute inset-0 w-full h-full opacity-60 pointer-events-auto">
-      <Orb
-        hue={270}
-        hoverIntensity={1.5}
-        rotateOnHover={true}
-        forceHoverState={false}
-      />
-    </div>
-  );
-});
-
-
-
-const AnimatedBackground = () => {
-  return (
-    <div className="absolute inset-0 overflow-hidden">
-      {/* Orb Background - Primary layer */}
-      <OrbBackgroundMain />
-    </div>
-  );
-};
-
-// Glass Surface Component - Optimized for mobile performance
-const GlassSurface = memo(({ 
-  children, 
-  className = "", 
-  blur = "xl",
-  opacity = 5,
-  border = true,
-  shadow = true 
-}: { 
-  children: React.ReactNode; 
-  className?: string;
-  blur?: "sm" | "md" | "lg" | "xl" | "2xl";
-  opacity?: number;
-  border?: boolean;
-  shadow?: boolean;
-}) => {
-  // Slightly reduce blur on mobile for performance (xl → lg, not md)
-  const mobile = isMobile();
-  const effectiveBlur = mobile && blur === "xl" ? "lg" : mobile && blur === "2xl" ? "xl" : blur;
-  
-  const blurClass = {
-    sm: "backdrop-blur-sm",
-    md: "backdrop-blur-md",
-    lg: "backdrop-blur-lg",
-    xl: "backdrop-blur-xl",
-    "2xl": "backdrop-blur-2xl",
-  }[effectiveBlur];
-
-  return (
-    <div 
-      className={`${blurClass} bg-white/${opacity} ${border ? 'border border-white/10' : ''} ${shadow ? 'shadow-2xl shadow-black/20' : ''} ${className}`}
-      style={{
-        WebkitBackdropFilter: `blur(${effectiveBlur === 'sm' ? '4px' : effectiveBlur === 'md' ? '12px' : effectiveBlur === 'lg' ? '16px' : effectiveBlur === 'xl' ? '24px' : '40px'})`,
-        contain: 'layout style paint', // CSS containment for performance
-      }}
-    >
-      {children}
-    </div>
-  );
-});
-
-// Simplified Card Border for Performance
-const CardShapeBlur = ({ index = 0 }: { index?: number }) => {
-  const colors = ['#8B5CF6', '#06B6D4', '#F59E0B', '#EC4899'];
-  const color = colors[index % colors.length];
-  
-  return (
-    <div
-      className="absolute inset-0 rounded-2xl pointer-events-none"
-      style={{
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        boxShadow: `0 0 20px ${color}20`,
-      }}
-    />
-  );
-};
-
-const GlassmorphicCard = memo(({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-  const mobile = isMobile();
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: mobile ? 20 : 30 }} // Slightly less movement on mobile
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: mobile ? 20 : 30 }}
-      transition={{ duration: mobile ? 0.4 : 0.5, delay: delay * 0.8 }} // Slightly faster, reduced stagger
-      className={`relative ${className}`}
-      whileHover={{ y: -5, transition: { duration: 0.2 } }} // Keep hover on mobile
-      style={{ contain: 'layout style paint' }} // CSS containment for performance
-    >
-      {/* Simplified border */}
-      <div className="absolute inset-0 rounded-3xl overflow-hidden">
-        <CardShapeBlur index={Math.floor(delay * 10)} />
-      </div>
-      
-      {/* Glass card - slightly reduce blur on mobile */}
-      <div className={`relative ${mobile ? 'backdrop-blur-lg' : 'backdrop-blur-xl'} bg-white/[0.07] border border-white/10 rounded-3xl p-8 hover:bg-white/[0.12] hover:border-purple-500/30 transition-all duration-300`}>
-        {children}
-      </div>
-    </motion.div>
-  );
-});
-
-const GradientText = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
-  return (
-    <motion.span
-      className={`bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent ${className}`}
-      animate={{
-        backgroundPosition: ['0% 50%', '200% 50%', '0% 50%'],
-      }}
-      transition={{
-        duration: 5,
-        repeat: Infinity,
-        ease: "linear"
-      }}
-      style={{
-        backgroundSize: '200% 200%',
-        textShadow: '0 0 80px rgba(139, 92, 246, 0.3)',
-      }}
-    >
-      {children}
-    </motion.span>
-  );
-};
-
-const FloatingButton = ({ children, onClick, className = "" }: { children: React.ReactNode; onClick?: () => void; className?: string }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
-  return (
-    <motion.button
-      onClick={onClick}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      className={`relative overflow-hidden rounded-xl px-10 py-5 font-semibold text-lg transition-all duration-300 ${className}`}
-      whileHover={{ scale: 1.05, boxShadow: '0 20px 60px rgba(139, 92, 246, 0.4)' }}
-      whileTap={{ scale: 0.98 }}
-    >
-      {/* Animated gradient background */}
-      <motion.div
-        className="absolute inset-0 rounded-xl"
-        style={{
-          background: 'linear-gradient(135deg, #8B5CF6, #06B6D4, #8B5CF6)',
-          backgroundSize: '200% 200%',
-        }}
-        animate={{
-          backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-        }}
-        transition={{
-          duration: 3,
-          repeat: Infinity,
-          ease: "linear"
-        }}
-      />
-      
-      {/* Glow effect */}
-      <motion.div
-        className="absolute inset-0 rounded-xl"
-        style={{
-          boxShadow: isHovered ? '0 0 40px rgba(139, 92, 246, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.1)' : '0 0 20px rgba(139, 92, 246, 0.3)',
-        }}
-        transition={{ duration: 0.3 }}
-      />
-      
-      {/* Ripple effect */}
-      {isHovered && (
-        <motion.div
-          className="absolute inset-0 bg-white/20 rounded-xl"
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1.2, opacity: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        />
-      )}
-      
-      <span className="relative z-10 flex items-center gap-3 text-white font-medium">
-        {children}
-      </span>
-    </motion.button>
-  );
-};
-
-const StatCard = ({ icon: Icon, value, label, delay = 0 }: { icon: any; value: string; label: string; delay?: number }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-      transition={{ duration: 0.5, delay }}
-      whileHover={{ scale: 1.03, y: -3 }}
-      className="group cursor-pointer"
-    >
-      <GlassmorphicCard delay={delay}>
-        <div className="flex flex-col items-center text-center space-y-4">
-          <div className="p-4 rounded-full bg-gradient-to-r from-purple-500/20 to-cyan-500/20 border border-white/20">
-            <Icon className="h-8 w-8 text-purple-400" />
+const ProductPreview = () => (
+  <div className="relative mx-auto w-full max-w-2xl">
+    <div className="absolute -inset-8 rounded-[2.5rem] bg-[#a56f46]/10 blur-3xl" />
+    <div className="relative overflow-hidden rounded-[1.4rem] border border-white/10 bg-[#151918] shadow-[0_36px_90px_rgba(0,0,0,0.38)]">
+      <div className="flex items-center justify-between border-b border-white/10 px-5 py-4 sm:px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#d6ad83] text-[#161917]">
+            <Building2 className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="text-3xl font-bold text-white mb-2">
-              {value}
-            </h3>
-            <p className="text-gray-300 text-sm">{label}</p>
+            <p className="text-sm font-semibold text-[#f4f0e8]">Musanze Town Buildings</p>
+            <p className="text-xs text-[#8f9994]">Site operations overview</p>
           </div>
         </div>
-      </GlassmorphicCard>
-    </motion.div>
-  );
-};
+        <span className="hidden rounded-full border border-white/10 px-3 py-1 text-[11px] text-[#aeb6b1] sm:inline-flex">
+          Illustrative workspace
+        </span>
+      </div>
 
-const FeatureCard = ({ icon: Icon, title, description, delay = 0 }: { icon: any; title: string; description: string; delay?: number }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 20 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{ duration: 0.5, delay }}
-      className="group"
-    >
-      <GlassmorphicCard delay={delay}>
-        <div className="flex items-start space-x-4">
-          <div className="p-3 rounded-lg bg-gradient-to-r from-purple-500/20 to-cyan-500/20 border border-white/20">
-            <Icon className="h-6 w-6 text-purple-400" />
+      <div className="grid gap-3 p-4 sm:grid-cols-3 sm:p-6">
+        {[
+          ['Workers', '14', '12 active today'],
+          ['Attendance', '86%', '2 entries pending'],
+          ['Labour this week', 'RWF 482K', 'Within plan'],
+        ].map(([label, value, note]) => (
+          <div key={label} className="rounded-xl border border-white/10 bg-white/[0.035] p-4">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-[#79837e]">{label}</p>
+            <p className="mt-2 text-xl font-semibold text-[#f4f0e8]">{value}</p>
+            <p className="mt-1 text-xs text-[#9ea7a2]">{note}</p>
           </div>
-          <div>
-            <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-purple-400 transition-colors">
-              {title}
-            </h3>
-            <p className="text-gray-300 text-sm leading-relaxed">{description}</p>
+        ))}
+      </div>
+
+      <div className="grid gap-4 px-4 pb-4 sm:grid-cols-[1.2fr_0.8fr] sm:px-6 sm:pb-6">
+        <div className="rounded-xl border border-white/10 bg-white/[0.035] p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-[#e6e1d8]">Today’s workforce</p>
+              <p className="mt-1 text-xs text-[#828d87]">Thursday · Musanze</p>
+            </div>
+            <span className="rounded-full bg-[#31483a] px-2.5 py-1 text-[11px] font-medium text-[#dbe8df]">Live</span>
           </div>
-        </div>
-      </GlassmorphicCard>
-    </motion.div>
-  );
-};
-
-const ReviewCard = ({ name, role, company, review, rating, delay = 0 }: { name: string; role: string; company: string; review: string; rating: number; delay?: number }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 20 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{ duration: 0.5, delay }}
-      whileHover={{ y: -3 }}
-      className="group"
-    >
-      <GlassmorphicCard delay={delay}>
-        <div className="space-y-4">
-          {/* Rating Stars */}
-          <div className="flex gap-1">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star 
-                key={i}
-                className={`h-5 w-5 ${i < rating ? 'text-amber-400 fill-amber-400' : 'text-gray-600'}`}
-              />
+          <div className="mt-5 space-y-3">
+            {[
+              ['Foremen', 2, 'Present'],
+              ['Skilled workers', 6, 'Present'],
+              ['Assistants', 4, '2 pending'],
+            ].map(([role, count, state]) => (
+              <div key={role} className="grid grid-cols-[1fr_auto_auto] items-center gap-3 border-t border-white/[0.07] pt-3 text-xs">
+                <span className="text-[#bbc2be]">{role}</span>
+                <span className="font-semibold text-[#f4f0e8]">{count}</span>
+                <span className="w-16 text-right text-[#87918c]">{state}</span>
+              </div>
             ))}
           </div>
-          
-          {/* Review Text */}
-          <p className="text-gray-300 text-sm leading-relaxed italic">
-            "{review}"
-          </p>
-          
-          {/* Author Info */}
-          <div className="flex items-center space-x-3 pt-4 border-t border-white/10">
-            <div className="h-12 w-12 rounded-full bg-gradient-to-r from-purple-500/30 to-cyan-500/30 border border-white/20 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">
-                {name.charAt(0)}
-              </span>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold text-sm">{name}</h4>
-              <p className="text-gray-400 text-xs">{role} at {company}</p>
-            </div>
+        </div>
+
+        <div className="rounded-xl bg-[#d7c09e] p-4 text-[#1d211f]">
+          <p className="text-[11px] uppercase tracking-[0.16em] text-[#675845]">Today’s priority</p>
+          <p className="mt-3 text-lg font-semibold leading-snug">Finish attendance before payroll review.</p>
+          <div className="mt-8 flex items-center gap-2 text-xs font-medium">
+            <Clock3 className="h-4 w-4" />
+            2 records need attention
           </div>
         </div>
-      </GlassmorphicCard>
-    </motion.div>
-  );
-};
-
-// Stats Carousel Component for Mobile - Memoized for performance
-const StatsCarousel = memo(({ stats }: { stats: any[] }) => {
-  const [emblaRef] = useEmblaCarousel({ 
-    loop: false, 
-    align: 'start',
-    dragFree: true,
-    containScroll: 'trimSnaps'
-  });
-
-  return (
-    <div className="md:hidden">
-      <div className="overflow-hidden -mx-4" ref={emblaRef}>
-        <div className="flex gap-4 px-4">
-          {stats.map((stat, index) => (
-            <div key={stat.label} className="flex-[0_0_85%] min-w-0">
-              <StatCard
-                icon={stat.icon}
-                value={stat.value}
-                label={stat.label}
-                delay={0}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Scroll indicator */}
-      <div className="flex justify-center gap-1.5 mt-6">
-        {stats.map((_, index) => (
-          <div
-            key={index}
-            className="h-1 w-8 rounded-full bg-gray-700/50"
-          />
-        ))}
-      </div>
-      <p className="text-center text-sm text-gray-500 mt-3">← Swipe to see more →</p>
-    </div>
-  );
-});
-
-// Features Carousel Component for Mobile - Memoized for performance
-const FeaturesCarousel = memo(({ features }: { features: any[] }) => {
-  const [emblaRef] = useEmblaCarousel({ 
-    loop: false, 
-    align: 'start',
-    dragFree: true,
-    containScroll: 'trimSnaps'
-  });
-
-  return (
-    <div className="md:hidden">
-      <div className="overflow-hidden -mx-4" ref={emblaRef}>
-        <div className="flex gap-4 px-4">
-          {features.map((feature, index) => (
-            <div key={feature.title} className="flex-[0_0_90%] min-w-0">
-              <FeatureCard
-                icon={feature.icon}
-                title={feature.title}
-                description={feature.description}
-                delay={0}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Scroll indicator */}
-      <div className="flex justify-center gap-1.5 mt-6">
-        {features.map((_, index) => (
-          <div
-            key={index}
-            className="h-1 w-8 rounded-full bg-gray-700/50"
-          />
-        ))}
-      </div>
-      <p className="text-center text-sm text-gray-500 mt-3">← Swipe to see more →</p>
-    </div>
-  );
-});
-
-// Reviews Carousel Component for Mobile - Memoized for performance
-const ReviewsCarousel = memo(({ reviews }: { reviews: any[] }) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setSelectedIndex(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-    onSelect();
-    emblaApi.on('select', onSelect);
-    return () => {
-      emblaApi.off('select', onSelect);
-    };
-  }, [emblaApi, onSelect]);
-
-  return (
-    <div className="md:hidden">
-      <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex">
-          {reviews.map((review, index) => (
-            <div key={review.name} className="flex-[0_0_100%] min-w-0 px-3">
-              <ReviewCard
-                name={review.name}
-                role={review.role}
-                company={review.company}
-                review={review.review}
-                rating={review.rating}
-                delay={0}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Carousel Dots */}
-      <div className="flex justify-center gap-2 mt-6">
-        {reviews.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => emblaApi?.scrollTo(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              index === selectedIndex 
-                ? 'w-8 bg-gradient-to-r from-purple-500 to-cyan-500' 
-                : 'w-2 bg-gray-600 hover:bg-gray-500'
-            }`}
-            aria-label={`Go to review ${index + 1}`}
-          />
-        ))}
       </div>
     </div>
-  );
-});
+  </div>
+);
 
-export default function Landing() {
+const Landing = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const stats = [
-    { icon: TrendingUp, value: "500+", label: "Projects Managed" },
-    { icon: Users, value: "2.5K+", label: "Workers Tracked" },
-    { icon: DollarSign, value: "50M+ RWF", label: "Payroll Processed" },
-    { icon: Clock, value: "99.9%", label: "Uptime" },
-  ];
-
-  const features = [
-    {
-      icon: Users,
-      title: "Smart Worker Management",
-      description: "Track attendance, manage schedules, and automate payroll with real-time updates and intelligent insights."
-    },
-    {
-      icon: DollarSign,
-      title: "Automated Payroll",
-      description: "Calculate daily wages in RWF, lunch deductions, and bonuses automatically. Generate reports and export data seamlessly."
-    },
-    {
-      icon: TrendingUp,
-      title: "Budget Tracking",
-      description: "Monitor project expenses, track budget allocation, and get real-time financial insights with beautiful charts."
-    },
-    {
-      icon: CheckCircle,
-      title: "Real-time Analytics",
-      description: "Get instant insights into project performance, worker productivity, and financial health with interactive dashboards."
-    },
-  ];
-
-  const reviews = [
-    {
-      name: "Michael Rodriguez",
-      role: "Project Manager",
-      company: "BuildTech Construction",
-      review: "Constry has completely transformed how we manage our construction projects. The automated payroll feature alone saves us 10+ hours every week. Highly recommended!",
-      rating: 5
-    },
-    {
-      name: "Sarah Chen",
-      role: "Operations Director",
-      company: "Elite Builders Inc",
-      review: "The real-time analytics and budget tracking features are game-changers. We can now make data-driven decisions and keep our projects on track and under budget.",
-      rating: 5
-    },
-    {
-      name: "James Patterson",
-      role: "Site Supervisor",
-      company: "Metro Construction Co",
-      review: "Worker management has never been easier. The attendance tracking and scheduling features are intuitive and save us so much time. Our team loves it!",
-      rating: 5
-    },
-    {
-      name: "Emily Thompson",
-      role: "Finance Manager",
-      company: "Skyline Developments",
-      review: "The expense tracking and reporting capabilities are outstanding. We have complete visibility into our project finances, making month-end closings a breeze.",
-      rating: 5
-    },
-    {
-      name: "David Kumar",
-      role: "CEO",
-      company: "Apex Construction Group",
-      review: "Constry is the most comprehensive construction management platform we've used. It's intuitive, powerful, and has significantly improved our operational efficiency.",
-      rating: 5
-    },
-    {
-      name: "Lisa Anderson",
-      role: "HR Director",
-      company: "Premier Build Solutions",
-      review: "Managing our workforce across multiple sites used to be a nightmare. Constry makes it simple and efficient. The support team is also incredibly responsive!",
-      rating: 5
-    },
-  ];
+  const openProduct = () => navigate(user ? '/dashboard' : '/auth');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-hidden">
-      <AnimatedBackground />
-      
-      {/* Navigation - Glass Surface */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="sticky top-0 z-50 px-3 md:px-4 py-3 md:py-4"
-      >
-        <GlassSurface className="rounded-2xl" blur="2xl" opacity={3}>
-          <nav className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
-            <motion.div
-              className="text-2xl font-bold"
-              whileHover={{ scale: 1.05 }}
-            >
-              <GradientText className="text-2xl md:text-3xl">Constry</GradientText>
-            </motion.div>
-            
-            {/* Desktop Navigation */}
-            <motion.div
-              className="hidden md:flex items-center space-x-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              <motion.a
-                href="#features"
-                className="text-gray-300 hover:text-white transition-colors relative group"
-                whileHover={{ y: -2 }}
-              >
-                Features
-                <motion.div
-                  className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-cyan-400 group-hover:w-full transition-all duration-300"
-                />
-              </motion.a>
-              <motion.a
-                href="#stats"
-                className="text-gray-300 hover:text-white transition-colors relative group"
-                whileHover={{ y: -2 }}
-              >
-                Stats
-                <motion.div
-                  className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-cyan-400 group-hover:w-full transition-all duration-300"
-                />
-              </motion.a>
-              <motion.a
-                href="#reviews"
-                className="text-gray-300 hover:text-white transition-colors relative group"
-                whileHover={{ y: -2 }}
-              >
-                Reviews
-                <motion.div
-                  className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-cyan-400 group-hover:w-full transition-all duration-300"
-                />
-              </motion.a>
-              <FloatingButton onClick={() => navigate(user ? '/dashboard' : '/auth')}>
-                {user ? 'Dashboard' : 'Get Started'}
-                <ArrowRight className="h-4 w-4" />
-              </FloatingButton>
-            </motion.div>
+    <div className="min-h-screen overflow-x-hidden bg-[#0c0f0e] text-[#f4f0e8] selection:bg-[#d6ad83] selection:text-[#171a18]">
+      <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[#0c0f0e]/95 backdrop-blur-md">
+        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8">
+          <button onClick={() => navigate('/')} className="flex items-center gap-3" aria-label="Consty home">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#d6ad83]/30 bg-[#d6ad83] text-[#171a18]">
+              <HardHat className="h-4 w-4" />
+            </span>
+            <span className="text-lg font-semibold tracking-[0.18em]">CONSTY</span>
+          </button>
 
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden text-white p-2"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          <div className="hidden items-center gap-8 text-sm text-[#aab2ae] md:flex">
+            <a href="#product" className="transition-colors hover:text-white">Product</a>
+            <a href="#workflow" className="transition-colors hover:text-white">Workflow</a>
+            <a href="#modules" className="transition-colors hover:text-white">Modules</a>
+          </div>
+
+          <div className="hidden items-center gap-3 md:flex">
+            <button onClick={() => navigate('/auth')} className="px-4 py-2 text-sm text-[#c6ccc8] transition-colors hover:text-white">Sign in</button>
+            <button onClick={openProduct} className="rounded-lg bg-[#d6ad83] px-5 py-2.5 text-sm font-semibold text-[#171a18] transition-colors hover:bg-[#e2c49f]">
+              {user ? 'Open workspace' : 'Get started'}
             </button>
-          </nav>
+          </div>
 
-          {/* Mobile Menu */}
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden border-t border-white/10 px-4 py-4 space-y-3"
-            >
-              <a
-                href="#features"
-                className="block text-gray-300 hover:text-white transition-colors py-2 text-base"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Features
-              </a>
-              <a
-                href="#stats"
-                className="block text-gray-300 hover:text-white transition-colors py-2 text-base"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Stats
-              </a>
-              <a
-                href="#reviews"
-                className="block text-gray-300 hover:text-white transition-colors py-2 text-base"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Reviews
-              </a>
-              <button
-                onClick={() => {
-                  navigate(user ? '/dashboard' : '/auth');
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2"
-              >
-                {user ? 'Go to Dashboard' : 'Get Started'}
-                <ArrowRight className="h-4 w-4" />
+          <button
+            className="rounded-lg border border-white/10 p-2 text-[#d8ddd9] md:hidden"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            aria-label="Toggle navigation"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </nav>
+
+        {mobileMenuOpen && (
+          <div className="border-t border-white/[0.08] px-5 py-5 md:hidden">
+            <div className="mx-auto flex max-w-7xl flex-col gap-4 text-sm text-[#bcc3bf]">
+              <a href="#product" onClick={() => setMobileMenuOpen(false)}>Product</a>
+              <a href="#workflow" onClick={() => setMobileMenuOpen(false)}>Workflow</a>
+              <a href="#modules" onClick={() => setMobileMenuOpen(false)}>Modules</a>
+              <button onClick={openProduct} className="mt-2 rounded-lg bg-[#d6ad83] px-5 py-3 font-semibold text-[#171a18]">
+                {user ? 'Open workspace' : 'Get started'}
               </button>
-            </motion.div>
-          )}
-        </GlassSurface>
-      </motion.div>
-
-      {/* Hero Section */}
-      <motion.section
-        style={{ y, opacity }}
-        className="relative z-10 flex flex-col items-center justify-center min-h-[75vh] px-4 md:px-6 text-center pt-24 md:pt-20"
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-5xl mx-auto"
-        >
-          {/* Glow effect behind hero */}
-          <motion.div
-            className="absolute -inset-40 bg-gradient-to-r from-purple-600/20 via-cyan-600/20 to-purple-600/20 rounded-full blur-3xl -z-10"
-            animate={{
-              scale: [1, 1.15, 1],
-              opacity: [0.3, 0.6, 0.3],
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-          
-          <motion.h1
-            className="text-5xl md:text-7xl lg:text-8xl font-extrabold mb-8 leading-tight tracking-tight"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            style={{ letterSpacing: '-0.02em' }}
-          >
-            Build{' '}
-            <motion.span
-              className="relative inline-block"
-              whileHover={{ scale: 1.05 }}
-            >
-              <GradientText className="text-5xl md:text-7xl lg:text-8xl">Smarter.</GradientText>
-              <motion.div
-                className="absolute -bottom-2 md:-bottom-3 left-0 right-0 h-2 md:h-3 bg-gradient-to-r from-purple-400 via-cyan-400 to-purple-400 rounded-full"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ duration: 0.8, delay: 0.8 }}
-                style={{ filter: 'blur(3px)' }}
-              />
-            </motion.span>
-          </motion.h1>
-          
-          <motion.p
-            className="text-lg md:text-xl lg:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed font-light"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            style={{ letterSpacing: '-0.01em' }}
-          >
-            The all-in-one Construction Management System to track workers, automate payroll, 
-            manage budgets, and grow your projects with{' '}
-            <GradientText className="text-lg md:text-xl lg:text-2xl font-medium">ease</GradientText>.
-          </motion.p>
-
-          <motion.div
-            className="flex flex-col sm:flex-row items-center justify-center gap-6"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-          >
-            <FloatingButton onClick={() => navigate(user ? '/dashboard' : '/auth')}>
-              {user ? 'Go to Dashboard' : 'Start Building'}
-              <Zap className="h-5 w-5" />
-            </FloatingButton>
-          </motion.div>
-        </motion.div>
-      </motion.section>
-
-      {/* Stats Section */}
-      <motion.section
-        id="stats"
-        className="relative py-12 md:py-20 px-4 md:px-6"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-      >
-        <div className="relative z-10 max-w-6xl mx-auto">
-          <motion.div
-            className="text-center mb-12 md:mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Trusted by{' '}
-              <GradientText className="text-4xl md:text-5xl">Thousands</GradientText>
-            </h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Join construction companies worldwide who trust Constry to manage their projects
-            </p>
-          </motion.div>
-
-          {/* Mobile Carousel */}
-          <StatsCarousel stats={stats} />
-
-          {/* Desktop Grid */}
-          <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
-            {stats.map((stat, index) => (
-              <StatCard
-                key={stat.label}
-                icon={stat.icon}
-                value={stat.value}
-                label={stat.label}
-                delay={index * 0.1}
-              />
-            ))}
-          </div>
-        </div>
-      </motion.section>
-
-      {/* Features Section */}
-      <motion.section
-        id="features"
-        className="relative z-10 py-12 md:py-20 px-4 md:px-6"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-      >
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            className="text-center mb-12 md:mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Everything You{' '}
-              <GradientText className="text-4xl md:text-5xl">Need</GradientText>
-            </h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Powerful features to manage your construction business with precision and ease
-            </p>
-          </motion.div>
-
-          {/* Mobile Carousel */}
-          <FeaturesCarousel features={features} />
-
-          {/* Desktop Grid */}
-          <div className="hidden md:grid grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {features.map((feature, index) => (
-              <FeatureCard
-                key={feature.title}
-                icon={feature.icon}
-                title={feature.title}
-                description={feature.description}
-                delay={index * 0.1}
-              />
-            ))}
-          </div>
-        </div>
-      </motion.section>
-
-      {/* Reviews Section */}
-      <motion.section
-        id="reviews"
-        className="relative z-10 py-12 md:py-20 px-4 md:px-6"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-      >
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            className="text-center mb-12 md:mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Loved by{' '}
-              <GradientText className="text-4xl md:text-5xl">Professionals</GradientText>
-            </h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              See what construction professionals are saying about Constry
-            </p>
-          </motion.div>
-
-          {/* Mobile Carousel */}
-          <ReviewsCarousel reviews={reviews} />
-
-          {/* Desktop Grid */}
-          <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {reviews.map((review, index) => (
-              <ReviewCard
-                key={review.name}
-                name={review.name}
-                role={review.role}
-                company={review.company}
-                review={review.review}
-                rating={review.rating}
-                delay={index * 0.1}
-              />
-            ))}
-          </div>
-        </div>
-      </motion.section>
-
-      {/* CTA Section */}
-      <motion.section
-        className="relative py-12 md:py-20 px-4 md:px-6"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-      >
-        <div className="relative z-10 max-w-4xl mx-auto text-center">
-          <GlassmorphicCard delay={0}>
-            <div className="py-16">
-              <motion.h2
-                className="text-4xl md:text-5xl font-bold mb-6"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-              >
-                Ready to{' '}
-                <GradientText className="text-4xl md:text-5xl">Transform</GradientText>{' '}
-                Your Business?
-              </motion.h2>
-              <motion.p
-                className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                viewport={{ once: true }}
-              >
-                Join thousands of construction companies already using Constry to streamline their operations
-              </motion.p>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                viewport={{ once: true }}
-              >
-                <FloatingButton onClick={() => navigate(user ? '/dashboard' : '/auth')}>
-                  {user ? 'Go to Dashboard' : 'Get Started Today'}
-                  <ArrowRight className="h-4 w-4" />
-                </FloatingButton>
-              </motion.div>
             </div>
-          </GlassmorphicCard>
-        </div>
-      </motion.section>
+          </div>
+        )}
+      </header>
 
-      {/* Footer - Glass Surface */}
-      <motion.footer
-        className="relative px-6 py-8"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
-        viewport={{ once: true }}
-      >
-        <div className="relative z-10 max-w-6xl mx-auto">
-          <GlassSurface className="rounded-2xl" blur="xl" opacity={3}>
-            <div className="text-center px-6 py-8">
-              <motion.div
-                className="mb-8"
-                whileHover={{ scale: 1.05 }}
-              >
-                <GradientText className="text-3xl font-bold">Constry</GradientText>
-              </motion.div>
-              <p className="text-gray-400 mb-6">
-                © 2024 Constry. All rights reserved. Built with precision for construction professionals.
+      <main>
+        <section className="relative border-b border-white/[0.07]">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.018)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.018)_1px,transparent_1px)] bg-[size:72px_72px]" />
+          <div className="relative mx-auto grid max-w-7xl items-center gap-16 px-5 py-20 sm:px-8 sm:py-28 lg:grid-cols-[0.88fr_1.12fr] lg:py-32">
+            <div>
+              <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-[#b8bfbb]">
+                <MapPin className="h-3.5 w-3.5 text-[#d6ad83]" />
+                Built for construction operations in Rwanda
+              </div>
+              <h1 className="max-w-xl text-5xl font-semibold leading-[1.02] tracking-[-0.045em] sm:text-6xl lg:text-7xl">
+                Run the site. <span className="text-[#d6ad83]">Know the numbers.</span>
+              </h1>
+              <p className="mt-7 max-w-xl text-lg leading-8 text-[#aeb6b1]">
+                Consty brings workers, attendance, RWF payroll, expenses, and project budgets into one clear operating view.
               </p>
-              <div className="flex justify-center space-x-6">
-                {['Privacy', 'Terms', 'Support', 'Contact'].map((item) => (
-                  <motion.a
-                    key={item}
-                    href="#"
-                    className="text-gray-400 hover:text-white transition-colors"
-                    whileHover={{ y: -2 }}
-                  >
-                    {item}
-                  </motion.a>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <button onClick={openProduct} className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#d6ad83] px-6 py-3.5 font-semibold text-[#171a18] transition-colors hover:bg-[#e2c49f]">
+                  {user ? 'Open your workspace' : 'Create your workspace'}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+                <a href="#workflow" className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/12 px-6 py-3.5 font-medium text-[#d9dedb] transition-colors hover:bg-white/[0.05]">See how it works</a>
+              </div>
+              <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-xs text-[#8f9994]">
+                {['RWF payroll', 'Field attendance', 'Budget control'].map((item) => (
+                  <span key={item} className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-[#d6ad83]" /> {item}</span>
                 ))}
               </div>
             </div>
-          </GlassSurface>
+            <ProductPreview />
+          </div>
+        </section>
+
+        <section id="product" className="border-b border-[#ddd6c9] bg-[#f1eee7] text-[#171a18]">
+          <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28">
+            <div className="grid gap-12 lg:grid-cols-[0.72fr_1.28fr]">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8c633f]">One operating record</p>
+                <h2 className="mt-5 max-w-md text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">Less chasing. Fewer surprises.</h2>
+              </div>
+              <div className="grid gap-8 sm:grid-cols-2">
+                <p className="text-lg leading-8 text-[#515954]">Site information often lives across notebooks, messages, and spreadsheets. Consty keeps the daily record connected from attendance to payroll and cost reporting.</p>
+                <div className="space-y-4 border-l border-[#d0c8ba] pl-6 text-sm text-[#515954]">
+                  {['One source of truth for the project team', 'Clear RWF calculations and audit trails', 'Designed for phone and desktop use'].map((item) => (
+                    <div key={item} className="flex gap-3"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#7f5a3b]" /><span>{item}</span></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="workflow" className="bg-[#f8f6f1] text-[#171a18]">
+          <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8c633f]">A practical daily rhythm</p>
+              <h2 className="mt-5 text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">From morning roll call to weekly payroll.</h2>
+            </div>
+            <div className="mt-14 grid border-y border-[#dcd6cc] lg:grid-cols-3">
+              {workflow.map((item, index) => (
+                <article key={item.step} className="border-b border-[#dcd6cc] py-8 lg:border-b-0 lg:border-r lg:px-8 lg:first:pl-0 lg:last:border-r-0">
+                  <div className="flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7f5a3b]">{item.step}</span><span className="font-mono text-xs text-[#9a948b]">0{index + 1}</span></div>
+                  <h3 className="mt-12 text-2xl font-semibold tracking-[-0.02em]">{item.title}</h3>
+                  <p className="mt-4 leading-7 text-[#5e655f]">{item.description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="modules" className="border-y border-white/[0.07] bg-[#101412]">
+          <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28">
+            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+              <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d6ad83]">Core modules</p><h2 className="mt-5 max-w-2xl text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">The essentials, connected.</h2></div>
+              <p className="max-w-md leading-7 text-[#9fa8a3]">Each module works on its own. Together, they create a reliable operating picture for the entire site.</p>
+            </div>
+            <div className="mt-14 grid overflow-hidden rounded-2xl border border-white/10 sm:grid-cols-2">
+              {modules.map((module) => (
+                <article key={module.title} className="group border-b border-white/10 p-7 transition-colors hover:bg-white/[0.035] sm:p-9 sm:odd:border-r">
+                  <div className="flex items-center justify-between"><module.icon className="h-5 w-5 text-[#d6ad83]" /><span className="font-mono text-xs text-[#657069]">{module.number}</span></div>
+                  <h3 className="mt-12 text-2xl font-semibold">{module.title}</h3>
+                  <p className="mt-3 max-w-md leading-7 text-[#99a29d]">{module.description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-[#d7c09e] text-[#171a18]">
+          <div className="mx-auto grid max-w-7xl gap-12 px-5 py-20 sm:px-8 sm:py-24 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#73543a]">Rwanda › Musanze District › Musanze Town Buildings</p>
+              <h2 className="mt-5 max-w-3xl text-4xl font-semibold tracking-[-0.035em] sm:text-5xl">Put your site operations into one clear view.</h2>
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-[#554b3e]">Start with your workforce today. Add attendance, payroll, and project cost control as your operation grows.</p>
+            </div>
+            <button onClick={openProduct} className="inline-flex items-center justify-center gap-3 rounded-lg bg-[#171a18] px-7 py-4 font-semibold text-[#f7f3eb] transition-colors hover:bg-[#2c312e]">
+              {user ? 'Open workspace' : 'Get started'}<ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t border-white/[0.08] bg-[#0c0f0e]">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-10 text-sm text-[#7f8983] sm:px-8 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3 text-[#d8ddd9]"><HardHat className="h-4 w-4 text-[#d6ad83]" /><span className="font-semibold tracking-[0.16em]">CONSTY</span></div>
+          <p>© {new Date().getFullYear()} Consty. Construction operations, clearly managed.</p>
+          <a href="https://github.com/nissi15/consty-build-flow" target="_blank" rel="noreferrer" className="transition-colors hover:text-white">View project</a>
         </div>
-      </motion.footer>
+      </footer>
     </div>
   );
-}
+};
+
+export default Landing;
