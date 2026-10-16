@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfWeek, endOfWeek, format, subWeeks } from 'date-fns';
-import { fetchAllPages } from '@/lib/supabase-pagination';
+import { fetchAllPagesInParallel, withDataTimeout } from '@/lib/supabase-pagination';
 
 interface PayrollRecord {
   id: string;
@@ -46,6 +46,54 @@ export function usePayroll() {
     workersOnPayroll: 0,
     payrollPeriods: 0,
   });
+  const requestInFlight = useRef<Promise<void> | null>(null);
+  const refetchQueued = useRef(false);
+  const realtimeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fetchPayrolls = useCallback(async () => {
+    if (requestInFlight.current) {
+      refetchQueued.current = true;
+      return requestInFlight.current;
+    }
+
+    const run = async () => {
+      do {
+        refetchQueued.current = false;
+        try {
+          const { count, error: countError } = await withDataTimeout(
+            supabase.from('payroll').select('id', { count: 'exact', head: true }),
+          );
+          if (countError) throw countError;
+          const payrollData = await fetchAllPagesInParallel<PayrollRecord>(count || 0, (from, to) => supabase
+            .from('payroll')
+            .select('*, worker:workers(name, role)')
+            .order('period_start', { ascending: false })
+            .order('created_at', { ascending: false })
+            .range(from, to), 1000, 4);
+
+          setPayrolls(payrollData);
+          const currentWeekStart = format(startOfWeek(new Date()), 'yyyy-MM-dd');
+          const currentWeekEnd = format(endOfWeek(new Date()), 'yyyy-MM-dd');
+          const weeklyTotal = payrollData
+            .filter(p => p.period_start >= currentWeekStart && p.period_end <= currentWeekEnd)
+            .reduce((sum, p) => sum + Number(p.net_amount), 0);
+          setStats({
+            weeklyPayroll: weeklyTotal,
+            workersOnPayroll: new Set(payrollData.map(p => p.worker_id)).size,
+            payrollPeriods: new Set(payrollData.map(p => `${p.period_start}-${p.period_end}`)).size,
+          });
+        } catch (error) {
+          console.error('Error fetching payrolls:', error);
+        }
+      } while (refetchQueued.current);
+    };
+
+    requestInFlight.current = run().finally(() => {
+      requestInFlight.current = null;
+      setLoading(false);
+    });
+    return requestInFlight.current;
+  }, []);
 
   useEffect(() => {
     fetchPayrolls();
@@ -53,47 +101,16 @@ export function usePayroll() {
     const channel = supabase
       .channel('payroll-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'payroll' }, () => {
-        fetchPayrolls();
+        if (realtimeTimer.current) clearTimeout(realtimeTimer.current);
+        realtimeTimer.current = setTimeout(fetchPayrolls, 750);
       })
       .subscribe();
 
     return () => {
+      if (realtimeTimer.current) clearTimeout(realtimeTimer.current);
       supabase.removeChannel(channel);
     };
-  }, []);
-
-  const fetchPayrolls = async () => {
-    try {
-      const payrollData = await fetchAllPages<PayrollRecord>((from, to) => supabase
-        .from('payroll')
-        .select('*, worker:workers(name, role)')
-        .order('created_at', { ascending: false })
-        .range(from, to));
-
-      setPayrolls(payrollData as PayrollRecord[]);
-
-      // Calculate stats
-      const currentWeekStart = format(startOfWeek(new Date()), 'yyyy-MM-dd');
-      const currentWeekEnd = format(endOfWeek(new Date()), 'yyyy-MM-dd');
-
-      const weeklyTotal = payrollData
-        .filter(p => p.period_start >= currentWeekStart && p.period_end <= currentWeekEnd)
-        .reduce((sum, p) => sum + p.net_amount, 0);
-
-      const uniqueWorkers = new Set(payrollData.map(p => p.worker_id)).size;
-      const uniquePeriods = new Set(payrollData.map(p => `${p.period_start}-${p.period_end}`)).size;
-
-      setStats({
-        weeklyPayroll: weeklyTotal,
-        workersOnPayroll: uniqueWorkers,
-        payrollPeriods: uniquePeriods,
-      });
-    } catch (error) {
-      console.error('Error fetching payrolls:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchPayrolls]);
 
   const generatePayroll = async () => {
     try {

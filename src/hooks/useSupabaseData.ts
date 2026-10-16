@@ -11,6 +11,7 @@ type ActivityLog = Database['public']['Tables']['activity_log']['Row'];
 type AttendanceWithWorker = Attendance & {
   workers: Pick<Worker, 'id' | 'name' | 'role'>;
 };
+type AttendanceSummary = Pick<Attendance, 'id' | 'date' | 'status'>;
 
 export const useWorkers = () => {
   const [workers, setWorkers] = useState<Worker[]>([]);
@@ -122,9 +123,105 @@ export const useAttendance = () => {
   return { attendance, loading, refetch: fetchAttendance };
 };
 
+export const useAttendanceSummary = () => {
+  const [attendance, setAttendance] = useState<AttendanceSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const requestInFlight = useRef<Promise<void> | null>(null);
+  const refetchQueued = useRef(false);
+  const realtimeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fetchAttendance = useCallback(async () => {
+    if (requestInFlight.current) {
+      refetchQueued.current = true;
+      return requestInFlight.current;
+    }
+
+    const run = async () => {
+      do {
+        refetchQueued.current = false;
+        try {
+          const { count, error: countError } = await withDataTimeout(
+            supabase.from('attendance').select('id', { count: 'exact', head: true }),
+          );
+          if (countError) throw countError;
+          const data = await fetchAllPagesInParallel<AttendanceSummary>(count || 0, (from, to) => supabase
+            .from('attendance')
+            .select('id,date,status')
+            .order('date', { ascending: false })
+            .range(from, to), 1000, 6);
+          setAttendance(data);
+        } catch (error) {
+          console.error('Error fetching attendance summary:', error);
+        }
+      } while (refetchQueued.current);
+    };
+
+    requestInFlight.current = run().finally(() => {
+      requestInFlight.current = null;
+      setLoading(false);
+    });
+    return requestInFlight.current;
+  }, []);
+
+  useEffect(() => {
+    fetchAttendance();
+    const channel = supabase
+      .channel('attendance-summary-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance' }, () => {
+        if (realtimeTimer.current) clearTimeout(realtimeTimer.current);
+        realtimeTimer.current = setTimeout(fetchAttendance, 750);
+      })
+      .subscribe();
+    return () => {
+      if (realtimeTimer.current) clearTimeout(realtimeTimer.current);
+      supabase.removeChannel(channel);
+    };
+  }, [fetchAttendance]);
+
+  return { attendance, loading, refetch: fetchAttendance };
+};
+
 export const useExpenses = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+  const requestInFlight = useRef<Promise<void> | null>(null);
+  const refetchQueued = useRef(false);
+  const realtimeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fetchExpenses = useCallback(async () => {
+    if (requestInFlight.current) {
+      refetchQueued.current = true;
+      return requestInFlight.current;
+    }
+
+    const run = async () => {
+      do {
+        refetchQueued.current = false;
+        try {
+          const { count, error: countError } = await withDataTimeout(
+            supabase.from('expenses').select('id', { count: 'exact', head: true }),
+          );
+          if (countError) throw countError;
+
+          const data = await fetchAllPagesInParallel<Expense>(count || 0, (from, to) => supabase
+            .from('expenses')
+            .select('*')
+            .order('date', { ascending: false })
+            .order('created_at', { ascending: false })
+            .range(from, to), 1000, 6);
+          setExpenses(data);
+        } catch (error) {
+          console.error('Error fetching expenses:', error);
+        }
+      } while (refetchQueued.current);
+    };
+
+    requestInFlight.current = run().finally(() => {
+      requestInFlight.current = null;
+      setLoading(false);
+    });
+    return requestInFlight.current;
+  }, []);
 
   useEffect(() => {
     fetchExpenses();
@@ -132,26 +229,16 @@ export const useExpenses = () => {
     const channel = supabase
       .channel('expenses-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => {
-        fetchExpenses();
+        if (realtimeTimer.current) clearTimeout(realtimeTimer.current);
+        realtimeTimer.current = setTimeout(fetchExpenses, 750);
       })
       .subscribe();
 
     return () => {
+      if (realtimeTimer.current) clearTimeout(realtimeTimer.current);
       supabase.removeChannel(channel);
     };
-  }, []);
-
-  const fetchExpenses = async () => {
-    const { data, error } = await supabase
-      .from('expenses')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (!error && data) {
-      setExpenses(data);
-    }
-    setLoading(false);
-  };
+  }, [fetchExpenses]);
 
   return { expenses, loading, refetch: fetchExpenses };
 };
@@ -159,6 +246,18 @@ export const useExpenses = () => {
 export const useBudget = () => {
   const [budget, setBudget] = useState<Budget | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const fetchBudget = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('budget')
+      .select('*')
+      .order('total_budget', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!error) setBudget(data);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
     fetchBudget();
@@ -173,21 +272,7 @@ export const useBudget = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
-
-  const fetchBudget = async () => {
-    const { data, error } = await supabase
-      .from('budget')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-    
-    if (!error && data) {
-      setBudget(data);
-    }
-    setLoading(false);
-  };
+  }, [fetchBudget]);
 
   return { budget, loading, refetch: fetchBudget };
 };

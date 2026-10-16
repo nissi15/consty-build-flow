@@ -6,7 +6,7 @@ import { AlertTriangle, ArrowUpRight, CalendarCheck, FileText, Package, Users, W
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useWorkers, useAttendance, useExpenses, useBudget, useActivityLog } from '@/hooks/useSupabaseData';
+import { useWorkers, useAttendanceSummary, useExpenses, useBudget, useActivityLog } from '@/hooks/useSupabaseData';
 import { usePayroll } from '@/hooks/usePayroll';
 import { getTodayInRwanda } from '@/utils/dateUtils';
 
@@ -18,7 +18,7 @@ const formatRwf = (value: number) => {
 
 const Dashboard = () => {
   const { workers, loading: workersLoading } = useWorkers();
-  const { attendance, loading: attendanceLoading } = useAttendance();
+  const { attendance, loading: attendanceLoading } = useAttendanceSummary();
   const { expenses, loading: expensesLoading } = useExpenses();
   const { budget, loading: budgetLoading } = useBudget();
   const { payrolls, loading: payrollLoading } = usePayroll();
@@ -38,10 +38,9 @@ const Dashboard = () => {
       const start = format(startOfMonth(date), 'yyyy-MM-dd');
       const end = format(endOfMonth(date), 'yyyy-MM-dd');
       const monthExpenses = expenses.filter(expense => expense.date >= start && expense.date <= end).reduce((sum, expense) => sum + Number(expense.amount), 0);
-      const monthPayroll = payrolls.filter(record => record.period_start >= start && record.period_start <= end).reduce((sum, record) => sum + Number(record.net_amount), 0);
       const monthAttendance = attendance.filter(record => record.date >= start && record.date <= end);
       const present = monthAttendance.filter(record => record.status === 'present').length;
-      return { month: format(date, 'MMM'), spending: monthExpenses + monthPayroll, attendance: monthAttendance.length ? Math.round((present / monthAttendance.length) * 100) : 0 };
+      return { month: format(date, 'MMM'), spending: monthExpenses, attendance: monthAttendance.length ? Math.round((present / monthAttendance.length) * 100) : 0 };
     });
     return { activeWorkers, presentToday, monthlyPayroll, budgetUsed, totalBudget, budgetPercent, months };
   }, [workers, attendance, payrolls, expenses, budget]);
@@ -71,7 +70,7 @@ const Dashboard = () => {
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,.7fr)]">
         <Card className="p-5">
-          <div className="mb-5 flex items-start justify-between"><div><h2 className="font-semibold">Monthly spending</h2><p className="mt-1 text-xs text-muted-foreground">Payroll and recorded project expenses · last 11 months</p></div><span className="rounded-lg border px-2.5 py-1 text-xs text-muted-foreground">11 months</span></div>
+          <div className="mb-5 flex items-start justify-between"><div><h2 className="font-semibold">Monthly spending</h2><p className="mt-1 text-xs text-muted-foreground">Recorded project costs, including labour · last 11 months</p></div><span className="rounded-lg border px-2.5 py-1 text-xs text-muted-foreground">11 months</span></div>
           <ResponsiveContainer width="100%" height={300}><AreaChart data={dashboard.months} margin={{ top: 8, right: 12, left: 8, bottom: 0 }}><defs><linearGradient id="spendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#111" stopOpacity={0.14} /><stop offset="100%" stopColor="#111" stopOpacity={0.01} /></linearGradient></defs><CartesianGrid vertical={false} stroke="#e9eaec" /><XAxis dataKey="month" tickLine={false} axisLine={false} fontSize={12} tick={{ fill: '#73777f' }} /><YAxis tickLine={false} axisLine={false} fontSize={12} width={48} tick={{ fill: '#73777f' }} tickFormatter={value => `${Math.round(value / 1_000_000)}M`} /><Tooltip formatter={(value: number) => [formatRwf(value), 'Spending']} contentStyle={{ borderRadius: 10, border: '1px solid #e2e4e7', boxShadow: '0 12px 30px rgba(0,0,0,.08)' }} /><Area type="monotone" dataKey="spending" stroke="#111" strokeWidth={2.25} fill="url(#spendFill)" dot={{ fill: '#111', r: 3 }} activeDot={{ r: 5 }} /></AreaChart></ResponsiveContainer>
         </Card>
         <Card className="p-5">

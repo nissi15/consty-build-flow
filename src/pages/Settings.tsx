@@ -180,11 +180,11 @@ const Settings = () => {
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Complexity demo</p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-tight">Load 11 months of realistic project operations</h2>
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-white/65">
-                  Adds 90 Rwandan workers, six-day attendance history, monthly payroll, construction materials,
-                  operating expenses and a RWF 450M project budget. Manually entered records remain untouched.
+                  Adds 90 Rwandan workers, six-day attendance history, monthly payroll, detailed construction materials,
+                  operating expenses and a RWF 500M project budget. Manually entered records remain untouched.
                 </p>
                 <div className="mt-5 flex flex-wrap gap-2 text-xs text-white/70">
-                  {['90 abbreviated names', '11 months', '≈25k attendance rows', '990 payroll rows', '176 cost entries', 'RWF 450M budget'].map((item) => (
+                  {['90 abbreviated names', '11 months', '14k+ attendance rows', '990 payroll rows', '528 cost entries', 'RWF 500M budget'].map((item) => (
                     <span key={item} className="rounded-full border border-white/15 px-3 py-1.5">{item}</span>
                   ))}
                 </div>

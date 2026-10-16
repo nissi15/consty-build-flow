@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { TablesInsert } from '@/integrations/supabase/types';
+import { fetchAllPagesInParallel } from '@/lib/supabase-pagination';
 
 export interface DemoSeedResult {
   workers: number;
@@ -103,11 +104,17 @@ async function upsertBatches<T extends Record<string, unknown>>(
   rows: T[],
   onConflict: string,
   batchSize = 750,
+  concurrency = 3,
 ) {
-  for (let index = 0; index < rows.length; index += batchSize) {
-    const batch = rows.slice(index, index + batchSize);
-    const { error } = await supabase.from(table).upsert(batch as never, { onConflict });
-    if (error) throw error;
+  const batches = Array.from({ length: Math.ceil(rows.length / batchSize) }, (_, index) =>
+    rows.slice(index * batchSize, (index + 1) * batchSize),
+  );
+
+  for (let index = 0; index < batches.length; index += concurrency) {
+    await Promise.all(batches.slice(index, index + concurrency).map(async (batch) => {
+      const { error } = await supabase.from(table).upsert(batch as never, { onConflict });
+      if (error) throw error;
+    }));
   }
 }
 
@@ -177,8 +184,20 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
     }
   }
 
-  onProgress(`Writing ${attendanceRows.length.toLocaleString()} attendance records in batches…`);
-  await upsertBatches('attendance', attendanceRows, 'worker_id,date');
+  const { count: existingAttendance, error: attendanceCountError } = await supabase
+    .from('attendance')
+    .select('id', { count: 'exact', head: true })
+    .gte('date', isoDate(months[0].start))
+    .lte('date', isoDate(months[months.length - 1].end))
+    .in('worker_id', workerRows.map(worker => worker.id!));
+  if (attendanceCountError) throw attendanceCountError;
+
+  if (existingAttendance === attendanceRows.length) {
+    onProgress(`${attendanceRows.length.toLocaleString()} attendance records already complete — skipping the slow rewrite…`);
+  } else {
+    onProgress(`Writing ${attendanceRows.length.toLocaleString()} attendance records in parallel batches…`);
+    await upsertBatches('attendance', attendanceRows, 'worker_id,date', 1000, 3);
+  }
 
   const updatedWorkers = workerRows.map((worker) => ({
     ...worker,
@@ -213,12 +232,12 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
   }
 
   onProgress(`Creating ${payrollRows.length.toLocaleString()} monthly payroll records…`);
-  await upsertBatches('payroll', payrollRows, 'worker_id,period_start,period_end');
+  await upsertBatches('payroll', payrollRows, 'worker_id,period_start,period_end', 500, 3);
 
   const expenseRows: TablesInsert<'expenses'>[] = [];
   let expenseIndex = 1;
   for (const [monthIndex, month] of months.entries()) {
-    const monthlyMaterials = Array.from({ length: 12 }, (_, offset) =>
+    const monthlyMaterials = Array.from({ length: 40 }, (_, offset) =>
       materials[(monthIndex * 5 + offset * 2) % materials.length],
     );
     for (const [materialIndex, [description, baseAmount]] of monthlyMaterials.entries()) {
@@ -231,16 +250,20 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
         date: isoDate(date),
         category: 'Materials',
         type: 'material',
-        description: `DEMO · Musanze Town Buildings · ${description}`,
+        description: `DEMO · Musanze Town Buildings · ${description} · delivery ${Math.floor(materialIndex / materials.length) + 1}`,
         amount: Math.round((baseAmount * variation) / 1000) * 1000,
       });
     }
 
     const operatingCosts = [
-      ['Equipment', 'Excavator, compactor and mixer hire · monthly allocation', 1_650_000],
-      ['Transport', 'Material haulage and site logistics · monthly allocation', 920_000],
-      ['Utilities', 'Site water, power and communications', 460_000],
-      ['Safety', 'Safety inspection and consumable PPE', 340_000],
+      ['Equipment', 'Excavator and operator hire · monthly allocation', 1_150_000],
+      ['Equipment', 'Compactor, mixer and scaffolding hire', 820_000],
+      ['Transport', 'Heavy material haulage and site logistics', 720_000],
+      ['Transport', 'Local supplier deliveries and fuel', 420_000],
+      ['Utilities', 'Site water and temporary power', 360_000],
+      ['Utilities', 'Communications and security lighting', 185_000],
+      ['Safety', 'Safety inspection and consumable PPE', 285_000],
+      ['Professional services', 'Surveying, testing and permit allocation', 475_000],
     ] as const;
     for (const [costIndex, [category, description, baseAmount]] of operatingCosts.entries()) {
       const date = new Date(month.start);
@@ -257,11 +280,26 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
     }
   }
 
-  const paidPayrollTotal = payrollRows
-    .filter((row) => row.status === 'paid')
-    .reduce((total, row) => total + Number(row.net_amount || 0), 0);
-  const targetUsedBudget = 292_500_000;
-  const targetExpenseTotal = Math.max(1, targetUsedBudget - paidPayrollTotal);
+  onProgress(`Preparing ${expenseRows.length.toLocaleString()} material and operating-cost entries…`);
+  const { error: cleanupError } = await supabase
+    .from('expenses')
+    .delete()
+    .like('description', 'DEMO · Musanze Town Buildings ·%');
+  if (cleanupError) throw cleanupError;
+
+  const { count: retainedExpenseCount, error: expenseCountError } = await supabase
+    .from('expenses')
+    .select('id', { count: 'exact', head: true });
+  if (expenseCountError) throw expenseCountError;
+  const retainedExpenses = await fetchAllPagesInParallel<{ amount: number }>(retainedExpenseCount || 0, (from, to) => supabase
+    .from('expenses')
+    .select('amount')
+    .order('id')
+    .range(from, to), 1000, 6);
+  const retainedExpenseTotal = retainedExpenses.reduce((total, row) => total + Number(row.amount || 0), 0);
+  const targetUsedBudget = 360_000_000;
+  const minimumDemoExpenseTotal = expenseRows.length * 25_000;
+  const targetExpenseTotal = Math.max(minimumDemoExpenseTotal, targetUsedBudget - retainedExpenseTotal);
   const rawExpenseTotal = expenseRows.reduce((total, row) => total + Number(row.amount), 0);
   const expenseScale = targetExpenseTotal / rawExpenseTotal;
   expenseRows.forEach((row) => {
@@ -271,17 +309,12 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
   const roundedExpenseTotal = expenseRows.reduce((total, row) => total + Number(row.amount), 0);
   expenseRows[expenseRows.length - 1].amount = Number(expenseRows[expenseRows.length - 1].amount) + (targetExpenseTotal - roundedExpenseTotal);
 
-  onProgress(`Adding ${expenseRows.length.toLocaleString()} material and operating-cost entries…`);
-  const { error: cleanupError } = await supabase
-    .from('expenses')
-    .delete()
-    .like('description', 'DEMO · Musanze Town Buildings ·%');
-  if (cleanupError) throw cleanupError;
-  await upsertBatches('expenses', expenseRows, 'id', 500);
+  onProgress(`Adding ${expenseRows.length.toLocaleString()} material and operating-cost entries across 11 months…`);
+  await upsertBatches('expenses', expenseRows, 'id', 500, 3);
 
   const expenseTotal = expenseRows.reduce((total, row) => total + Number(row.amount), 0);
-  const usedBudget = expenseTotal + paidPayrollTotal;
-  const totalBudget = 450_000_000;
+  const usedBudget = retainedExpenseTotal + expenseTotal;
+  const totalBudget = 500_000_000;
 
   onProgress('Finalising the project budget and activity history…');
   const { error: budgetError } = await supabase.from('budget').upsert({

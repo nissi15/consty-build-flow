@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfMonth, endOfMonth } from 'date-fns';
+import { fetchAllPagesInParallel, withDataTimeout } from '@/lib/supabase-pagination';
 
 interface Expense {
   id: string;
@@ -14,25 +15,43 @@ interface Expense {
 export function useExpenses() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+  const requestInFlight = useRef<Promise<void> | null>(null);
+  const refetchQueued = useRef(false);
+  const realtimeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchExpenses = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('expenses')
-        .select('*')
-        .order('date', { ascending: false });
-
-      if (error) {
-        throw error;
-      }
-
-      setExpenses(data || []);
-    } catch (error) {
-      console.error('Error fetching expenses:', error);
-    } finally {
-      setLoading(false);
+    if (requestInFlight.current) {
+      refetchQueued.current = true;
+      return requestInFlight.current;
     }
+
+    setLoading(true);
+    const run = async () => {
+      do {
+        refetchQueued.current = false;
+        try {
+          const { count, error: countError } = await withDataTimeout(
+            supabase.from('expenses').select('id', { count: 'exact', head: true }),
+          );
+          if (countError) throw countError;
+          const data = await fetchAllPagesInParallel<Expense>(count || 0, (from, to) => supabase
+            .from('expenses')
+            .select('id,category,amount,description,date,created_at')
+            .order('date', { ascending: false })
+            .order('created_at', { ascending: false })
+            .range(from, to), 1000, 6);
+          setExpenses(data);
+        } catch (error) {
+          console.error('Error fetching expenses:', error);
+        }
+      } while (refetchQueued.current);
+    };
+
+    requestInFlight.current = run().finally(() => {
+      requestInFlight.current = null;
+      setLoading(false);
+    });
+    return requestInFlight.current;
   }, []);
 
   useEffect(() => {
@@ -41,11 +60,13 @@ export function useExpenses() {
     const channel = supabase
       .channel('expenses-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => {
-        fetchExpenses();
+        if (realtimeTimer.current) clearTimeout(realtimeTimer.current);
+        realtimeTimer.current = setTimeout(fetchExpenses, 750);
       })
       .subscribe();
 
     return () => {
+      if (realtimeTimer.current) clearTimeout(realtimeTimer.current);
       supabase.removeChannel(channel);
     };
   }, [fetchExpenses]);

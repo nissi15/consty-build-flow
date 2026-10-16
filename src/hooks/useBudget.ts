@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { startOfMonth, endOfMonth } from 'date-fns';
+import { fetchAllPagesInParallel, withDataTimeout } from '@/lib/supabase-pagination';
 
 interface Budget {
   id: string;
@@ -19,9 +19,9 @@ export function useBudget() {
       const { data, error } = await supabase
         .from('budget')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('total_budget', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Budget fetch error:', error);
@@ -41,22 +41,16 @@ export function useBudget() {
     if (!budget) return;
 
     try {
-      const { data: expenses, error: expensesError } = await supabase
+      const { count, error: countError } = await withDataTimeout(
+        supabase.from('expenses').select('id', { count: 'exact', head: true }),
+      );
+      if (countError) throw countError;
+      const expenses = await fetchAllPagesInParallel<{ amount: number }>(count || 0, (from, to) => supabase
         .from('expenses')
-        .select('amount');
-
-      if (expensesError) throw expensesError;
-
-      const { data: payroll, error: payrollError } = await supabase
-        .from('payroll')
-        .select('net_amount,status')
-        .eq('status', 'paid');
-
-      if (payrollError) throw payrollError;
-
-      const expenseTotal = expenses?.reduce((sum, expense) => sum + Number(expense.amount), 0) || 0;
-      const payrollTotal = payroll?.reduce((sum, record) => sum + Number(record.net_amount), 0) || 0;
-      const usedBudget = expenseTotal + payrollTotal;
+        .select('amount')
+        .order('id')
+        .range(from, to), 1000, 6);
+      const usedBudget = expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
 
       const { error: updateError } = await supabase
         .from('budget')
@@ -87,20 +81,10 @@ export function useBudget() {
       })
       .subscribe();
 
-    const expenseChannel = supabase
-      .channel('expense-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => {
-        if (budget) {
-          recalculateTotals();
-        }
-      })
-      .subscribe();
-
     return () => {
       supabase.removeChannel(budgetChannel);
-      supabase.removeChannel(expenseChannel);
     };
-  }, []);
+  }, [fetchBudget]);
 
   const stats = {
     totalBudget: budget?.total_budget || 50000,
