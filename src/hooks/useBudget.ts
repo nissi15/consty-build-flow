@@ -47,7 +47,16 @@ export function useBudget() {
 
       if (expensesError) throw expensesError;
 
-      const usedBudget = expenses?.reduce((sum, expense) => sum + Number(expense.amount), 0) || 0;
+      const { data: payroll, error: payrollError } = await supabase
+        .from('payroll')
+        .select('net_amount,status')
+        .eq('status', 'paid');
+
+      if (payrollError) throw payrollError;
+
+      const expenseTotal = expenses?.reduce((sum, expense) => sum + Number(expense.amount), 0) || 0;
+      const payrollTotal = payroll?.reduce((sum, record) => sum + Number(record.net_amount), 0) || 0;
+      const usedBudget = expenseTotal + payrollTotal;
 
       const { error: updateError } = await supabase
         .from('budget')

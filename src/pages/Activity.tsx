@@ -19,7 +19,7 @@ const Activity = () => {
   }
 
   return (
-    <div className="min-h-screen space-y-6 bg-[#f3f0e9] p-4 text-[#1a211d] dark:bg-[#0e1210] dark:text-[#f2eee6] sm:p-6 lg:p-8">
+    <div className="min-h-screen space-y-6 bg-[#f7f8fa] p-4 text-[#111214] dark:bg-[#0b0c0e] dark:text-[#f5f5f7] sm:p-6 lg:p-8">
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -36,7 +36,7 @@ const Activity = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
-        <Card className="border-[#ddd6c8] bg-[#fffdf8] p-6 shadow-sm dark:border-[#34453a] dark:bg-[#18231d]">
+        <Card className="border-[#e2e4e7] bg-white p-6 shadow-sm dark:border-[#292b2f] dark:bg-[#111214]">
           <div className="space-y-4">
             {activityLog.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">

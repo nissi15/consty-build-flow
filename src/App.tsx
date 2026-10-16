@@ -20,6 +20,7 @@ const Expenses = lazy(() => import("./pages/Expenses"));
 const Budget = lazy(() => import("./pages/Budget"));
 const Activity = lazy(() => import("./pages/Activity"));
 const Settings = lazy(() => import("./pages/Settings"));
+const Reports = lazy(() => import("./pages/Reports"));
 const DashboardLayout = lazy(() => import("./components/layout/DashboardLayout"));
 const OwnerDashboard = lazy(() => import("./pages/OwnerDashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -27,7 +28,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 // Loading component for suspense fallback
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
-    <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#d6ad83]/30 border-t-[#2f493b] dark:border-t-[#d6ad83]"></div>
+    <div className="h-10 w-10 animate-spin rounded-full border-2 border-black/10 border-t-black dark:border-white/20 dark:border-t-white"></div>
   </div>
 );
 
@@ -71,6 +72,7 @@ const App = () => (
                   <Route path="/budget" element={<Budget />} />
                   <Route path="/activity" element={<Activity />} />
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="/reports" element={<Reports />} />
                 </Route>
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />

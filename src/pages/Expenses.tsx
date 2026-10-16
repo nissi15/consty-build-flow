@@ -136,7 +136,7 @@ export default function Expenses() {
   };
 
   return (
-    <div className="min-h-screen space-y-4 bg-[#f3f0e9] p-4 text-[#1a211d] dark:bg-[#0e1210] dark:text-[#f2eee6] sm:space-y-6 sm:p-6 lg:p-8">
+    <div className="min-h-screen space-y-4 bg-[#f7f8fa] p-4 text-[#111214] dark:bg-[#0b0c0e] dark:text-[#f5f5f7] sm:space-y-6 sm:p-6 lg:p-8">
       <div className="space-y-6">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
@@ -149,7 +149,7 @@ export default function Expenses() {
             </div>
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="gap-2 bg-[#2f493b] text-[#f7f3eb] hover:bg-[#24392e] dark:bg-[#d6ad83] dark:text-[#171a18]">
+                <Button className="gap-2 bg-[#0071e3] text-white hover:bg-[#0077ed]">
                   <Plus className="h-4 w-4" />
                   Add Expense
                 </Button>

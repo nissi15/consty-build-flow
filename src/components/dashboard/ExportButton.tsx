@@ -42,7 +42,7 @@ export const ExportButton = memo(function ExportButton({ expenses, attendance, w
     <Button 
       onClick={handlePDFExport} 
       variant="default"
-      className={`gap-2 bg-[#2f493b] text-[#f7f3eb] hover:bg-[#24392e] dark:bg-[#d6ad83] dark:text-[#171a18] dark:hover:bg-[#e2c49f] ${className}`}
+      className={`gap-2 bg-[#0071e3] text-white hover:bg-[#0077ed] ${className}`}
     >
       <FileText className="h-4 w-4" />
       Download Weekly Report

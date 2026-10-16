@@ -259,7 +259,7 @@ export default function Workers() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f3f0e9] px-4 py-6 text-[#1a211d] dark:bg-[#0e1210] dark:text-[#f2eee6] sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f7f8fa] px-4 py-6 text-[#111214] dark:bg-[#0b0c0e] dark:text-[#f5f5f7] sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1600px] space-y-6">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
@@ -267,7 +267,7 @@ export default function Workers() {
         >
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8a603d] dark:text-[#d6ad83]">Musanze Town Buildings · Workforce</p>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#72767e]">Rwanda · Musanze District · Musanze Town Buildings</p>
               <h1 className="text-3xl font-semibold tracking-[-0.025em] sm:text-4xl">Workers</h1>
               <p className="mt-2 text-muted-foreground">Worker records, attendance status, and daily rates for the active site.</p>
             </div>
@@ -276,14 +276,14 @@ export default function Workers() {
                 onClick={handleAutoCalculate}
                 disabled={isCalculating}
                 variant="outline"
-                className="gap-2 border-[#cfc8bc] bg-[#fbfaf7] text-[#31483a] hover:bg-[#ebe7de] dark:border-[#344038] dark:bg-[#151a17] dark:text-[#cfdbd2] dark:hover:bg-[#1d251f]"
+                className="gap-2 border-[#dfe2e7] bg-white hover:bg-[#f3f4f6] dark:border-[#34363b] dark:bg-[#111214] dark:hover:bg-[#202226]"
               >
                 <Calculator className="h-4 w-4" />
                 {isCalculating ? 'Calculating...' : 'Calculate today'}
               </Button>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button className="gap-2 bg-[#2f493b] text-[#f7f3eb] hover:bg-[#24392e] dark:bg-[#d6ad83] dark:text-[#171a18] dark:hover:bg-[#e2c49f]">
+                  <Button className="gap-2 bg-[#0071e3] text-white hover:bg-[#0077ed]">
                     <Plus className="h-4 w-4" />
                     Add Worker
                   </Button>
@@ -393,7 +393,7 @@ export default function Workers() {
             </p>
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="gap-2 bg-[#2f493b] text-[#f7f3eb] hover:bg-[#24392e]">
+                <Button className="gap-2 bg-[#0071e3] text-white hover:bg-[#0077ed]">
                   <Plus className="h-4 w-4" />
                   Add Your First Worker
                 </Button>

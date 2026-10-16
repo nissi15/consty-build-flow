@@ -9,7 +9,10 @@ import {
   PiggyBank,
   Clock,
   Settings,
-  X
+  X,
+  FileBarChart,
+  Building2,
+  ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -23,7 +26,8 @@ const navItems = [
   { icon: DollarSign, label: 'Payroll', path: '/payroll' },
   { icon: TrendingUp, label: 'Expenses', path: '/expenses' },
   { icon: PiggyBank, label: 'Budget', path: '/budget' },
-  { icon: Clock, label: 'Activity Logs', path: '/activity' },
+  { icon: FileBarChart, label: 'Reports', path: '/reports' },
+  { icon: Clock, label: 'Activity', path: '/activity' },
   { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 
@@ -36,7 +40,7 @@ const Sidebar = ({ mobileMenuOpen = false, setMobileMenuOpen }: SidebarProps) =>
   const isMobile = useIsMobile();
 
   const NavContent = ({ onLinkClick }: { onLinkClick?: () => void }) => (
-    <nav className="space-y-2">
+    <nav className="space-y-1">
       {navItems.map((item, index) => (
         <motion.div
           key={item.path}
@@ -49,14 +53,14 @@ const Sidebar = ({ mobileMenuOpen = false, setMobileMenuOpen }: SidebarProps) =>
             onClick={onLinkClick}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition-colors duration-200',
+                'flex h-10 items-center gap-3 rounded-lg px-3 text-sm transition-colors duration-150',
                 isActive
-                  ? 'bg-[#2f493b] text-[#f7f3eb] dark:bg-[#d6ad83] dark:text-[#171a18]'
-                  : 'text-[#59635d] hover:bg-[#eee9df] hover:text-[#1c241f] dark:text-[#aeb7b1] dark:hover:bg-[#1b211e] dark:hover:text-white'
+                  ? 'bg-[#eaf3ff] text-[#06f] dark:bg-[#0b2d52] dark:text-[#66aaff]'
+                  : 'text-[#4d5156] hover:bg-[#f4f5f7] hover:text-black dark:text-[#a9adb4] dark:hover:bg-[#18191b] dark:hover:text-white'
               )
             }
           >
-            <item.icon className="h-5 w-5" />
+            <item.icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
             <span className="font-medium">{item.label}</span>
           </NavLink>
         </motion.div>
@@ -68,10 +72,10 @@ const Sidebar = ({ mobileMenuOpen = false, setMobileMenuOpen }: SidebarProps) =>
   if (isMobile) {
     return (
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="left" className="w-72 border-r border-[#ded8cd] bg-[#f8f6f1] p-6 dark:border-[#27302c] dark:bg-[#111512]">
+        <SheetContent side="left" className="w-72 border-r border-[#e3e5e8] bg-white p-5 dark:border-[#252629] dark:bg-[#0f1011]">
           <SheetHeader className="mb-6">
             <div className="flex items-center justify-between">
-              <SheetTitle className="text-xl font-bold">Consty</SheetTitle>
+              <SheetTitle className="text-xl font-semibold tracking-tight">CONSTY</SheetTitle>
               <Button
                 variant="ghost"
                 size="icon"
@@ -94,9 +98,22 @@ const Sidebar = ({ mobileMenuOpen = false, setMobileMenuOpen }: SidebarProps) =>
       initial={{ x: -20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ delay: 0.1 }}
-      className="sticky top-0 z-40 hidden h-screen w-64 border-r border-[#ded8cd] bg-[#f8f6f1] p-5 dark:border-[#27302c] dark:bg-[#111512] lg:block"
+      className="sticky top-[65px] z-40 hidden h-[calc(100vh-65px)] w-56 shrink-0 border-r border-[#e3e5e8] bg-white p-4 dark:border-[#252629] dark:bg-[#0f1011] lg:flex lg:flex-col"
     >
       <NavContent />
+      <div className="mt-auto rounded-xl border border-[#e3e5e8] bg-[#fafafa] p-3 dark:border-[#292b2f] dark:bg-[#151617]">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#f0f1f3] dark:bg-[#232529]">
+            <Building2 className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs text-muted-foreground">Project</p>
+            <p className="truncate text-sm font-medium">Musanze Town Buildings</p>
+          </div>
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">Musanze District, Rwanda</p>
+      </div>
     </motion.aside>
   );
 };

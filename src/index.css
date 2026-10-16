@@ -8,45 +8,45 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 42 24% 96%;
-    --foreground: 150 10% 11%;
+    --background: 0 0% 98%;
+    --foreground: 0 0% 7%;
 
-    --card: 40 25% 99%;
-    --card-foreground: 150 10% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 7%;
 
-    --popover: 40 25% 99%;
-    --popover-foreground: 150 10% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
 
-    --primary: 145 20% 24%;
-    --primary-foreground: 42 28% 96%;
+    --primary: 211 100% 50%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 37 38% 84%;
-    --secondary-foreground: 150 10% 14%;
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 10%;
 
-    --muted: 40 14% 92%;
-    --muted-foreground: 145 5% 42%;
+    --muted: 220 10% 96%;
+    --muted-foreground: 220 6% 42%;
 
-    --accent: 31 35% 58%;
-    --accent-foreground: 42 28% 97%;
+    --accent: 211 100% 96%;
+    --accent-foreground: 211 100% 42%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 38 13% 83%;
-    --input: 38 13% 83%;
-    --ring: 145 20% 24%;
+    --border: 220 13% 89%;
+    --input: 220 13% 87%;
+    --ring: 211 100% 50%;
 
-    --radius: 0.75rem;
+    --radius: 0.7rem;
     
     --gradient-dark-1: 0 0% 5%;
     --gradient-dark-2: 0 0% 11%;
     --gradient-dark-3: 0 0% 15%;
     
-    --chart-1: 145 20% 28%;
-    --chart-2: 31 35% 52%;
-    --chart-3: 43 35% 62%;
-    --chart-4: 197 14% 39%;
-    --chart-5: 18 30% 48%;
+    --chart-1: 0 0% 10%;
+    --chart-2: 0 0% 32%;
+    --chart-3: 0 0% 52%;
+    --chart-4: 0 0% 70%;
+    --chart-5: 211 100% 50%;
 
     --sidebar-background: 0 0% 98%;
 
@@ -66,43 +66,43 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 150 10% 7%;
-    --foreground: 42 22% 94%;
+    --background: 0 0% 6%;
+    --foreground: 0 0% 96%;
 
-    --card: 150 8% 10%;
-    --card-foreground: 42 22% 94%;
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 96%;
 
     --popover: 0 0% 8%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 36 38% 68%;
-    --primary-foreground: 150 10% 10%;
+    --primary: 211 100% 58%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 145 18% 25%;
-    --secondary-foreground: 42 22% 94%;
+    --secondary: 0 0% 16%;
+    --secondary-foreground: 0 0% 96%;
 
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 65%;
 
-    --accent: 31 32% 52%;
-    --accent-foreground: 42 22% 96%;
+    --accent: 211 60% 18%;
+    --accent-foreground: 211 100% 76%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 0 0% 15%;
     --input: 0 0% 15%;
-    --ring: 36 38% 68%;
+    --ring: 211 100% 58%;
     
     --gradient-dark-1: 0 0% 5%;
     --gradient-dark-2: 0 0% 11%;
     --gradient-dark-3: 0 0% 15%;
     
-    --chart-1: 36 38% 68%;
-    --chart-2: 145 18% 48%;
-    --chart-3: 43 30% 60%;
-    --chart-4: 197 18% 55%;
-    --chart-5: 18 35% 58%;
+    --chart-1: 0 0% 94%;
+    --chart-2: 0 0% 74%;
+    --chart-3: 0 0% 55%;
+    --chart-4: 0 0% 36%;
+    --chart-5: 211 100% 58%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -122,6 +122,7 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground font-sans antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
+    font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
   }
 
   :focus-visible {
@@ -132,7 +133,7 @@ All colors MUST be HSL.
 
 @layer utilities {
   .glass {
-    @apply bg-card border border-border shadow-sm;
+    @apply bg-card border border-border shadow-[0_1px_2px_rgba(0,0,0,0.03),0_8px_24px_rgba(0,0,0,0.035)];
   }
   
   .dark .glass {

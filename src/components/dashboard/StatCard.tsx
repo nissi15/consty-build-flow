@@ -38,7 +38,7 @@ const StatCard = ({ title, value, change, changeType = 'neutral', icon: Icon, in
               </span>
             )}
           </div>
-          <div className="rounded-lg bg-[#eee4d5] p-3 text-[#7f5a3b] dark:bg-[#3a2f24] dark:text-[#d6ad83]">
+          <div className="rounded-lg bg-[#f2f3f5] p-3 text-[#34373d] dark:bg-[#202226] dark:text-[#d1d3d7]">
             <Icon className="h-6 w-6" />
           </div>
         </div>

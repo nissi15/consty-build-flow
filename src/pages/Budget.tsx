@@ -132,7 +132,7 @@ export default function Budget() {
   }
 
   return (
-    <div className="min-h-screen space-y-6 bg-[#f3f0e9] p-4 text-[#1a211d] dark:bg-[#0e1210] dark:text-[#f2eee6] sm:p-6 lg:p-8">
+    <div className="min-h-screen space-y-6 bg-[#f7f8fa] p-4 text-[#111214] dark:bg-[#0b0c0e] dark:text-[#f5f5f7] sm:p-6 lg:p-8">
       <div className="space-y-6">
         <motion.div
           initial={{ y: -20, opacity: 0 }}

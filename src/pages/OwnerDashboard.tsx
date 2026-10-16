@@ -204,7 +204,7 @@ export default function OwnerDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0B1120]">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[#254b3b]"></div>
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[#0071e3]"></div>
       </div>
     );
   }
@@ -243,7 +243,7 @@ export default function OwnerDashboard() {
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
-              <div className="flex-shrink-0 rounded-xl bg-[#254b3b] p-2 shadow-sm sm:p-2.5">
+              <div className="flex-shrink-0 rounded-xl bg-black p-2 shadow-sm sm:p-2.5">
                 <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
               <div className="min-w-0 flex-1">
@@ -415,7 +415,7 @@ export default function OwnerDashboard() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="rounded-lg bg-[#e2ebe5] p-1.5 dark:bg-[#20352a] sm:p-2">
-                    <Receipt className="h-4 w-4 text-[#254b3b] dark:text-[#a9c5b5] sm:h-5 sm:w-5" />
+                    <Receipt className="h-4 w-4 text-[#0071e3] dark:text-[#69a8ff] sm:h-5 sm:w-5" />
                   </div>
                   <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 dark:text-slate-100">
                     Today's Expenses

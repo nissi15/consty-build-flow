@@ -212,7 +212,7 @@ export function AttendanceRecords({ attendance }: AttendanceRecordsProps) {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-9 w-9 ring-2 ring-slate-200 dark:ring-slate-700">
-                        <AvatarFallback className="bg-[#254b3b] text-white font-semibold text-sm">
+                        <AvatarFallback className="bg-[#eef3ff] text-[#0066cc] font-semibold text-sm">
                           {record.workers?.name?.split(' ').map(n => n[0]).join('') || '?'}
                         </AvatarFallback>
                       </Avatar>

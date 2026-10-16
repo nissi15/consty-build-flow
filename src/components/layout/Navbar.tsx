@@ -1,4 +1,4 @@
-import { Moon, Sun, Menu, LogOut, HardHat, MapPin } from 'lucide-react';
+import { Moon, Sun, Menu, LogOut, Building2, Search, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,9 +26,9 @@ const Navbar = ({ onMenuClick, showMenuButton = false }: NavbarProps) => {
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="sticky top-0 z-50 border-b border-[#ded8cd] bg-[#f8f6f1]/95 px-4 py-3 backdrop-blur-md dark:border-[#27302c] dark:bg-[#111512]/95 sm:px-6"
+      className="sticky top-0 z-50 h-[65px] border-b border-[#e3e5e8] bg-white/95 px-4 backdrop-blur-xl dark:border-[#252629] dark:bg-[#0f1011]/95 sm:px-6"
     >
-      <div className="mx-auto flex max-w-[1600px] items-center justify-between">
+      <div className="flex h-full items-center justify-between">
         <div className="flex items-center gap-2 sm:gap-4">
           {showMenuButton && (
             <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden">
@@ -36,25 +36,24 @@ const Navbar = ({ onMenuClick, showMenuButton = false }: NavbarProps) => {
             </Button>
           )}
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2f493b] text-[#f6f1e8] dark:bg-[#d6ad83] dark:text-[#171a18]">
-              <HardHat className="h-4 w-4" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black text-white dark:bg-white dark:text-black">
+              <Building2 className="h-4 w-4" />
             </div>
-            <span className="text-base font-semibold tracking-[0.14em] sm:text-lg">CONSTY</span>
+            <span className="text-base font-semibold tracking-[0.08em] sm:text-lg">CONSTY</span>
           </div>
           {user && isAdmin && (
-            <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
+            <span className="rounded-full bg-[#f1f2f4] px-2 py-1 text-xs font-medium text-[#555b63] dark:bg-[#222428] dark:text-[#bac0c8]">
               Admin
             </span>
           )}
         </div>
 
-        <div className="hidden items-center gap-2 text-sm text-[#59635d] dark:text-[#aeb7b1] lg:flex">
-          <MapPin className="h-4 w-4 text-[#9a6a45] dark:text-[#d6ad83]" />
-          <span>Rwanda</span>
-          <span className="text-[#aaa398]">/</span>
-          <span>Musanze District</span>
-          <span className="text-[#aaa398]">/</span>
-          <span className="font-medium text-[#1d2721] dark:text-[#f1ece4]">Musanze Town Buildings</span>
+        <div className="hidden items-center gap-3 lg:flex">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#777d85]" />
+            <input aria-label="Search" placeholder="Search workers, expenses, reports…" className="h-9 w-80 rounded-lg border border-[#e0e2e5] bg-[#fafafa] pl-9 pr-3 text-sm outline-none transition focus:border-[#9fc8ff] focus:ring-2 focus:ring-[#06f]/10 dark:border-[#303236] dark:bg-[#17181a]" />
+          </div>
+          <Button variant="ghost" size="icon" aria-label="Notifications"><Bell className="h-[18px] w-[18px]" /></Button>
         </div>
         
         <div className="flex items-center gap-2">
@@ -82,7 +81,7 @@ const Navbar = ({ onMenuClick, showMenuButton = false }: NavbarProps) => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-[#2f493b] text-[#f7f3eb] text-sm dark:bg-[#d6ad83] dark:text-[#171a18]">
+                    <AvatarFallback className="bg-[#eceef1] text-sm font-medium text-[#26292d] dark:bg-[#282a2e] dark:text-white">
                       {user?.email?.[0].toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>

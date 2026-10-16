@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 // Gradient Text Component
 const GradientText = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
   return (
-    <span className={`text-[#f2eee6] ${className}`}>
+    <span className={`text-[#111214] ${className}`}>
       {children}
     </span>
   );
@@ -23,7 +23,7 @@ const GradientText = ({ children, className = "" }: { children: React.ReactNode;
 const GlassSurface = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
   return (
     <div
-      className={`border border-white/10 bg-[#151918] shadow-[0_28px_80px_rgba(0,0,0,0.38)] ${className}`}
+      className={`border border-black/10 bg-white shadow-[0_28px_80px_rgba(0,0,0,0.12)] ${className}`}
     >
       {children}
     </div>
@@ -89,8 +89,8 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#0c0f0e]">
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.018)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.018)_1px,transparent_1px)] bg-[size:72px_72px]" />
+    <div className="min-h-screen relative overflow-hidden bg-[#f5f5f7] text-[#111214]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(0,0,0,.055),transparent_36%),linear-gradient(rgba(0,0,0,.025)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,.025)_1px,transparent_1px)] bg-[size:auto,72px_72px,72px_72px]" />
 
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4">
@@ -100,7 +100,7 @@ const Auth = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
           onClick={() => navigate('/')}
-          className="absolute top-8 left-8 flex items-center gap-2 text-white/70 hover:text-white transition-colors"
+          className="absolute top-8 left-8 flex items-center gap-2 text-[#656970] hover:text-black transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
           <span>Back to Home</span>
@@ -113,7 +113,7 @@ const Auth = () => {
           transition={{ duration: 0.5 }}
           className="mb-8 flex items-center gap-3"
         >
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#d6ad83] text-[#171a18]"><HardHat className="h-5 w-5" /></span>
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-white"><HardHat className="h-5 w-5" /></span>
           <GradientText className="text-xl font-semibold tracking-[0.18em]">CONSTY</GradientText>
         </motion.div>
 
@@ -127,7 +127,7 @@ const Auth = () => {
           <GlassSurface className="relative rounded-2xl p-8">
             {/* Decorative gradient border */}
             <div className="absolute inset-0 rounded-3xl pointer-events-none" style={{
-              border: '1px solid rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(0, 0, 0, 0.04)',
             }} />
 
             <div className="relative">
@@ -136,17 +136,17 @@ const Auth = () => {
                 <motion.div
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                  className="rounded-xl bg-[#d6ad83] p-4"
+                  className="rounded-xl bg-black p-4"
                 >
-                  <HardHat className="h-8 w-8 text-[#171a18]" />
+                  <HardHat className="h-8 w-8 text-white" />
                 </motion.div>
               </div>
 
               {/* Title */}
-              <h1 className="text-3xl font-bold text-center mb-2 text-white">
+              <h1 className="text-3xl font-semibold tracking-[-0.035em] text-center mb-2 text-[#111214]">
                 {userType === 'owner' ? 'Project Owner' : isLogin ? 'Welcome Back' : 'Get Started'}
               </h1>
-              <p className="text-gray-400 text-center mb-6">
+              <p className="text-[#777b82] text-center mb-6">
                 {userType === 'owner' 
                   ? 'Enter your 6-digit code to view project' 
                   : isLogin ? 'Sign in to manage your projects' : 'Create your Consty account'}
@@ -154,17 +154,17 @@ const Auth = () => {
 
               {/* User Type Toggle */}
               <Tabs value={userType} onValueChange={(v) => setUserType(v as 'manager' | 'owner')} className="w-full mb-6">
-                <TabsList className="grid w-full grid-cols-2 border border-white/10 bg-white/[0.035]">
+                <TabsList className="grid w-full grid-cols-2 border border-[#e2e4e7] bg-[#f2f3f5]">
                   <TabsTrigger 
                     value="manager" 
-                    className="text-gray-400 data-[state=active]:bg-[#31483a] data-[state=active]:text-[#f2eee6]"
+                    className="text-[#777b82] data-[state=active]:bg-white data-[state=active]:text-black"
                   >
                     <UserCircle className="h-4 w-4 mr-2" />
                     Manager
                   </TabsTrigger>
                   <TabsTrigger 
                     value="owner"
-                    className="text-gray-400 data-[state=active]:bg-[#31483a] data-[state=active]:text-[#f2eee6]"
+                    className="text-[#777b82] data-[state=active]:bg-white data-[state=active]:text-black"
                   >
                     <Crown className="h-4 w-4 mr-2" />
                     Owner
@@ -181,7 +181,7 @@ const Auth = () => {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <Label htmlFor="ownerCode" className="text-gray-300">Access Code</Label>
+                    <Label htmlFor="ownerCode">Access Code</Label>
                     <Input
                       id="ownerCode"
                       type="text"
@@ -193,9 +193,9 @@ const Auth = () => {
                       placeholder="000000"
                       maxLength={6}
                       required
-                      className="mt-1.5 border-white/10 bg-white/[0.035] text-white placeholder:text-gray-500 focus:border-[#d6ad83] text-center text-2xl tracking-widest font-mono"
+                      className="mt-1.5 border-[#dfe2e7] bg-[#f8f9fa] text-center text-2xl tracking-widest font-mono"
                     />
-                    <p className="text-xs text-gray-500 mt-2 text-center">
+                    <p className="text-xs text-[#8a8e95] mt-2 text-center">
                       Enter the 6-digit code provided by your site manager
                     </p>
                   </motion.div>
@@ -208,7 +208,7 @@ const Auth = () => {
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                       >
-                        <Label htmlFor="fullName" className="text-gray-300">Full Name</Label>
+                        <Label htmlFor="fullName">Full Name</Label>
                         <Input
                           id="fullName"
                           type="text"
@@ -216,13 +216,13 @@ const Auth = () => {
                           onChange={(e) => setFullName(e.target.value)}
                           placeholder="John Doe"
                           required={!isLogin}
-                          className="mt-1.5 border-white/10 bg-white/[0.035] text-white placeholder:text-gray-500 focus:border-[#d6ad83]"
+                          className="mt-1.5 border-[#dfe2e7] bg-[#f8f9fa]"
                         />
                       </motion.div>
                     )}
 
                     <div>
-                      <Label htmlFor="email" className="text-gray-300">Email</Label>
+                      <Label htmlFor="email">Email</Label>
                       <Input
                         id="email"
                         type="email"
@@ -230,12 +230,12 @@ const Auth = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@example.com"
                         required
-                        className="mt-1.5 border-white/10 bg-white/[0.035] text-white placeholder:text-gray-500 focus:border-[#d6ad83]"
+                        className="mt-1.5 border-[#dfe2e7] bg-[#f8f9fa]"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="password" className="text-gray-300">Password</Label>
+                      <Label htmlFor="password">Password</Label>
                       <Input
                         id="password"
                         type="password"
@@ -244,10 +244,10 @@ const Auth = () => {
                         placeholder="••••••••"
                         required
                         minLength={6}
-                        className="mt-1.5 border-white/10 bg-white/[0.035] text-white placeholder:text-gray-500 focus:border-[#d6ad83]"
+                        className="mt-1.5 border-[#dfe2e7] bg-[#f8f9fa]"
                       />
                       {!isLogin && (
-                        <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+                        <p className="text-xs text-[#8a8e95] mt-1">Minimum 6 characters</p>
                       )}
                     </div>
                   </>
@@ -256,7 +256,7 @@ const Auth = () => {
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Button
                     type="submit"
-                    className="h-12 w-full border-0 bg-[#d6ad83] text-base font-semibold text-[#171a18] hover:bg-[#e2c49f]"
+                    className="h-12 w-full border-0 bg-black text-base font-semibold text-white hover:bg-[#2b2c2f]"
                     disabled={loading}
                   >
                     {loading ? (
@@ -279,17 +279,17 @@ const Auth = () => {
                   <button
                     type="button"
                     onClick={() => setIsLogin(!isLogin)}
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                    className="text-sm text-[#777b82] hover:text-black transition-colors"
                   >
                     {isLogin ? (
                       <>
                         Don't have an account?{' '}
-                        <span className="font-medium text-[#d6ad83]">Sign up</span>
+                        <span className="font-medium text-[#0071e3]">Sign up</span>
                       </>
                     ) : (
                       <>
                         Already have an account?{' '}
-                        <span className="font-medium text-[#d6ad83]">Sign in</span>
+                        <span className="font-medium text-[#0071e3]">Sign in</span>
                       </>
                     )}
                   </button>
@@ -304,7 +304,7 @@ const Auth = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-8 text-sm text-gray-500"
+          className="mt-8 text-sm text-[#8a8e95]"
         >
           Secure authentication powered by Supabase
         </motion.p>

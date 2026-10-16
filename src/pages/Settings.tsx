@@ -131,7 +131,7 @@ const Settings = () => {
 
   const loadDemoPortfolio = async () => {
     const confirmed = window.confirm(
-      'Load an 11-month complexity demo? This adds 90 workers and thousands of linked records. Existing records will not be deleted.',
+      'Refresh the 11-month complexity demo? This updates the generated demo records while preserving manually entered records.',
     );
     if (!confirmed) return;
 
@@ -152,15 +152,15 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-full space-y-6 bg-[#f6f4ee] p-4 dark:bg-[#111814] sm:p-6 lg:p-8">
+    <div className="min-h-full space-y-6 bg-[#f7f8fa] p-4 dark:bg-[#0b0c0e] sm:p-6 lg:p-8">
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
       >
-        <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8b6b3e]">
-          <MapPin className="h-3.5 w-3.5" /> Musanze Town Buildings · Administration
+        <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#73777f]">
+          <MapPin className="h-3.5 w-3.5" /> Rwanda · Musanze District · Musanze Town Buildings
         </div>
-        <h1 className="text-3xl font-semibold tracking-tight text-[#17231c] dark:text-[#f4f0e5] sm:text-4xl">Settings</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-[#111214] dark:text-[#f5f5f7] sm:text-4xl">Settings</h1>
         <p className="mt-2 text-muted-foreground">Manage project access, appearance and demonstration data.</p>
       </motion.div>
 
@@ -171,25 +171,25 @@ const Settings = () => {
           transition={{ delay: 0.1 }}
           className="lg:col-span-2"
         >
-          <Card className="overflow-hidden border-[#d8d1c2] bg-[#17231c] text-[#f4f0e5] shadow-[0_18px_60px_rgba(23,35,28,0.16)] dark:border-[#34453a]">
+          <Card className="overflow-hidden border-black bg-black text-white shadow-[0_18px_60px_rgba(0,0,0,0.14)] dark:border-[#292b2f]">
             <div className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-center lg:p-8">
               <div>
-                <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-lg border border-[#97764a]/50 bg-[#97764a]/15">
-                  <Database className="h-5 w-5 text-[#d4b37c]" />
+                <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10">
+                  <Database className="h-5 w-5 text-white" />
                 </div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#d4b37c]">Complexity demo</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Complexity demo</p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-tight">Load 11 months of realistic project operations</h2>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-[#c7cec9]">
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-white/65">
                   Adds 90 Rwandan workers, six-day attendance history, monthly payroll, construction materials,
-                  operating expenses and a complete project budget. Existing records remain untouched.
+                  operating expenses and a RWF 450M project budget. Manually entered records remain untouched.
                 </p>
-                <div className="mt-5 flex flex-wrap gap-2 text-xs text-[#dce2de]">
-                  {['90 workers', '11 months', '≈25k attendance rows', '990 payroll rows', '242 cost entries'].map((item) => (
-                    <span key={item} className="rounded-full border border-[#46564c] px-3 py-1.5">{item}</span>
+                <div className="mt-5 flex flex-wrap gap-2 text-xs text-white/70">
+                  {['90 abbreviated names', '11 months', '≈25k attendance rows', '990 payroll rows', '176 cost entries', 'RWF 450M budget'].map((item) => (
+                    <span key={item} className="rounded-full border border-white/15 px-3 py-1.5">{item}</span>
                   ))}
                 </div>
                 {(demoProgress || demoResult) && (
-                  <div className="mt-5 border-l-2 border-[#b78a52] pl-3 text-sm text-[#dce2de]" aria-live="polite">
+                  <div className="mt-5 border-l-2 border-white/70 pl-3 text-sm text-white/75" aria-live="polite">
                     {demoResult
                       ? `${demoResult.workers} workers, ${demoResult.attendance.toLocaleString()} attendance records, ${demoResult.payroll.toLocaleString()} payroll records and ${demoResult.expenses} expenses are ready.`
                       : demoProgress}
@@ -199,10 +199,10 @@ const Settings = () => {
               <Button
                 onClick={loadDemoPortfolio}
                 disabled={isSeedingDemo}
-                className="h-12 min-w-56 bg-[#b78a52] px-6 font-semibold text-[#111814] hover:bg-[#c89c63]"
+                className="h-12 min-w-56 bg-white px-6 font-semibold text-black hover:bg-[#f0f1f2]"
               >
                 {isSeedingDemo ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
-                {isSeedingDemo ? 'Loading portfolio…' : 'Load demo portfolio'}
+                {isSeedingDemo ? 'Refreshing portfolio…' : 'Refresh demo portfolio'}
               </Button>
             </div>
           </Card>
@@ -213,10 +213,10 @@ const Settings = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.15 }}
         >
-          <Card className="h-full border-[#ddd6c8] bg-[#fffdf8] p-6 shadow-sm dark:border-[#34453a] dark:bg-[#18231d]">
+          <Card className="h-full border-[#e2e4e7] bg-white p-6 shadow-sm dark:border-[#292b2f] dark:bg-[#111214]">
             <div className="flex items-center gap-3 mb-6">
-              <div className="rounded-lg bg-[#e9e3d7] p-2 dark:bg-[#26362c]">
-                <Palette className="h-5 w-5 text-[#254b3b] dark:text-[#d4b37c]" />
+              <div className="rounded-lg bg-[#f2f3f5] p-2 dark:bg-[#202226]">
+                <Palette className="h-5 w-5" />
               </div>
               <h3 className="text-xl font-semibold">Appearance</h3>
             </div>
@@ -240,14 +240,14 @@ const Settings = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.25 }}
         >
-          <Card className="h-full border-[#ddd6c8] bg-[#fffdf8] p-6 shadow-sm dark:border-[#34453a] dark:bg-[#18231d]">
+          <Card className="h-full border-[#e2e4e7] bg-white p-6 shadow-sm dark:border-[#292b2f] dark:bg-[#111214]">
             <div className="flex items-center gap-3 mb-6">
-              <div className="rounded-lg bg-[#e9e3d7] p-2 dark:bg-[#26362c]">
-                <Shield className="h-5 w-5 text-[#254b3b] dark:text-[#d4b37c]" />
+              <div className="rounded-lg bg-[#f2f3f5] p-2 dark:bg-[#202226]">
+                <Shield className="h-5 w-5" />
               </div>
               <h3 className="text-xl font-semibold">Signed-in account</h3>
             </div>
-            <div className="rounded-lg border border-[#e3ddcf] bg-[#f7f3ea] p-4 dark:border-[#3b4b40] dark:bg-[#111814]">
+            <div className="rounded-lg border border-[#e2e4e7] bg-[#f7f8fa] p-4 dark:border-[#292b2f] dark:bg-[#191a1d]">
               <Label className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Email</Label>
               <p className="mt-2 font-medium">{user?.email || 'No account email available'}</p>
             </div>
@@ -264,11 +264,11 @@ const Settings = () => {
           transition={{ delay: 0.3 }}
           className="lg:col-span-2"
         >
-          <Card className="border-[#ddd6c8] bg-[#fffdf8] p-6 shadow-sm dark:border-[#34453a] dark:bg-[#18231d]">
+          <Card className="border-[#e2e4e7] bg-white p-6 shadow-sm dark:border-[#292b2f] dark:bg-[#111214]">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-[#e9e3d7] p-2 dark:bg-[#26362c]">
-                  <Crown className="h-5 w-5 text-[#8b6b3e] dark:text-[#d4b37c]" />
+                <div className="rounded-lg bg-[#f2f3f5] p-2 dark:bg-[#202226]">
+                  <Crown className="h-5 w-5" />
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold">Owner Access Codes</h3>
@@ -281,7 +281,7 @@ const Settings = () => {
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button 
-                    className="gap-2 bg-[#254b3b] text-white hover:bg-[#1d3b2f]"
+                    className="gap-2 bg-[#0071e3] text-white hover:bg-[#0077ed]"
                     disabled={ownerCodes.some(code => code.is_active)}
                   >
                     <Plus className="h-4 w-4" />
@@ -347,7 +347,7 @@ const Settings = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-semibold text-[#17231c] dark:text-[#f4f0e5]">
+                          <h4 className="font-semibold text-[#111214] dark:text-[#f5f5f7]">
                             {ownerCode.owner_name}
                           </h4>
                           <Badge
@@ -376,8 +376,8 @@ const Settings = () => {
 
                       <div className="flex items-center gap-2">
                         {/* Code Display */}
-                        <div className="flex items-center gap-2 rounded-lg border border-[#d8d1c2] bg-[#fffdf8] px-4 py-2 dark:border-[#3b4b40] dark:bg-[#18231d]">
-                          <code className="font-mono text-2xl font-bold tracking-widest text-[#254b3b] dark:text-[#d4b37c]">
+                        <div className="flex items-center gap-2 rounded-lg border border-[#e2e4e7] bg-white px-4 py-2 dark:border-[#292b2f] dark:bg-[#111214]">
+                          <code className="font-mono text-2xl font-bold tracking-widest text-[#0071e3] dark:text-[#69a8ff]">
                             {ownerCode.code}
                           </code>
                           <Button

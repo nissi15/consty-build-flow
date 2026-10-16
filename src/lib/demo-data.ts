@@ -19,16 +19,6 @@ const DEMO_ID = {
   activity: '60000000-0000-4000-8000-000000000001',
 };
 
-const firstNames = [
-  'Aline', 'Ange', 'Ariane', 'Beatha', 'Carine', 'Chantal', 'Claudine', 'Diane',
-  'Divine', 'Dorcas', 'Esther', 'Francine', 'Gisèle', 'Grace', 'Immaculée',
-  'Jeanne', 'Josiane', 'Julienne', 'Liliane', 'Mireille', 'Nadine', 'Odette',
-  'Olive', 'Sandrine', 'Solange', 'Vestine', 'Yvette', 'Aimé', 'Alain', 'Alexis',
-  'Bosco', 'Claude', 'Emmanuel', 'Éric', 'Fabrice', 'Faustin', 'Félix', 'Fred',
-  'Gad', 'Gilbert', 'Innocent', 'Jacques', 'Jean', 'Jérôme', 'Joseph', 'Justin',
-  'Kevin', 'Martin', 'Patrick', 'Paul', 'Samuel', 'Théogène', 'Thierry', 'Yves',
-];
-
 const surnames = [
   'Habimana', 'Uwimana', 'Niyonsenga', 'Mukamana', 'Nshimiyimana', 'Nsengiyumva',
   'Bizimana', 'Hakizimana', 'Tuyishime', 'Murekatete', 'Uwamahoro', 'Ishimwe',
@@ -39,40 +29,61 @@ const surnames = [
   'Munyakazi', 'Mugiraneza', 'Ntirenganya', 'Ntakirutimana', 'Rugamba', 'Rutikanga',
 ];
 
+const initials = ['P', 'D', 'E', 'J', 'M', 'A', 'C', 'F', 'G', 'I', 'K', 'N', 'R', 'S', 'T', 'V', 'Y', 'B'];
+const registerNames = Array.from({ length: 90 }, (_, index) => {
+  if (index === 0) return 'Habimana P';
+  if (index === 1) return 'Jacque D';
+  const surname = surnames[(index * 7 + 2) % surnames.length];
+  const initial = initials[(index * 5 + Math.floor(index / surnames.length)) % initials.length];
+  return `${surname} ${initial}`;
+});
+
 const rolePlan = [
-  ['Site engineer', 3, 22000, 2500],
-  ['Foreman', 4, 16000, 2500],
-  ['Mason', 18, 10000, 2000],
-  ['Carpenter', 12, 11000, 2000],
-  ['Steel fixer', 10, 11000, 2000],
-  ['Electrician', 6, 13500, 2200],
-  ['Plumber', 6, 13000, 2200],
-  ['Painter', 8, 9000, 1800],
-  ['Equipment operator', 5, 14000, 2200],
-  ['Storekeeper', 3, 9500, 1800],
-  ['Safety officer', 3, 12500, 2200],
-  ['General assistant', 12, 7000, 1500],
+  ['Site engineer', 3, 12000, 2000],
+  ['Foreman', 4, 8000, 2000],
+  ['Mason', 18, 6000, 1500],
+  ['Carpenter', 12, 6500, 1500],
+  ['Steel fixer', 10, 6500, 1500],
+  ['Electrician', 6, 7000, 1500],
+  ['Plumber', 6, 7000, 1500],
+  ['Painter', 8, 5000, 1200],
+  ['Equipment operator', 5, 7500, 1800],
+  ['Storekeeper', 3, 4500, 1000],
+  ['Safety officer', 3, 6500, 1500],
+  ['Assistant', 12, 3500, 1000],
 ] as const;
 
 const materials = [
-  ['Cement, 50 kg bags', 6_480_000],
-  ['Reinforcement steel Y12', 8_950_000],
-  ['Reinforcement steel Y16', 9_860_000],
-  ['Machine-cut stones', 5_420_000],
-  ['River sand deliveries', 3_780_000],
-  ['Coarse aggregate', 4_160_000],
-  ['Concrete blocks', 4_880_000],
-  ['Roofing sheets', 7_650_000],
-  ['Structural timber', 4_720_000],
-  ['Formwork plywood', 3_960_000],
-  ['Electrical cable and conduit', 4_450_000],
-  ['Plumbing pipe and fittings', 3_840_000],
-  ['Floor and wall tiles', 5_760_000],
-  ['Interior and exterior paint', 3_280_000],
-  ['Doors, frames and ironmongery', 4_940_000],
-  ['Windows and glazing', 5_180_000],
-  ['Waterproofing materials', 2_740_000],
-  ['PPE and site safety supplies', 1_320_000],
+  ['Cement CIMERWA 32.5N · 420 bags', 5_040_000],
+  ['Cement CIMERWA 42.5N · 180 bags', 2_430_000],
+  ['Reinforcement steel Y8 · 1.2 tonnes', 1_680_000],
+  ['Reinforcement steel Y10 · 1.5 tonnes', 2_175_000],
+  ['Reinforcement steel Y12 · 2.0 tonnes', 3_180_000],
+  ['Reinforcement steel Y16 · 1.4 tonnes', 2_520_000],
+  ['Binding wire · 18 rolls', 198_000],
+  ['Machine-cut volcanic stone · 2 truckloads', 1_260_000],
+  ['River sand · 3 truckloads', 870_000],
+  ['Washed sand · 2 truckloads', 720_000],
+  ['Coarse aggregate 20 mm · 3 truckloads', 1_080_000],
+  ['Concrete blocks 15 cm · 1,200 pieces', 1_140_000],
+  ['Concrete blocks 20 cm · 850 pieces', 1_020_000],
+  ['Burnt clay bricks · 2,500 pieces', 625_000],
+  ['Structural timber 4×2 · 160 lengths', 1_120_000],
+  ['Formwork plywood 18 mm · 45 sheets', 1_035_000],
+  ['Roofing sheets 0.45 mm · 95 sheets', 2_185_000],
+  ['Roofing ridge caps and fasteners', 486_000],
+  ['Electrical conduit and fittings · floor lot', 695_000],
+  ['Electrical cable 2.5 mm · 24 coils', 1_560_000],
+  ['PVC plumbing pipe and fittings · floor lot', 1_185_000],
+  ['PPR water pipe and fittings · floor lot', 1_340_000],
+  ['Floor tiles 60×60 cm · 210 m²', 2_205_000],
+  ['Wall tiles 30×60 cm · 145 m²', 1_305_000],
+  ['Interior emulsion paint · 42 buckets', 1_218_000],
+  ['Exterior weather paint · 28 buckets', 1_036_000],
+  ['Waterproofing membrane · 16 rolls', 928_000],
+  ['Aluminium windows and glazing · batch', 2_840_000],
+  ['Steel doors, frames and locks · batch', 2_460_000],
+  ['PPE restock · helmets, boots and gloves', 745_000],
 ] as const;
 
 const pad = (value: number, size = 2) => String(value).padStart(size, '0');
@@ -112,7 +123,7 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
   );
 
   const workerRows: TablesInsert<'workers'>[] = roleQueue.map((assignment, index) => {
-    const name = `${firstNames[index % firstNames.length]} ${surnames[(index * 7 + 3) % surnames.length]}`;
+    const name = registerNames[index];
     const joinDate = new Date(projectStart);
     joinDate.setDate(joinDate.getDate() - 35 + (index % 28));
     return {
@@ -207,7 +218,10 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
   const expenseRows: TablesInsert<'expenses'>[] = [];
   let expenseIndex = 1;
   for (const [monthIndex, month] of months.entries()) {
-    for (const [materialIndex, [description, baseAmount]] of materials.entries()) {
+    const monthlyMaterials = Array.from({ length: 12 }, (_, offset) =>
+      materials[(monthIndex * 5 + offset * 2) % materials.length],
+    );
+    for (const [materialIndex, [description, baseAmount]] of monthlyMaterials.entries()) {
       const date = new Date(month.start);
       date.setDate(2 + ((materialIndex * 3 + monthIndex) % Math.max(3, month.end.getDate() - 2)));
       if (date > month.end) date.setTime(month.end.getTime());
@@ -223,10 +237,10 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
     }
 
     const operatingCosts = [
-      ['Equipment', 'Excavator and concrete mixer hire', 3_650_000],
-      ['Transport', 'Material haulage and site logistics', 2_480_000],
-      ['Utilities', 'Site water, power and communications', 1_180_000],
-      ['Safety', 'Safety inspection and protective equipment', 940_000],
+      ['Equipment', 'Excavator, compactor and mixer hire · monthly allocation', 1_650_000],
+      ['Transport', 'Material haulage and site logistics · monthly allocation', 920_000],
+      ['Utilities', 'Site water, power and communications', 460_000],
+      ['Safety', 'Safety inspection and consumable PPE', 340_000],
     ] as const;
     for (const [costIndex, [category, description, baseAmount]] of operatingCosts.entries()) {
       const date = new Date(month.start);
@@ -243,15 +257,31 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
     }
   }
 
-  onProgress(`Adding ${expenseRows.length.toLocaleString()} material and operating-cost entries…`);
-  await upsertBatches('expenses', expenseRows, 'id', 500);
-
-  const expenseTotal = expenseRows.reduce((total, row) => total + Number(row.amount), 0);
   const paidPayrollTotal = payrollRows
     .filter((row) => row.status === 'paid')
     .reduce((total, row) => total + Number(row.net_amount || 0), 0);
+  const targetUsedBudget = 292_500_000;
+  const targetExpenseTotal = Math.max(1, targetUsedBudget - paidPayrollTotal);
+  const rawExpenseTotal = expenseRows.reduce((total, row) => total + Number(row.amount), 0);
+  const expenseScale = targetExpenseTotal / rawExpenseTotal;
+  expenseRows.forEach((row) => {
+    row.amount = Math.max(25_000, Math.round((Number(row.amount) * expenseScale) / 1000) * 1000);
+  });
+
+  const roundedExpenseTotal = expenseRows.reduce((total, row) => total + Number(row.amount), 0);
+  expenseRows[expenseRows.length - 1].amount = Number(expenseRows[expenseRows.length - 1].amount) + (targetExpenseTotal - roundedExpenseTotal);
+
+  onProgress(`Adding ${expenseRows.length.toLocaleString()} material and operating-cost entries…`);
+  const { error: cleanupError } = await supabase
+    .from('expenses')
+    .delete()
+    .like('description', 'DEMO · Musanze Town Buildings ·%');
+  if (cleanupError) throw cleanupError;
+  await upsertBatches('expenses', expenseRows, 'id', 500);
+
+  const expenseTotal = expenseRows.reduce((total, row) => total + Number(row.amount), 0);
   const usedBudget = expenseTotal + paidPayrollTotal;
-  const totalBudget = Math.ceil((usedBudget * 1.28) / 1_000_000) * 1_000_000;
+  const totalBudget = 450_000_000;
 
   onProgress('Finalising the project budget and activity history…');
   const { error: budgetError } = await supabase.from('budget').upsert({

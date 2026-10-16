@@ -1,539 +1,91 @@
-import { motion } from 'framer-motion';
-import { Users, Clock, DollarSign, Package, Wrench, Truck } from 'lucide-react';
-import { ActivityLog } from '@/components/dashboard/ActivityLog';
-import { ExportButton } from '@/components/dashboard/ExportButton';
-import { ChartDetailModal } from '@/components/dashboard/ChartDetailModal';
-import { useState } from 'react';
-import { useDataRefresh } from '@/hooks/useDataRefresh';
+import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { AlertTriangle, ArrowUpRight, CalendarCheck, FileText, Package, Users, WalletCards } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import StatCard from '@/components/dashboard/StatCard';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart';
-import { BarChart, Bar, LineChart, Line, Cell, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-interface ChartClickData {
-  activePayload?: Array<{
-    payload: any;
-    [key: string]: any;
-  }>;
-  [key: string]: any;
-}
-import { useWorkers, useAttendance, useExpenses, useBudget } from '@/hooks/useSupabaseData';
+import { useWorkers, useAttendance, useExpenses, useBudget, useActivityLog } from '@/hooks/useSupabaseData';
 import { usePayroll } from '@/hooks/usePayroll';
-import { useAuth } from '@/contexts/AuthContext';
-import { useMemo } from 'react';
-import { format, startOfWeek, endOfWeek, subWeeks, eachDayOfInterval } from 'date-fns';
-import { getCategoryColor } from '@/constants/expenseCategories';
 import { getTodayInRwanda } from '@/utils/dateUtils';
 
-const chartConfig = {
-  attendance: { label: 'Attendance %', color: 'hsl(var(--chart-1))' },
-  expenses: { label: 'Expenses', color: 'hsl(var(--chart-2))' },
+const formatRwf = (value: number) => {
+  if (value >= 1_000_000_000) return `RWF ${(value / 1_000_000_000).toFixed(2)}B`;
+  if (value >= 1_000_000) return `RWF ${(value / 1_000_000).toFixed(1)}M`;
+  return `RWF ${Math.round(value).toLocaleString()}`;
 };
 
-interface StatItem {
-  title: string;
-  value: string;
-  change?: string;
-  changeType?: 'positive' | 'negative' | 'neutral';
-  icon: any;
-}
-
 const Dashboard = () => {
-  // Set up automatic data refresh every 30 seconds
-  useDataRefresh(30000);
-  
-  const { user } = useAuth();
   const { workers, loading: workersLoading } = useWorkers();
   const { attendance, loading: attendanceLoading } = useAttendance();
   const { expenses, loading: expensesLoading } = useExpenses();
   const { budget, loading: budgetLoading } = useBudget();
   const { payrolls, loading: payrollLoading } = usePayroll();
+  const { activityLog } = useActivityLog();
 
-  const [detailModal, setDetailModal] = useState<{
-    open: boolean;
-    title: string;
-    description: string;
-    data: any[];
-    type: 'expenses' | 'attendance' | 'budget';
-  }>({
-    open: false,
-    title: '',
-    description: '',
-    data: [],
-    type: 'expenses',
-  });
-
-  const stats: StatItem[] = useMemo(() => {
-    const totalWorkers = workers.filter(w => w.is_active).length;
+  const dashboard = useMemo(() => {
+    const activeWorkers = workers.filter(worker => worker.is_active);
     const today = getTodayInRwanda();
-    
-    // Calculate weekly expenses
-    const weekStart = new Date();
-    weekStart.setDate(weekStart.getDate() - 7);
-    const weeklyExpenses = expenses
-      .filter(e => new Date(e.date) >= weekStart)
-      .reduce((sum, e) => sum + Number(e.amount), 0);
-    
-    // Calculate last week's expenses for comparison
-    const lastWeekStart = new Date(weekStart);
-    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-    const lastWeekExpenses = expenses
-      .filter(e => new Date(e.date) >= lastWeekStart && new Date(e.date) < weekStart)
-      .reduce((sum, e) => sum + Number(e.amount), 0);
-    
-    const expenseChange = lastWeekExpenses > 0 
-      ? ((weeklyExpenses - lastWeekExpenses) / lastWeekExpenses * 100)
-      : 0;
-
-    // Calculate remaining budget
-    const remainingBudget = (budget?.total_budget || 0) - (budget?.used_budget || 0);
-    
-    // Calculate labor and material expenses
-    const laborExpenses = expenses
-      .filter(e => e.category === 'Labor')
-      .reduce((sum, e) => sum + Number(e.amount), 0);
-    
-    const materialExpenses = expenses
-      .filter(e => e.category === 'Materials')
-      .reduce((sum, e) => sum + Number(e.amount), 0);
-
-    // Calculate attendance rate
-    const todayAttendance = attendance.filter(a => 
-      a.date === today && a.status === 'present'
-    ).length;
-    const attendanceRate = totalWorkers > 0 ? Math.round((todayAttendance / totalWorkers) * 100) : 0;
-
-    return [
-      { title: 'Total Workers', value: totalWorkers.toString(), icon: Users, change: '+2 this week', changeType: 'positive' },
-      { title: 'Weekly Expenses', value: `RWF ${weeklyExpenses.toLocaleString()}`, change: `${expenseChange.toFixed(1)}% from last week`, icon: DollarSign, changeType: expenseChange > 0 ? 'negative' : 'positive' as const },
-      { title: 'Remaining Budget', value: `RWF ${remainingBudget.toLocaleString()}`, icon: Package, change: `${Math.round((remainingBudget / (budget?.total_budget || 1)) * 100)}% remaining`, changeType: remainingBudget > (budget?.total_budget || 1) * 0.2 ? 'positive' : 'negative' as const },
-      { title: 'Attendance Rate', value: `${attendanceRate}%`, icon: Clock, change: `${todayAttendance} present today`, changeType: attendanceRate > 80 ? 'positive' : 'negative' as const },
-      { title: 'Labor Expenses', value: `RWF ${laborExpenses.toLocaleString()}`, icon: Wrench, change: 'This week', changeType: 'neutral' },
-      { title: 'Material Expenses', value: `RWF ${materialExpenses.toLocaleString()}`, icon: Truck, change: 'This week', changeType: 'neutral' },
-    ];
-  }, [workers, expenses, budget, attendance]);
-
-  const weeklyData = useMemo(() => {
-    const currentWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
-    const currentWeekEnd = endOfWeek(new Date(), { weekStartsOn: 1 }); // Sunday
-    const daysOfWeek = eachDayOfInterval({ start: currentWeekStart, end: currentWeekEnd });
-
-    return daysOfWeek.map(day => {
-      const dateStr = format(day, 'yyyy-MM-dd');
-      const dayName = format(day, 'EEE'); // Mon, Tue, etc.
-      
-      const dayExpenses = expenses
-        .filter(e => e.date === dateStr)
-        .reduce((sum, e) => sum + Number(e.amount), 0);
-      
-      const dayAttendance = attendance
-        .filter(a => a.date === dateStr && a.status === 'present')
-        .length;
-      
-      const activeWorkers = workers.filter(w => w.is_active).length;
-      const attendancePercent = activeWorkers > 0 ? Math.round((dayAttendance / activeWorkers) * 100) : 0;
-
-      return {
-        day: dayName,
-        attendance: attendancePercent,
-        expenses: dayExpenses,
-      };
+    const presentToday = attendance.filter(record => record.date === today && record.status === 'present').length;
+    const monthKey = today.slice(0, 7);
+    const monthlyPayroll = payrolls.filter(record => record.period_start.slice(0, 7) === monthKey).reduce((sum, record) => sum + Number(record.net_amount), 0);
+    const budgetUsed = Number(budget?.used_budget || 0);
+    const totalBudget = Number(budget?.total_budget || 0);
+    const budgetPercent = totalBudget ? Math.round((budgetUsed / totalBudget) * 100) : 0;
+    const months = Array.from({ length: 11 }, (_, index) => {
+      const date = subMonths(new Date(), 10 - index);
+      const start = format(startOfMonth(date), 'yyyy-MM-dd');
+      const end = format(endOfMonth(date), 'yyyy-MM-dd');
+      const monthExpenses = expenses.filter(expense => expense.date >= start && expense.date <= end).reduce((sum, expense) => sum + Number(expense.amount), 0);
+      const monthPayroll = payrolls.filter(record => record.period_start >= start && record.period_start <= end).reduce((sum, record) => sum + Number(record.net_amount), 0);
+      const monthAttendance = attendance.filter(record => record.date >= start && record.date <= end);
+      const present = monthAttendance.filter(record => record.status === 'present').length;
+      return { month: format(date, 'MMM'), spending: monthExpenses + monthPayroll, attendance: monthAttendance.length ? Math.round((present / monthAttendance.length) * 100) : 0 };
     });
-  }, [expenses, attendance, workers]);
+    return { activeWorkers, presentToday, monthlyPayroll, budgetUsed, totalBudget, budgetPercent, months };
+  }, [workers, attendance, payrolls, expenses, budget]);
 
-  const expenseData = useMemo(() => {
-    // Group expenses by category dynamically
-    const categoryTotals = expenses.reduce((acc, expense) => {
-      acc[expense.category] = (acc[expense.category] || 0) + Number(expense.amount);
-      return acc;
-    }, {} as Record<string, number>);
-    
-    // Convert to array format for chart
-    return Object.entries(categoryTotals)
-      .map(([name, value], index) => ({
-        name,
-        value,
-        color: getCategoryColor(name, index), // Use category color or fallback
-      }))
-      .filter(item => item.value > 0)
-      .sort((a, b) => b.value - a.value); // Sort by value descending
-  }, [expenses]);
+  const loading = workersLoading || attendanceLoading || expensesLoading || budgetLoading || payrollLoading;
+  if (loading) return <div className="space-y-5 p-5 lg:p-8"><Skeleton className="h-24" /><div className="grid gap-4 lg:grid-cols-4">{[1, 2, 3, 4].map(item => <Skeleton key={item} className="h-32" />)}</div><Skeleton className="h-[420px]" /></div>;
 
-  const payrollTrendData = useMemo(() => {
-    // Group payrolls by week for the last 4 weeks
-    const weeksData = [];
-    for (let i = 3; i >= 0; i--) {
-      const weekStart = startOfWeek(subWeeks(new Date(), i), { weekStartsOn: 1 });
-      const weekEnd = endOfWeek(subWeeks(new Date(), i), { weekStartsOn: 1 });
-      const weekStartStr = format(weekStart, 'yyyy-MM-dd');
-      const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
-      
-      // Match payroll records that overlap with this week
-      // Remove time portion if present and compare dates
-      const weekPayrolls = payrolls.filter(p => {
-        const pStart = p.period_start.split('T')[0];
-        const pEnd = p.period_end.split('T')[0];
-        // Check if payroll period overlaps with week (period starts or ends within week, or week is within period)
-        return (pStart <= weekEndStr && pEnd >= weekStartStr);
-      });
-      
-      const totalPayroll = weekPayrolls.reduce((sum, p) => sum + Number(p.net_amount || 0), 0);
-      
-      weeksData.push({
-        week: `Week ${4 - i}`,
-        payroll: totalPayroll,
-        fullDate: format(weekStart, 'MMM d'),
-      });
-    }
-    
-    return weeksData;
-  }, [payrolls]);
-
-  const budgetVsActualData = useMemo(() => {
-    // Calculate budget and actual spending for the last 4 weeks
-    const weeklyBudget = (budget?.total_budget || 0) / 4; // Divide total budget by 4 weeks
-    const weeksData = [];
-    
-    for (let i = 3; i >= 0; i--) {
-      const weekStart = startOfWeek(subWeeks(new Date(), i), { weekStartsOn: 1 });
-      const weekEnd = endOfWeek(subWeeks(new Date(), i), { weekStartsOn: 1 });
-      const weekStartStr = format(weekStart, 'yyyy-MM-dd');
-      const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
-      
-      const weekExpenses = expenses.filter(e => 
-        e.date >= weekStartStr && e.date <= weekEndStr
-      ).reduce((sum, e) => sum + Number(e.amount), 0);
-      
-      weeksData.push({
-        week: `Week ${4 - i}`,
-        budget: weeklyBudget,
-        actual: weekExpenses,
-        fullDate: format(weekStart, 'MMM d'),
-      });
-    }
-    
-    return weeksData;
-  }, [expenses, budget]);
-
-  if (workersLoading || attendanceLoading || expensesLoading || budgetLoading || payrollLoading) {
-    return (
-      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-        <Skeleton className="h-20 w-full" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32" />)}
-        </div>
-        <div className="grid md:grid-cols-2 gap-6">
-          <Skeleton className="h-[400px]" />
-          <Skeleton className="h-[400px]" />
-        </div>
-      </div>
-    );
-  }
+  const cards = [
+    { label: 'Total workforce', value: dashboard.activeWorkers.length.toString(), detail: 'Active workers on project', icon: Users },
+    { label: 'Present today', value: dashboard.presentToday.toString(), detail: `${dashboard.activeWorkers.length ? Math.round((dashboard.presentToday / dashboard.activeWorkers.length) * 100) : 0}% attendance rate`, icon: CalendarCheck },
+    { label: 'Monthly payroll', value: formatRwf(dashboard.monthlyPayroll), detail: format(new Date(), 'MMMM yyyy'), icon: WalletCards },
+    { label: 'Budget used', value: `${dashboard.budgetPercent}%`, detail: `${formatRwf(dashboard.budgetUsed)} of ${formatRwf(dashboard.totalBudget)}`, icon: Package },
+  ];
+  const recentMaterials = expenses.filter(expense => expense.category === 'Materials').sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4);
+  const attendanceExceptions = Math.max(0, dashboard.activeWorkers.length - dashboard.presentToday);
 
   return (
-    <div className="min-h-screen space-y-4 bg-[#f3f0e9] p-4 text-[#1a211d] dark:bg-[#0e1210] dark:text-[#f2eee6] sm:space-y-6 sm:p-6 lg:p-8">
-      <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="flex flex-col sm:flex-row gap-6"
-      >
-        <motion.div className="flex-1 rounded-xl border border-[#ded8cd] bg-[#fbfaf7] p-6 shadow-sm dark:border-[#28312c] dark:bg-[#151a17]">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8a603d] dark:text-[#d6ad83]">Musanze Town Buildings · Overview</p>
-          <h1 className="mt-3 text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">Welcome back, {user?.user_metadata?.full_name || 'Manager'}.</h1>
-          <p className="mt-2 text-muted-foreground">Today’s workforce, payroll, and project cost position.</p>
-          <p className="mt-4 text-sm text-[#66706a] dark:text-[#929c96]">{format(new Date(), 'EEEE, MMM dd')}</p>
-        </motion.div>
-        <div className="flex items-end gap-3">
-          <ExportButton
-            expenses={expenses}
-            attendance={attendance}
-            workers={workers}
-            budget={budget}
-            className="w-full sm:w-auto"
-          />
-        </div>
-      </motion.div>
+    <div className="mx-auto max-w-[1540px] space-y-5 p-4 sm:p-6 lg:p-8">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div><p className="mb-2 text-sm text-muted-foreground">Project overview</p><h1 className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Musanze Town Buildings</h1><p className="mt-2 text-sm text-muted-foreground">Construction operations · Musanze District, Rwanda</p></div>
+        <Button asChild variant="outline" className="h-10 gap-2 bg-white dark:bg-[#111214]"><Link to="/reports"><FileText className="h-4 w-4" /> Generate report</Link></Button>
+      </header>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <StatCard 
-            key={stat.title} 
-            title={stat.title}
-            value={stat.value}
-            change={stat.change}
-            changeType={stat.changeType}
-            icon={stat.icon}
-            index={index} 
-          />
-        ))}
-      </div>
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {cards.map(({ label, value, detail, icon: Icon }) => <Card key={label} className="border-[#e2e4e7] bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,.025)] dark:border-[#292b2f] dark:bg-[#111214]"><div className="flex items-start justify-between"><div><p className="text-sm text-muted-foreground">{label}</p><p className="mt-2 text-2xl font-semibold tracking-[-0.03em]">{value}</p><p className="mt-1 text-xs text-muted-foreground">{detail}</p></div><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f2f3f5] dark:bg-[#202226]"><Icon className="h-[18px] w-[18px]" strokeWidth={1.8} /></div></div></Card>)}
+      </section>
 
-      {/* Charts */}
-      <div className="grid gap-6">
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
-            <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Weekly Expenses Breakdown</h3>
-            <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart 
-                  data={weeklyData}
-                  margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
-                  onClick={(data: ChartClickData) => {
-                    if (data && data.activePayload) {
-                      const day = data.activePayload[0].payload.day;
-                      const dayExpenses = expenses.filter(e => 
-                        format(new Date(e.date), 'EEE') === day
-                      );
-                      setDetailModal({
-                        open: true,
-                        title: `Expenses for ${day}`,
-                        description: 'Detailed breakdown of expenses for the selected day',
-                        data: dayExpenses,
-                        type: 'expenses',
-                      });
-                    }
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis 
-                    dataKey="day" 
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                  />
-                  <YAxis 
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                  />
-                  <Tooltip 
-                    formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Expenses']}
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--background))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                    }}
-                  />
-                  <Bar dataKey="expenses" fill="#f97316" radius={[4, 4, 0, 0]} cursor="pointer" />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </Card>
-        </motion.div>
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,.7fr)]">
+        <Card className="border-[#e2e4e7] bg-white p-5 shadow-none dark:border-[#292b2f] dark:bg-[#111214]">
+          <div className="mb-5 flex items-start justify-between"><div><h2 className="font-semibold">Monthly spending</h2><p className="mt-1 text-xs text-muted-foreground">Payroll and recorded project expenses · last 11 months</p></div><span className="rounded-lg border px-2.5 py-1 text-xs text-muted-foreground">11 months</span></div>
+          <ResponsiveContainer width="100%" height={300}><AreaChart data={dashboard.months} margin={{ top: 8, right: 12, left: 8, bottom: 0 }}><defs><linearGradient id="spendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#111" stopOpacity={0.14} /><stop offset="100%" stopColor="#111" stopOpacity={0.01} /></linearGradient></defs><CartesianGrid vertical={false} stroke="#e9eaec" /><XAxis dataKey="month" tickLine={false} axisLine={false} fontSize={12} tick={{ fill: '#73777f' }} /><YAxis tickLine={false} axisLine={false} fontSize={12} width={48} tick={{ fill: '#73777f' }} tickFormatter={value => `${Math.round(value / 1_000_000)}M`} /><Tooltip formatter={(value: number) => [formatRwf(value), 'Spending']} contentStyle={{ borderRadius: 10, border: '1px solid #e2e4e7', boxShadow: '0 12px 30px rgba(0,0,0,.08)' }} /><Area type="monotone" dataKey="spending" stroke="#111" strokeWidth={2.25} fill="url(#spendFill)" dot={{ fill: '#111', r: 3 }} activeDot={{ r: 5 }} /></AreaChart></ResponsiveContainer>
+        </Card>
+        <Card className="border-[#e2e4e7] bg-white p-5 shadow-none dark:border-[#292b2f] dark:bg-[#111214]">
+          <div className="flex items-center justify-between"><h2 className="font-semibold">Budget position</h2><Link to="/budget" className="text-xs text-muted-foreground hover:text-foreground">View details →</Link></div>
+          <div className="mx-auto my-8 flex h-44 w-44 items-center justify-center rounded-full" style={{ background: `conic-gradient(#111 ${dashboard.budgetPercent * 3.6}deg, #e8e9eb 0deg)` }}><div className="flex h-32 w-32 flex-col items-center justify-center rounded-full bg-white dark:bg-[#111214]"><strong className="text-3xl">{dashboard.budgetPercent}%</strong><span className="text-xs text-muted-foreground">used</span></div></div>
+          <div className="space-y-3 border-t pt-4 text-sm"><div className="flex justify-between"><span className="text-muted-foreground">Spent</span><strong>{formatRwf(dashboard.budgetUsed)}</strong></div><div className="flex justify-between"><span className="text-muted-foreground">Remaining</span><strong>{formatRwf(Math.max(0, dashboard.totalBudget - dashboard.budgetUsed))}</strong></div><div className="flex justify-between"><span className="text-muted-foreground">Total budget</span><strong>{formatRwf(dashboard.totalBudget)}</strong></div></div>
+        </Card>
+      </section>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
-              <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Payroll Trend</h3>
-              {payrollTrendData.every(d => d.payroll === 0) ? (
-                <div className="h-[250px] sm:h-[300px] flex items-center justify-center">
-                  <div className="text-center">
-                    <p className="text-slate-500 dark:text-slate-400 mb-2">No payroll data yet</p>
-                    <p className="text-sm text-slate-400 dark:text-slate-500">Generate payroll from the Payroll page</p>
-                  </div>
-                </div>
-              ) : (
-                <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart 
-                      data={payrollTrendData}
-                      margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis 
-                        dataKey="week" 
-                        stroke="hsl(var(--muted-foreground))"
-                        fontSize={12}
-                      />
-                      <YAxis 
-                        stroke="hsl(var(--muted-foreground))"
-                        fontSize={12}
-                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                      />
-                      <Tooltip 
-                        formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Payroll']}
-                        contentStyle={{
-                          backgroundColor: 'hsl(var(--background))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px',
-                        }}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="payroll" 
-                        stroke="#f97316" 
-                        strokeWidth={2}
-                        dot={{ fill: '#f97316', r: 4 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              )}
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.6 }}
-          >
-            <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
-              <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Budget vs Actual</h3>
-              {budgetVsActualData.every(d => d.budget === 0 && d.actual === 0) ? (
-                <div className="h-[250px] sm:h-[300px] flex items-center justify-center">
-                  <div className="text-center">
-                    <p className="text-slate-500 dark:text-slate-400 mb-2">No budget data yet</p>
-                    <p className="text-sm text-slate-400 dark:text-slate-500">Set a budget from the Budget page</p>
-                  </div>
-                </div>
-              ) : (
-                <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart 
-                      data={budgetVsActualData}
-                      margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis 
-                        dataKey="week" 
-                        stroke="hsl(var(--muted-foreground))"
-                        fontSize={12}
-                      />
-                      <YAxis 
-                        stroke="hsl(var(--muted-foreground))"
-                        fontSize={12}
-                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                      />
-                      <Tooltip 
-                        formatter={(value: number) => [`RWF ${value.toLocaleString()}`, '']}
-                        contentStyle={{
-                          backgroundColor: 'hsl(var(--background))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px',
-                        }}
-                      />
-                      <Legend 
-                        wrapperStyle={{ fontSize: '12px' }}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="budget" 
-                        stroke="#22c55e" 
-                        strokeWidth={2}
-                        dot={{ fill: '#22c55e', r: 4 }}
-                        name="Budget"
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="actual" 
-                        stroke="#f97316" 
-                        strokeWidth={2}
-                        dot={{ fill: '#f97316', r: 4 }}
-                        name="Actual"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              )}
-            </Card>
-          </motion.div>
-        </div>
-
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.7 }}
-        >
-          <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
-            <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Expense Categories</h3>
-            {expenseData.length === 0 ? (
-              <div className="h-[300px] flex items-center justify-center">
-                <p className="text-slate-500 dark:text-slate-400">No expense data available</p>
-              </div>
-            ) : (
-              <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
-                    data={expenseData}
-                    margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
-                    onClick={(data: ChartClickData) => {
-                      if (data && data.activePayload) {
-                        const category = data.activePayload[0].payload.name;
-                        setDetailModal({
-                          open: true,
-                          title: `${category} Expenses`,
-                          description: `Detailed breakdown of ${category} expenses`,
-                          data: expenses.filter(e => e.category === category),
-                          type: 'expenses',
-                        });
-                      }
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="name" 
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis 
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                    />
-                    <Tooltip 
-                      formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Amount']}
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--background))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                      }}
-                    />
-                    <Bar dataKey="value" radius={[4, 4, 0, 0]} cursor="pointer">
-                      {expenseData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            )}
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Recent Activity */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.8 }}
-      >
-        <ActivityLog />
-      </motion.div>
-
-      {/* Detail Modal */}
-      <ChartDetailModal
-        open={detailModal.open}
-        onOpenChange={(open) => setDetailModal({ ...detailModal, open })}
-        title={detailModal.title}
-        description={detailModal.description}
-        data={detailModal.data}
-        type={detailModal.type}
-      />
+      <section className="grid gap-4 lg:grid-cols-3">
+        <Card className="border-[#e2e4e7] bg-white p-5 shadow-none dark:border-[#292b2f] dark:bg-[#111214]"><div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">Attendance</h2><span className="text-xs text-muted-foreground">11 months</span></div><ResponsiveContainer width="100%" height={190}><BarChart data={dashboard.months}><XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={11} /><YAxis hide domain={[0, 100]} /><Tooltip formatter={(value: number) => [`${value}%`, 'Attendance']} /><Bar dataKey="attendance" fill="#cfd2d6" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></Card>
+        <Card className="border-[#e2e4e7] bg-white p-5 shadow-none dark:border-[#292b2f] dark:bg-[#111214]"><div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">Recent materials</h2><Link to="/expenses" className="text-xs text-muted-foreground">View all →</Link></div><div className="divide-y">{recentMaterials.map(item => <div key={item.id} className="flex items-center gap-3 py-3"><div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f1f2f4]"><Package className="h-4 w-4" /></div><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{item.description?.replace('DEMO · Musanze Town Buildings · ', '') || 'Material purchase'}</p><p className="text-xs text-muted-foreground">{format(new Date(item.date), 'dd MMM yyyy')}</p></div><span className="text-xs font-medium">{formatRwf(Number(item.amount))}</span></div>)}</div></Card>
+        <Card className="border-[#e2e4e7] bg-white p-5 shadow-none dark:border-[#292b2f] dark:bg-[#111214]"><div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">Site alerts</h2><AlertTriangle className="h-4 w-4 text-[#d97706]" /></div><div className="space-y-3"><div className="flex gap-3 rounded-lg bg-[#fff7ed] p-3 dark:bg-[#3a2410]"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#d97706]" /><div><p className="text-sm font-medium">{attendanceExceptions} workers not marked present</p><p className="mt-1 text-xs text-muted-foreground">Review today’s attendance before payroll closes.</p></div></div><div className="flex gap-3 rounded-lg bg-[#f3f4f6] p-3 dark:bg-[#202226]"><FileText className="mt-0.5 h-4 w-4 shrink-0" /><div><p className="text-sm font-medium">Reports available</p><p className="mt-1 text-xs text-muted-foreground">Export any date range as PDF or CSV.</p></div></div>{activityLog[0] && <div className="border-t pt-3"><p className="text-xs uppercase tracking-wide text-muted-foreground">Latest activity</p><p className="mt-2 text-sm">{activityLog[0].message}</p></div>}</div><Button asChild variant="ghost" className="mt-3 h-9 w-full justify-between px-1 text-sm"><Link to="/activity">Open activity log <ArrowUpRight className="h-4 w-4" /></Link></Button></Card>
+      </section>
     </div>
   );
 };

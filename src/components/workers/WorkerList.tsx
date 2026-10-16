@@ -1,4 +1,5 @@
 import { Edit2, Trash2, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,11 +35,17 @@ interface WorkerListProps {
 
 export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
   const formatRwf = (value: number) => `RWF ${Number(value).toLocaleString('en-US')}`;
+  const [page, setPage] = useState(1);
+  const pageSize = 12;
+  const pageCount = Math.max(1, Math.ceil(workers.length / pageSize));
+  const pageWorkers = workers.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => setPage(1), [workers.length]);
 
   if (workers.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-[#cfc8bc] bg-[#fbfaf7] px-6 py-14 text-center dark:border-[#344038] dark:bg-[#151a17]">
-        <Users className="mx-auto h-6 w-6 text-[#8a603d]" />
+        <Users className="mx-auto h-6 w-6 text-[#73777f]" />
         <h2 className="mt-4 font-semibold">No workers match these filters</h2>
         <p className="mt-1 text-sm text-muted-foreground">Try a different name, date, or attendance status.</p>
       </div>
@@ -49,12 +56,12 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
     <div className="space-y-4">
       <div className="text-sm">
         <h2 className="mb-1 text-lg font-semibold tracking-[-0.01em]">Team register</h2>
-        <p className="text-muted-foreground">{workers.length} workers shown</p>
+        <p className="text-muted-foreground">{workers.length} workers · showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, workers.length)}</p>
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden overflow-hidden rounded-xl border border-[#ded8cd] bg-[#fbfaf7] shadow-[0_1px_2px_rgba(29,33,31,0.04)] dark:border-[#28312c] dark:bg-[#151a17] md:block">
-        <div className="grid grid-cols-7 gap-4 border-b border-[#ded8cd] bg-[#eeeae2] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#707a74] dark:border-[#28312c] dark:bg-[#1b211e] dark:text-[#929c96]">
+      <div className="hidden overflow-hidden rounded-xl border border-[#e2e4e7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.025)] dark:border-[#292b2f] dark:bg-[#111214] md:block">
+        <div className="grid grid-cols-7 gap-4 border-b border-[#e2e4e7] bg-[#f6f7f8] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#73777f] dark:border-[#292b2f] dark:bg-[#191a1d] dark:text-[#92969d]">
           <div className="col-span-2">Worker</div>
           <div>Role</div>
           <div>Daily Rate</div>
@@ -64,11 +71,11 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
         </div>
 
         <div className="divide-y">
-          {workers.map((worker) => (
-            <div key={worker.id} className="grid grid-cols-7 gap-4 px-5 py-4 items-center transition-colors hover:bg-[#f4f1ea] dark:hover:bg-[#1a211d]">
+          {pageWorkers.map((worker) => (
+            <div key={worker.id} className="grid grid-cols-7 gap-4 px-5 py-4 items-center transition-colors hover:bg-[#fafafa] dark:hover:bg-[#17181a]">
               <div className="col-span-2 flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-[#eee4d5] text-[#7f5a3b] dark:bg-[#3a2f24] dark:text-[#d6ad83]">
+                  <AvatarFallback className="bg-[#eef3ff] text-[#0066cc] dark:bg-[#15233a] dark:text-[#69a8ff]">
                     {worker.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
@@ -79,7 +86,7 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
               </div>
 
               <div>
-                <Badge variant="outline" className="border-[#cad3cc] bg-[#edf1ed] capitalize text-[#3f5d4b] hover:bg-[#edf1ed] dark:border-[#34463b] dark:bg-[#243029] dark:text-[#bad0c1]">
+                <Badge variant="outline" className="border-[#dfe2e7] bg-[#f5f6f8] capitalize text-[#4b515a] hover:bg-[#f5f6f8] dark:border-[#34363b] dark:bg-[#202226] dark:text-[#c5c7cc]">
                   {worker.role}
                 </Badge>
               </div>
@@ -144,12 +151,12 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
 
       {/* Mobile Card View */}
       <div className="md:hidden space-y-3">
-        {workers.map((worker) => (
+        {pageWorkers.map((worker) => (
           <div key={worker.id} className="space-y-3 rounded-xl border border-[#ded8cd] bg-[#fbfaf7] p-4 shadow-sm dark:border-[#28312c] dark:bg-[#151a17]">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <Avatar className="h-12 w-12 flex-shrink-0">
-                  <AvatarFallback className="bg-[#eee4d5] text-[#7f5a3b] dark:bg-[#3a2f24] dark:text-[#d6ad83]">
+                  <AvatarFallback className="bg-[#eef3ff] text-[#0066cc] dark:bg-[#15233a] dark:text-[#69a8ff]">
                     {worker.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
@@ -227,6 +234,16 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
           </div>
         ))}
       </div>
+
+      {pageCount > 1 && (
+        <div className="flex items-center justify-between border-t pt-4 text-sm">
+          <span className="text-muted-foreground">Page {page} of {pageCount}</span>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(value => Math.max(1, value - 1))}>Previous</Button>
+            <Button variant="outline" size="sm" disabled={page === pageCount} onClick={() => setPage(value => Math.min(pageCount, value + 1))}>Next</Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
