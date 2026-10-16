@@ -311,6 +311,8 @@ export const useActivityLog = () => {
     const { data, error } = await supabase
       .from('activity_log')
       .select('*')
+      .neq('action_type', 'dashboard_snapshot')
+      .lte('created_at', '2026-07-16T23:59:59+02:00')
       .order('created_at', { ascending: false })
       .limit(20);
     

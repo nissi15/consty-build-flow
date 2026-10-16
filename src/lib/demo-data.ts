@@ -317,7 +317,7 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
   const portfolioExpenseIds = new Set(expenseRows.map(row => row.id!));
   const retainedExpenses = retainedExpensesWithIds.filter(row => !portfolioExpenseIds.has(row.id));
   const retainedExpenseTotal = retainedExpenses.reduce((total, row) => total + Number(row.amount || 0), 0);
-  const targetUsedBudget = 360_000_000;
+  const targetUsedBudget = 371_245_600;
   const minimumDemoExpenseTotal = expenseRows.length * 25_000;
   const targetExpenseTotal = Math.max(minimumDemoExpenseTotal, targetUsedBudget - retainedExpenseTotal);
   const rawExpenseTotal = expenseRows.reduce((total, row) => total + Number(row.amount), 0);
@@ -337,6 +337,12 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
   const totalBudget = 500_000_000;
 
   onProgress('Finalising the project budget and activity history…');
+  const { error: activityCleanupError } = await supabase
+    .from('activity_log')
+    .delete()
+    .gt('created_at', '2026-07-16T23:59:59+02:00');
+  if (activityCleanupError) throw activityCleanupError;
+
   const { error: budgetError } = await supabase.from('budget').upsert({
     id: DEMO_ID.budget,
     total_budget: totalBudget,
@@ -349,8 +355,47 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
     id: DEMO_ID.activity,
     action_type: 'portfolio_reconciled',
     message: `Reconciled Musanze Town Buildings through July 2026: ${workerRows.length} workers, ${attendanceRows.length} attendance records, ${payrollRows.length} payroll records and ${expenseRows.length} project expenses.`,
+    created_at: '2026-07-01T16:40:00+02:00',
   }, { onConflict: 'id' });
   if (activityError) throw activityError;
+
+  const activityMessages = [
+    ['attendance', 'Attendance confirmed for Habimana P · net labour RWF 10,000'],
+    ['expense', 'CIMERWA cement delivery recorded · RWF 5,040,000'],
+    ['attendance', 'Attendance confirmed for Jacque D · net labour RWF 6,000'],
+    ['payroll', 'July payroll review completed for the site workforce'],
+    ['expense', 'Reinforcement steel Y12 delivery recorded · RWF 3,180,000'],
+    ['attendance', 'Attendance confirmed for Uwimana G · net labour RWF 8,000'],
+    ['worker', 'Munyaneza C assigned to the finishing team'],
+    ['expense', 'River sand delivery recorded · RWF 870,000'],
+    ['attendance', 'Attendance confirmed for Kayitesi B · net labour RWF 9,300'],
+    ['budget', 'Budget position reviewed against recorded project expenses'],
+    ['expense', 'Electrical conduit and fittings recorded · RWF 695,000'],
+    ['attendance', 'Attendance confirmed for Kalisa C · net labour RWF 5,500'],
+    ['expense', 'Concrete blocks 15 cm delivery recorded · RWF 1,140,000'],
+    ['attendance', 'Attendance confirmed for Sibomana N · net labour RWF 5,500'],
+    ['worker', 'Safety briefing completed for the active site team'],
+    ['expense', 'Formwork plywood delivery recorded · RWF 1,035,000'],
+    ['attendance', 'Attendance confirmed for Nkurunziza A · net labour RWF 4,500'],
+    ['expense', 'PPE restock recorded · RWF 745,000'],
+    ['attendance', 'Attendance confirmed for Harerimana K · net labour RWF 6,200'],
+    ['payroll', 'June payroll marked paid after final site review'],
+  ] as const;
+  const curatedActivity = activityMessages.map(([action_type, message], index) => {
+    const date = new Date('2026-07-16T15:45:00+02:00');
+    date.setDate(date.getDate() - Math.floor(index / 4));
+    date.setMinutes(date.getMinutes() - (index % 4) * 22);
+    return {
+      id: stableUuid('70000000-0000-4000-8000-', index + 1),
+      action_type,
+      message,
+      created_at: date.toISOString(),
+    };
+  });
+  const { error: curatedActivityError } = await supabase
+    .from('activity_log')
+    .upsert(curatedActivity, { onConflict: 'id' });
+  if (curatedActivityError) throw curatedActivityError;
 
   const allExpenseRows = [...retainedExpenses, ...expenseRows];
   const dashboardMonths = months.map(month => {
@@ -375,6 +420,7 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
     id: DEMO_ID.snapshot,
     action_type: 'dashboard_snapshot',
     message: JSON.stringify({ months: dashboardMonths, total_expenses: usedBudget, category_totals: categoryTotals }),
+    created_at: '2026-07-16T16:45:00+02:00',
   }, { onConflict: 'id' });
   if (snapshotError) throw snapshotError;
 

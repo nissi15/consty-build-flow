@@ -8,9 +8,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useActivityLog } from '@/hooks/useSupabaseData';
 import { useDashboardSummary } from '@/hooks/useDashboardSummary';
 import { cleanPortfolioLabel, PROJECT_END } from '@/lib/project-period';
-import { seedDemoPortfolio } from '@/lib/demo-data';
-import { useEffect, useRef } from 'react';
-import { toast } from 'sonner';
 
 const formatRwf = (value: number) => {
   if (value >= 1_000_000_000) return `RWF ${(value / 1_000_000_000).toFixed(2)}B`;
@@ -19,26 +16,8 @@ const formatRwf = (value: number) => {
 };
 
 const Dashboard = () => {
-  const { summary: dashboard, loading, refetch } = useDashboardSummary();
+  const { summary: dashboard, loading } = useDashboardSummary();
   const { activityLog } = useActivityLog();
-  const reconciliationStarted = useRef(false);
-  useEffect(() => {
-    const key = 'consty-portfolio-reconciled-july-2026-v1';
-    if (reconciliationStarted.current || localStorage.getItem(key)) return;
-    reconciliationStarted.current = true;
-    toast.info('Synchronising the portfolio through July 2026…');
-    seedDemoPortfolio()
-      .then(async () => {
-        localStorage.setItem(key, 'complete');
-        await refetch();
-        toast.success('Portfolio figures are now synchronised through July 2026.');
-      })
-      .catch((error) => {
-        reconciliationStarted.current = false;
-        console.error('Portfolio reconciliation failed:', error);
-        toast.error('Portfolio synchronisation could not finish. Use Settings to retry.');
-      });
-  }, [refetch]);
   if (loading) return <div className="space-y-5 p-5 lg:p-8"><Skeleton className="h-24" /><div className="grid gap-4 lg:grid-cols-4">{[1, 2, 3, 4].map(item => <Skeleton key={item} className="h-32" />)}</div><Skeleton className="h-[420px]" /></div>;
 
   const budgetUsed = Number(dashboard.budget.used_budget || 0);

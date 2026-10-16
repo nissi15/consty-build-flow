@@ -6,6 +6,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useActivityLog } from '@/hooks/useSupabaseData';
 import { format } from 'date-fns';
 
+const cleanActivityMessage = (message: string) => message
+  .replace(/Expense added:\s*\$(\d+(?:\.\d+)?)/gi, (_, value: string) => `Expense added: RWF ${Number(value).toLocaleString()}`)
+  .replace(/\$(\d+(?:\.\d+)?)/g, (_, value: string) => `RWF ${Number(value).toLocaleString()}`);
+
 const Activity = () => {
   const { activityLog, loading } = useActivityLog();
 
@@ -55,7 +59,7 @@ const Activity = () => {
                     {getActionIcon(log.action_type)}
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium mb-1">{log.message}</p>
+                    <p className="font-medium mb-1">{cleanActivityMessage(log.message)}</p>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Clock className="h-4 w-4" />
                       {format(new Date(log.created_at), 'PPp')}

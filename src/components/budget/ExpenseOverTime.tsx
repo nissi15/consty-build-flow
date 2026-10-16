@@ -1,8 +1,9 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { startOfWeek, endOfWeek, eachDayOfInterval, format, subWeeks } from 'date-fns';
+import { startOfWeek, endOfWeek, format, subWeeks } from 'date-fns';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PROJECT_END } from '@/lib/project-period';
+import { fetchAllPagesInParallel, withDataTimeout } from '@/lib/supabase-pagination';
 
 export function ExpenseOverTime() {
   const [data, setData] = useState<{ name: string; amount: number }[]>([]);
@@ -15,24 +16,29 @@ export function ExpenseOverTime() {
         const endDate = PROJECT_END;
         const startDate = subWeeks(endDate, 4); // Last 4 weeks
 
-        const { data: expenses, error } = await supabase
+        const fromDate = format(startDate, 'yyyy-MM-dd');
+        const toDate = format(endDate, 'yyyy-MM-dd');
+        const { count, error: countError } = await withDataTimeout(
+          supabase.from('expenses').select('id', { count: 'exact', head: true }).gte('date', fromDate).lte('date', toDate),
+        );
+        if (countError) throw countError;
+        const expenses = await fetchAllPagesInParallel<{ amount: number; date: string }>(count || 0, (from, to) => supabase
           .from('expenses')
-          .select('amount, date')
-          .gte('date', format(startDate, 'yyyy-MM-dd'))
-          .lte('date', format(endDate, 'yyyy-MM-dd'))
-          .order('date', { ascending: true });
-
-        if (error) throw error;
+          .select('amount,date')
+          .gte('date', fromDate)
+          .lte('date', toDate)
+          .order('date', { ascending: true })
+          .range(from, to), 1000, 4);
 
         // Group expenses by week
         const weeklyData = Array.from({ length: 4 }, (_, i) => {
           const weekStart = startOfWeek(subWeeks(endDate, 3 - i));
           const weekEnd = endOfWeek(weekStart);
           
-          const weekExpenses = expenses?.filter(expense => {
+          const weekExpenses = expenses.filter(expense => {
             const expenseDate = new Date(expense.date);
             return expenseDate >= weekStart && expenseDate <= weekEnd;
-          }) || [];
+          });
 
           const total = weekExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
 
@@ -89,13 +95,13 @@ export function ExpenseOverTime() {
           margin={{
             top: 5,
             right: 30,
-            left: 20,
+            left: 4,
             bottom: 5,
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
-          <YAxis />
+          <YAxis width={64} tickFormatter={(value: number) => `${(value / 1_000_000).toFixed(1)}M`} />
           <Tooltip
             formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Amount']}
           />
