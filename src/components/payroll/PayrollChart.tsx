@@ -19,7 +19,7 @@ export function PayrollChart({ data, onExport, showNoData = false }: PayrollChar
       <Card className="p-6 glass">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-[#8b6b3e]" />
+            <TrendingUp className="h-5 w-5 text-accent-foreground" />
             <h2 className="text-lg font-semibold">Weekly Payroll Trend</h2>
           </div>
           {onExport && (

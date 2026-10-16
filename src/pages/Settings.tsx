@@ -152,7 +152,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-full space-y-6 bg-[#f7f8fa] p-4 dark:bg-[#0b0c0e] sm:p-6 lg:p-8">
+    <div className="min-h-full space-y-6 bg-background p-4 sm:p-6 lg:p-8">
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -213,9 +213,9 @@ const Settings = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.15 }}
         >
-          <Card className="h-full border-[#e2e4e7] bg-white p-6 shadow-sm dark:border-[#292b2f] dark:bg-[#111214]">
+          <Card className="h-full p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="rounded-lg bg-[#f2f3f5] p-2 dark:bg-[#202226]">
+              <div className="icon-tile p-2.5">
                 <Palette className="h-5 w-5" />
               </div>
               <h3 className="text-xl font-semibold">Appearance</h3>
@@ -240,14 +240,14 @@ const Settings = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.25 }}
         >
-          <Card className="h-full border-[#e2e4e7] bg-white p-6 shadow-sm dark:border-[#292b2f] dark:bg-[#111214]">
+          <Card className="h-full p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="rounded-lg bg-[#f2f3f5] p-2 dark:bg-[#202226]">
+              <div className="icon-tile p-2.5">
                 <Shield className="h-5 w-5" />
               </div>
               <h3 className="text-xl font-semibold">Signed-in account</h3>
             </div>
-            <div className="rounded-lg border border-[#e2e4e7] bg-[#f7f8fa] p-4 dark:border-[#292b2f] dark:bg-[#191a1d]">
+            <div className="surface-row p-4">
               <Label className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Email</Label>
               <p className="mt-2 font-medium">{user?.email || 'No account email available'}</p>
             </div>
@@ -264,10 +264,10 @@ const Settings = () => {
           transition={{ delay: 0.3 }}
           className="lg:col-span-2"
         >
-          <Card className="border-[#e2e4e7] bg-white p-6 shadow-sm dark:border-[#292b2f] dark:bg-[#111214]">
+          <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-[#f2f3f5] p-2 dark:bg-[#202226]">
+                <div className="icon-tile p-2.5">
                   <Crown className="h-5 w-5" />
                 </div>
                 <div>
@@ -281,7 +281,7 @@ const Settings = () => {
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button 
-                    className="gap-2 bg-[#0071e3] text-white hover:bg-[#0077ed]"
+                    className="gap-2"
                     disabled={ownerCodes.some(code => code.is_active)}
                   >
                     <Plus className="h-4 w-4" />
@@ -342,7 +342,7 @@ const Settings = () => {
                     key={ownerCode.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="rounded-lg border border-[#e3ddcf] bg-[#f7f3ea] p-4 dark:border-[#3b4b40] dark:bg-[#111814]"
+                    className="surface-row p-4"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">

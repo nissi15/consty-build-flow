@@ -104,7 +104,7 @@ export default function Reports() {
     <div className="mx-auto max-w-[1540px] space-y-5 p-4 sm:p-6 lg:p-8">
       <header><p className="mb-2 text-sm text-muted-foreground">Project intelligence</p><h1 className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Reports</h1><p className="mt-2 text-sm text-muted-foreground">Build an audit-ready report from any operational area and date range.</p></header>
 
-      <Card className="border-[#e2e4e7] bg-white p-5 shadow-none dark:border-[#292b2f] dark:bg-[#111214]">
+      <Card className="p-5">
         <div className="mb-5 flex items-center gap-2"><SlidersHorizontal className="h-4 w-4" /><h2 className="font-semibold">Report controls</h2></div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <div className="space-y-2"><Label>Report type</Label><Select value={reportType} onValueChange={value => setReportType(value as ReportType)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="overview">Project overview</SelectItem><SelectItem value="workforce">Workforce register</SelectItem><SelectItem value="attendance">Attendance</SelectItem><SelectItem value="payroll">Payroll</SelectItem><SelectItem value="materials">Materials</SelectItem><SelectItem value="expenses">All expenses</SelectItem><SelectItem value="budget">Budget position</SelectItem></SelectContent></Select></div>
@@ -116,14 +116,14 @@ export default function Reports() {
       </Card>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-[#e2e4e7] bg-white p-5 shadow-none dark:border-[#292b2f] dark:bg-[#111214]"><p className="text-sm text-muted-foreground">Selected report</p><p className="mt-2 text-xl font-semibold">{report.title}</p></Card>
-        <Card className="border-[#e2e4e7] bg-white p-5 shadow-none dark:border-[#292b2f] dark:bg-[#111214]"><p className="text-sm text-muted-foreground">Rows included</p><p className="mt-2 text-xl font-semibold">{report.rows.length.toLocaleString()}</p></Card>
-        <Card className="border-[#e2e4e7] bg-white p-5 shadow-none dark:border-[#292b2f] dark:bg-[#111214]"><p className="text-sm text-muted-foreground">Reported value</p><p className="mt-2 text-xl font-semibold">{reportType === 'workforce' || reportType === 'attendance' ? report.total.toLocaleString() : money(report.total)}</p></Card>
+        <Card className="p-5"><p className="text-sm text-muted-foreground">Selected report</p><p className="mt-2 text-xl font-semibold">{report.title}</p></Card>
+        <Card className="p-5"><p className="text-sm text-muted-foreground">Rows included</p><p className="mt-2 text-xl font-semibold">{report.rows.length.toLocaleString()}</p></Card>
+        <Card className="p-5"><p className="text-sm text-muted-foreground">Reported value</p><p className="mt-2 text-xl font-semibold">{reportType === 'workforce' || reportType === 'attendance' ? report.total.toLocaleString() : money(report.total)}</p></Card>
       </div>
 
-      <Card className="overflow-hidden border-[#e2e4e7] bg-white shadow-none dark:border-[#292b2f] dark:bg-[#111214]">
+      <Card className="overflow-hidden">
         <div className="flex items-center justify-between border-b px-5 py-4"><div><h2 className="font-semibold">Preview</h2><p className="mt-1 text-xs text-muted-foreground">{subtitle}</p></div><FileBarChart className="h-5 w-5 text-muted-foreground" /></div>
-        <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-[#f6f7f8] text-xs text-muted-foreground dark:bg-[#191a1d]"><tr>{report.headers.map(header => <th key={header} className="whitespace-nowrap px-5 py-3 font-medium">{header}</th>)}</tr></thead><tbody className="divide-y">{report.rows.slice(0, 50).map((row, rowIndex) => <tr key={rowIndex} className="hover:bg-[#fafafa] dark:hover:bg-[#17181a]">{row.map((cell, cellIndex) => <td key={cellIndex} className="whitespace-nowrap px-5 py-3">{cell}</td>)}</tr>)}</tbody></table></div>
+        <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-muted/60 text-xs text-muted-foreground"><tr>{report.headers.map(header => <th key={header} className="whitespace-nowrap px-5 py-3 font-medium">{header}</th>)}</tr></thead><tbody className="divide-y">{report.rows.slice(0, 50).map((row, rowIndex) => <tr key={rowIndex} className="hover:bg-muted/45">{row.map((cell, cellIndex) => <td key={cellIndex} className="whitespace-nowrap px-5 py-3">{cell}</td>)}</tr>)}</tbody></table></div>
         {report.rows.length > 50 && <div className="border-t px-5 py-3 text-xs text-muted-foreground">Previewing 50 of {report.rows.length.toLocaleString()} rows. Exports include every row.</div>}
       </Card>
     </div>

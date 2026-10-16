@@ -17,28 +17,28 @@ export function WorkerStats({ totalWorkers, presentToday, avgDailyRate, weeklyHo
       value: totalWorkers,
       note: 'Current workforce',
       icon: Users,
-      iconClass: 'bg-[#eef3ff] text-[#0066cc] dark:bg-[#15233a] dark:text-[#69a8ff]',
+      iconClass: 'bg-accent text-accent-foreground',
     },
     {
       title: 'Present today',
       value: presentToday,
       note: `${attendanceRate}% of active workers`,
       icon: CalendarDays,
-      iconClass: 'bg-[#f2f3f5] text-[#34373d] dark:bg-[#202226] dark:text-[#d1d3d7]',
+      iconClass: 'bg-secondary text-secondary-foreground',
     },
     {
       title: 'Average daily rate',
       value: `RWF ${avgDailyRate.toLocaleString('en-US')}`,
       note: 'Per active worker',
       icon: Banknote,
-      iconClass: 'bg-[#f2f3f5] text-[#34373d] dark:bg-[#202226] dark:text-[#d1d3d7]',
+      iconClass: 'bg-secondary text-secondary-foreground',
     },
     {
       title: 'Hours logged',
       value: weeklyHours.toLocaleString('en-US'),
       note: 'Rolling seven days',
       icon: Clock,
-      iconClass: 'bg-[#f2f3f5] text-[#34373d] dark:bg-[#202226] dark:text-[#d1d3d7]',
+      iconClass: 'bg-secondary text-secondary-foreground',
     },
   ];
 
@@ -51,9 +51,9 @@ export function WorkerStats({ totalWorkers, presentToday, avgDailyRate, weeklyHo
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: index * 0.1 }}
         >
-          <Card className="rounded-xl border-[#e2e4e7] bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.025)] dark:border-[#292b2f] dark:bg-[#111214]">
+          <Card className="p-5 transition-colors hover:border-primary/20">
             <div className="flex items-start gap-4">
-              <div className={`rounded-lg p-2.5 ${stat.iconClass}`}>
+              <div className={`rounded-xl p-2.5 ${stat.iconClass}`}>
                 <stat.icon className="h-5 w-5" />
               </div>
               <div>

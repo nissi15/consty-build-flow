@@ -14,7 +14,7 @@ export function PayrollStats({ weeklyPayroll, workersOnPayroll, payrollPeriods }
       title: "This Week's Payroll",
       value: `RWF ${weeklyPayroll.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
       icon: DollarSign,
-      iconClass: 'bg-[#e9e3d7] text-[#8b6b3e]',
+      iconClass: 'bg-secondary text-secondary-foreground',
     },
     {
       title: 'Workers on Payroll',
@@ -39,9 +39,9 @@ export function PayrollStats({ weeklyPayroll, workersOnPayroll, payrollPeriods }
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: index * 0.1 }}
         >
-          <Card className="bg-white dark:bg-[#111827] rounded-xl p-4 shadow-lg border border-slate-200 dark:border-slate-800 hover:shadow-xl transition-all duration-300">
+          <Card className="p-4 transition-colors hover:border-primary/20">
             <div className="flex items-center gap-4">
-              <div className={`p-2 rounded-lg ${stat.iconClass}`}>
+              <div className={`rounded-xl p-2.5 ${stat.iconClass}`}>
                 <stat.icon className="h-5 w-5" />
               </div>
               <div>

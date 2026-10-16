@@ -19,7 +19,7 @@ interface PendingAttendanceProps {
 export function PendingAttendance({ workers, onMarkPresent, onMarkAbsent }: PendingAttendanceProps) {
   if (workers.length === 0) {
     return (
-      <Card className="bg-white dark:bg-[#111827] rounded-xl p-8 shadow-lg border border-slate-200 dark:border-slate-800">
+      <Card className="p-8">
         <div className="text-center">
           <div className="inline-flex p-3 rounded-full bg-green-100 dark:bg-green-900/30 mb-4">
             <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
@@ -36,10 +36,10 @@ export function PendingAttendance({ workers, onMarkPresent, onMarkAbsent }: Pend
   }
 
   return (
-    <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
+    <Card className="p-6">
       <div className="flex items-center gap-2 mb-6">
-        <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-          <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+        <div className="rounded-xl bg-amber-50 p-2.5 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400">
+          <Clock className="h-5 w-5" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
@@ -58,12 +58,12 @@ export function PendingAttendance({ workers, onMarkPresent, onMarkAbsent }: Pend
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200"
+            className="surface-row p-4"
           >
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <Avatar className="h-10 w-10 ring-2 ring-slate-200 dark:ring-slate-700">
-                  <AvatarFallback className="bg-[#eef3ff] text-[#0066cc] font-semibold">
+                <Avatar className="h-10 w-10 ring-1 ring-border">
+                  <AvatarFallback className="bg-accent font-semibold text-accent-foreground">
                     {worker.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>

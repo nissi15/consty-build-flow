@@ -107,7 +107,7 @@ export function AttendanceRecords({ attendance }: AttendanceRecordsProps) {
   };
 
   return (
-    <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
+    <Card className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
@@ -212,7 +212,7 @@ export function AttendanceRecords({ attendance }: AttendanceRecordsProps) {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-9 w-9 ring-2 ring-slate-200 dark:ring-slate-700">
-                        <AvatarFallback className="bg-[#eef3ff] text-[#0066cc] font-semibold text-sm">
+                        <AvatarFallback className="bg-accent text-sm font-semibold text-accent-foreground">
                           {record.workers?.name?.split(' ').map(n => n[0]).join('') || '?'}
                         </AvatarFallback>
                       </Avatar>
@@ -274,7 +274,7 @@ export function AttendanceRecords({ attendance }: AttendanceRecordsProps) {
         </div>
       )}
       {filteredAndSortedRecords.length > pageSize && (
-        <div className="mt-5 flex flex-col gap-3 border-t border-[#e3ddcf] pt-4 text-sm text-muted-foreground dark:border-[#34453a] sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-5 flex flex-col gap-3 border-t border-border pt-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>
             Showing {((page - 1) * pageSize + 1).toLocaleString()}–{Math.min(page * pageSize, filteredAndSortedRecords.length).toLocaleString()} of {filteredAndSortedRecords.length.toLocaleString()}
           </p>

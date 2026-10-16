@@ -27,7 +27,7 @@ const StatCard = ({ title, value, change, changeType = 'neutral', icon: Icon, in
       transition={{ delay: index * 0.1 }}
       className="group"
     >
-      <Card className="rounded-xl border-[#ded8cd] bg-[#fbfaf7] p-6 shadow-[0_1px_2px_rgba(29,33,31,0.04)] transition-colors dark:border-[#28312c] dark:bg-[#151a17]">
+      <Card className="p-6 transition-colors hover:border-primary/20">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78817c] dark:text-[#8f9993]">{title}</p>

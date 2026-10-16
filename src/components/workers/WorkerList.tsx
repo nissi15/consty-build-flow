@@ -44,7 +44,7 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
 
   if (workers.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-[#cfc8bc] bg-[#fbfaf7] px-6 py-14 text-center dark:border-[#344038] dark:bg-[#151a17]">
+      <div className="rounded-2xl border border-dashed border-border bg-card px-6 py-14 text-center">
         <Users className="mx-auto h-6 w-6 text-[#73777f]" />
         <h2 className="mt-4 font-semibold">No workers match these filters</h2>
         <p className="mt-1 text-sm text-muted-foreground">Try a different name, date, or attendance status.</p>
@@ -60,8 +60,8 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden overflow-hidden rounded-xl border border-[#e2e4e7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.025)] dark:border-[#292b2f] dark:bg-[#111214] md:block">
-        <div className="grid grid-cols-7 gap-4 border-b border-[#e2e4e7] bg-[#f6f7f8] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#73777f] dark:border-[#292b2f] dark:bg-[#191a1d] dark:text-[#92969d]">
+      <div className="hidden overflow-hidden rounded-2xl border border-border/90 bg-card shadow-[0_1px_2px_rgba(15,23,42,0.025),0_10px_30px_rgba(15,23,42,0.04)] dark:shadow-sm md:block">
+        <div className="grid grid-cols-7 gap-4 border-b border-border bg-muted/60 px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           <div className="col-span-2">Worker</div>
           <div>Role</div>
           <div>Daily Rate</div>
@@ -72,10 +72,10 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
 
         <div className="divide-y">
           {pageWorkers.map((worker) => (
-            <div key={worker.id} className="grid grid-cols-7 gap-4 px-5 py-4 items-center transition-colors hover:bg-[#fafafa] dark:hover:bg-[#17181a]">
+            <div key={worker.id} className="grid grid-cols-7 items-center gap-4 px-5 py-4 transition-colors hover:bg-muted/45">
               <div className="col-span-2 flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-[#eef3ff] text-[#0066cc] dark:bg-[#15233a] dark:text-[#69a8ff]">
+                  <AvatarFallback className="bg-accent text-accent-foreground">
                     {worker.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
@@ -86,7 +86,7 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
               </div>
 
               <div>
-                <Badge variant="outline" className="border-[#dfe2e7] bg-[#f5f6f8] capitalize text-[#4b515a] hover:bg-[#f5f6f8] dark:border-[#34363b] dark:bg-[#202226] dark:text-[#c5c7cc]">
+                <Badge variant="outline" className="border-border bg-secondary capitalize text-secondary-foreground hover:bg-secondary">
                   {worker.role}
                 </Badge>
               </div>
@@ -111,7 +111,7 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
                     {worker.attendance.status.charAt(0).toUpperCase() + worker.attendance.status.slice(1)}
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="border-[#ddd6c9] bg-[#f0ede7] text-[#786f63] hover:bg-[#f0ede7]">
+                  <Badge variant="outline" className="border-border bg-muted text-muted-foreground hover:bg-muted">
                     Not marked
                   </Badge>
                 )}
@@ -127,7 +127,7 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() => onEdit(worker)}
-                  className="hover:bg-[#eee9df] hover:text-[#7f5a3b]"
+                  className="hover:bg-accent hover:text-accent-foreground"
                   aria-label={`Edit ${worker.name}`}
                   title={`Edit ${worker.name}`}
                 >
@@ -137,7 +137,7 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() => onDelete(worker)}
-                  className="hover:bg-[#f3e7e4] hover:text-[#8c4941]"
+                  className="hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-400"
                   aria-label={`Delete ${worker.name}`}
                   title={`Delete ${worker.name}`}
                 >
@@ -152,11 +152,11 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
       {/* Mobile Card View */}
       <div className="md:hidden space-y-3">
         {pageWorkers.map((worker) => (
-          <div key={worker.id} className="space-y-3 rounded-xl border border-[#ded8cd] bg-[#fbfaf7] p-4 shadow-sm dark:border-[#28312c] dark:bg-[#151a17]">
+          <div key={worker.id} className="space-y-3 rounded-2xl border border-border/90 bg-card p-4 shadow-[0_1px_2px_rgba(15,23,42,0.025),0_8px_24px_rgba(15,23,42,0.035)] dark:shadow-sm">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <Avatar className="h-12 w-12 flex-shrink-0">
-                  <AvatarFallback className="bg-[#eef3ff] text-[#0066cc] dark:bg-[#15233a] dark:text-[#69a8ff]">
+                  <AvatarFallback className="bg-accent text-accent-foreground">
                     {worker.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
@@ -170,7 +170,7 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() => onEdit(worker)}
-                  className="h-10 w-10 hover:bg-[#eee9df] hover:text-[#7f5a3b]"
+                  className="h-10 w-10 hover:bg-accent hover:text-accent-foreground"
                   aria-label={`Edit ${worker.name}`}
                 >
                   <Edit2 className="h-4 w-4" />
@@ -179,7 +179,7 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() => onDelete(worker)}
-                  className="h-10 w-10 hover:bg-[#f3e7e4] hover:text-[#8c4941]"
+                  className="h-10 w-10 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-400"
                   aria-label={`Delete ${worker.name}`}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -190,7 +190,7 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Role</p>
-                <Badge variant="outline" className="border-[#cad3cc] bg-[#edf1ed] capitalize text-[#3f5d4b] hover:bg-[#edf1ed]">
+                <Badge variant="outline" className="border-border bg-secondary capitalize text-secondary-foreground hover:bg-secondary">
                   {worker.role}
                 </Badge>
               </div>
@@ -211,7 +211,7 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
                     {worker.attendance.status.charAt(0).toUpperCase() + worker.attendance.status.slice(1)}
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="border-[#ddd6c9] bg-[#f0ede7] text-[#786f63] hover:bg-[#f0ede7]">
+                  <Badge variant="outline" className="border-border bg-muted text-muted-foreground hover:bg-muted">
                     Not marked
                   </Badge>
                 )}

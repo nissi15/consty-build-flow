@@ -237,9 +237,9 @@ export default function OwnerDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f6f4ee] dark:bg-[#111814]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10 shadow-sm">
+      <div className="sticky top-0 z-10 border-b border-border bg-background/88 shadow-sm backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
@@ -338,7 +338,7 @@ export default function OwnerDashboard() {
         {/* Key Metrics - 2 Column Layout */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-3 sm:p-4 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className="p-3 transition-colors hover:border-primary/20 sm:p-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] xs:text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">Total Budget</p>
@@ -354,7 +354,7 @@ export default function OwnerDashboard() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-            <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-3 sm:p-4 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className="p-3 transition-colors hover:border-primary/20 sm:p-4">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] xs:text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">Total Spent</p>
@@ -373,7 +373,7 @@ export default function OwnerDashboard() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-3 sm:p-4 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className="p-3 transition-colors hover:border-primary/20 sm:p-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] xs:text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">Total Payroll</p>
@@ -381,15 +381,15 @@ export default function OwnerDashboard() {
                     RWF {stats.totalPayroll.toLocaleString()}
                   </p>
                 </div>
-                <div className="flex-shrink-0 rounded-lg bg-[#e9e3d7] p-1.5 dark:bg-[#26362c] xs:p-2 sm:p-3">
-                  <Wallet className="h-3.5 w-3.5 text-[#8b6b3e] dark:text-[#d4b37c] xs:h-4 xs:w-4 sm:h-6 sm:w-6" />
+                <div className="icon-tile flex-shrink-0 p-1.5 xs:p-2 sm:p-3">
+                  <Wallet className="h-3.5 w-3.5 xs:h-4 xs:w-4 sm:h-6 sm:w-6" />
                 </div>
               </div>
             </Card>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-            <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-3 sm:p-4 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className="p-3 transition-colors hover:border-primary/20 sm:p-4">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] xs:text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">Workers Present</p>
@@ -410,7 +410,7 @@ export default function OwnerDashboard() {
 
         {/* Today's Expenses Card - Mobile Responsive */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-4 sm:p-6 shadow-lg">
+          <Card className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
@@ -442,7 +442,7 @@ export default function OwnerDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Budget Overview */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-            <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-4 sm:p-6 shadow-lg">
+            <Card className="p-4 sm:p-6">
               <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 mb-3 sm:mb-4">
                 Budget Overview
               </h3>
@@ -484,7 +484,7 @@ export default function OwnerDashboard() {
 
           {/* Expense Breakdown */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-            <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-4 sm:p-6 shadow-lg">
+            <Card className="p-4 sm:p-6">
               <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 mb-3 sm:mb-4">
                 Expense Breakdown
               </h3>
@@ -536,9 +536,9 @@ export default function OwnerDashboard() {
 
         {/* Daily Spending Trend */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
-          <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-4 sm:p-6 shadow-lg">
+          <Card className="p-4 sm:p-6">
             <div className="flex items-center gap-2 mb-3 sm:mb-4">
-              <ShoppingCart className="h-4 w-4 text-[#8b6b3e] dark:text-[#d4b37c] sm:h-5 sm:w-5" />
+              <ShoppingCart className="h-4 w-4 text-accent-foreground sm:h-5 sm:w-5" />
               <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100">
                 Daily Spending (Last 7 Days)
               </h3>
@@ -565,7 +565,7 @@ export default function OwnerDashboard() {
 
         {/* Attendance Trend */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-          <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-4 sm:p-6 shadow-lg">
+          <Card className="p-4 sm:p-6">
             <div className="flex items-center gap-2 mb-3 sm:mb-4">
               <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 dark:text-green-400" />
               <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100">
@@ -591,9 +591,9 @@ export default function OwnerDashboard() {
 
         {/* Recent Activity */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
-          <Card className="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-sm p-4 sm:p-6 shadow-lg">
+          <Card className="p-4 sm:p-6">
             <div className="flex items-center gap-2 mb-3 sm:mb-4">
-              <Activity className="h-4 w-4 text-[#8b6b3e] dark:text-[#d4b37c] sm:h-5 sm:w-5" />
+              <Activity className="h-4 w-4 text-accent-foreground sm:h-5 sm:w-5" />
               <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100">
                 Recent Activity
               </h3>

@@ -8,23 +8,23 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 7%;
+    --background: 220 20% 98%;
+    --foreground: 220 18% 9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 7%;
+    --card-foreground: 220 18% 9%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 7%;
 
-    --primary: 211 100% 50%;
+    --primary: 211 100% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 95%;
-    --secondary-foreground: 0 0% 10%;
+    --secondary: 220 18% 96%;
+    --secondary-foreground: 220 18% 13%;
 
-    --muted: 220 10% 96%;
-    --muted-foreground: 220 6% 42%;
+    --muted: 220 16% 96%;
+    --muted-foreground: 220 8% 43%;
 
     --accent: 211 100% 96%;
     --accent-foreground: 211 100% 42%;
@@ -32,11 +32,11 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 89%;
-    --input: 220 13% 87%;
-    --ring: 211 100% 50%;
+    --border: 220 14% 90%;
+    --input: 220 14% 88%;
+    --ring: 211 100% 45%;
 
-    --radius: 0.7rem;
+    --radius: 0.85rem;
     
     --gradient-dark-1: 0 0% 5%;
     --gradient-dark-2: 0 0% 11%;
@@ -133,11 +133,23 @@ All colors MUST be HSL.
 
 @layer utilities {
   .glass {
-    @apply bg-card border border-border shadow-[0_1px_2px_rgba(0,0,0,0.03),0_8px_24px_rgba(0,0,0,0.035)];
+    @apply rounded-2xl border border-border/90 bg-card shadow-[0_1px_2px_rgba(15,23,42,0.025),0_10px_30px_rgba(15,23,42,0.04)];
   }
   
   .dark .glass {
-    @apply bg-card border border-border shadow-sm;
+    @apply border-border bg-card shadow-[0_1px_2px_rgba(0,0,0,0.35)];
+  }
+
+  .surface-row {
+    @apply rounded-xl border border-border/80 bg-muted/35 transition-colors hover:bg-muted/65;
+  }
+
+  .icon-tile {
+    @apply inline-flex items-center justify-center rounded-xl bg-secondary text-secondary-foreground;
+  }
+
+  .icon-tile-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-accent text-accent-foreground;
   }
   
   .gradient-primary {

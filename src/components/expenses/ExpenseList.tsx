@@ -35,9 +35,9 @@ export function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
     // Convert hex to tailwind classes
     switch (category) {
       case 'Labor':
-        return 'bg-[#eee7da] dark:bg-[#2d382f] text-[#765a35] dark:text-[#d4b37c] border-[#d8c7aa] dark:border-[#4b594e]';
+        return 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
       case 'Materials':
-        return 'bg-[#eef3ff] dark:bg-[#15233a] text-[#0066cc] dark:text-[#69a8ff] border-[#d7e5ff] dark:border-[#27446f]';
+        return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-900';
       case 'Equipment':
         return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800';
       case 'Transport':
@@ -51,10 +51,10 @@ export function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
 
   if (expenses.length === 0) {
     return (
-      <Card className="bg-white dark:bg-[#111827] rounded-xl p-8 shadow-lg border border-slate-200 dark:border-slate-800">
+      <Card className="p-8">
         <div className="text-center">
-          <div className="mb-4 inline-flex rounded-full bg-[#e9e3d7] p-3 dark:bg-[#26362c]">
-            <Receipt className="h-8 w-8 text-[#8b6b3e] dark:text-[#d4b37c]" />
+          <div className="icon-tile mb-4 rounded-2xl p-3">
+            <Receipt className="h-8 w-8" />
           </div>
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
             No Expenses Found
@@ -70,11 +70,11 @@ export function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
   const totalAmount = expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
 
   return (
-    <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
+    <Card className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <div className="rounded-lg bg-[#e9e3d7] p-2 dark:bg-[#26362c]">
-            <Receipt className="h-5 w-5 text-[#8b6b3e] dark:text-[#d4b37c]" />
+          <div className="icon-tile p-2.5">
+            <Receipt className="h-5 w-5" />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
@@ -111,7 +111,7 @@ export function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.02 }}
-                className="group hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                className="group hover:bg-muted/50"
               >
                 <TableCell>
                   <div className="flex items-center gap-2">
@@ -181,7 +181,7 @@ export function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
         </Table>
       </div>
 
-      <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+      <div className="mt-6 border-t border-border pt-6">
         <div className="flex justify-between items-center">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Showing {expenses.length} {expenses.length === 1 ? 'expense' : 'expenses'}

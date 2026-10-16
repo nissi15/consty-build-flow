@@ -37,10 +37,10 @@ export function PayrollHistory({ onGeneratePayroll, showNoData = true }: Payroll
 
   if (showNoData) {
     return (
-      <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
+      <Card className="p-6">
         <div className="flex items-center gap-2 mb-6">
-          <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-            <History className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+          <div className="icon-tile p-2.5">
+            <History className="h-5 w-5" />
           </div>
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Payroll History</h2>
         </div>
@@ -48,7 +48,7 @@ export function PayrollHistory({ onGeneratePayroll, showNoData = true }: Payroll
           <TrendingUp className="h-12 w-12 mb-4 text-slate-300 dark:text-slate-700" />
           <p className="text-slate-700 dark:text-slate-300 font-medium">No payroll records</p>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Generate your first weekly payroll to get started.</p>
-          <Button onClick={onGeneratePayroll} className="bg-orange-500 hover:bg-orange-600">
+          <Button onClick={onGeneratePayroll}>
             Generate First Payroll
           </Button>
         </div>
@@ -57,10 +57,10 @@ export function PayrollHistory({ onGeneratePayroll, showNoData = true }: Payroll
   }
 
   return (
-    <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800">
+    <Card className="p-6">
       <div className="flex items-center gap-2 mb-6">
-        <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-          <History className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+        <div className="icon-tile p-2.5">
+          <History className="h-5 w-5" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Payroll History</h2>
@@ -90,7 +90,7 @@ export function PayrollHistory({ onGeneratePayroll, showNoData = true }: Payroll
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.02 }}
-                className="group hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                className="group hover:bg-muted/50"
               >
                 <TableCell>
                   <div>
@@ -129,7 +129,7 @@ export function PayrollHistory({ onGeneratePayroll, showNoData = true }: Payroll
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1.5">
-                    <DollarSign className="h-4 w-4 text-[#8b6b3e]" />
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
                     <span className="font-bold text-[#111214] dark:text-[#f5f5f7]">
                       RWF {payroll.net_amount.toLocaleString()}
                     </span>
@@ -154,7 +154,7 @@ export function PayrollHistory({ onGeneratePayroll, showNoData = true }: Payroll
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.02 }}
-            className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+            className="surface-row p-4"
           >
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1 min-w-0">
@@ -188,7 +188,7 @@ export function PayrollHistory({ onGeneratePayroll, showNoData = true }: Payroll
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mb-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+            <div className="mb-3 grid grid-cols-2 gap-3 border-t border-border pt-3">
               <div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Daily Rate</p>
                 <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
@@ -203,7 +203,7 @@ export function PayrollHistory({ onGeneratePayroll, showNoData = true }: Payroll
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+            <div className="grid grid-cols-2 gap-3 border-t border-border pt-3">
               <div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Lunch</p>
                 <p className="text-sm font-medium text-green-600 dark:text-green-400">
@@ -213,7 +213,7 @@ export function PayrollHistory({ onGeneratePayroll, showNoData = true }: Payroll
               <div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Net Amount</p>
                 <div className="flex items-center gap-1">
-                  <DollarSign className="h-3.5 w-3.5 text-[#8b6b3e]" />
+                  <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
                   <p className="text-sm font-bold text-[#111214] dark:text-[#f5f5f7]">
                     RWF {payroll.net_amount.toLocaleString()}
                   </p>

@@ -82,7 +82,7 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWor
 
   if (activeWorkers.length === 0) {
     return (
-      <Card className="bg-white dark:bg-[#111827] rounded-xl p-8 shadow-lg border border-slate-200 dark:border-slate-800">
+      <Card className="p-8">
         <div className="text-center">
           <div className="inline-flex p-3 rounded-full bg-blue-100 dark:bg-blue-900/30 mb-4">
             <Users className="h-8 w-8 text-blue-600 dark:text-blue-400" />
@@ -99,7 +99,7 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWor
   }
 
   return (
-    <Card className="bg-white dark:bg-[#111827] rounded-xl p-4 md:p-6 shadow-lg border border-slate-200 dark:border-slate-800">
+    <Card className="p-4 md:p-6">
       <div className="mb-6">
         {/* Desktop Header - Original Layout */}
         <div className="hidden md:flex items-center justify-between mb-2">
@@ -157,12 +157,12 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWor
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200"
+              className="surface-row p-4"
             >
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Avatar className="h-12 w-12 ring-2 ring-slate-200 dark:ring-slate-700 flex-shrink-0">
-                    <AvatarFallback className="bg-[#eef3ff] text-[#0066cc] font-semibold">
+                    <AvatarFallback className="bg-accent font-semibold text-accent-foreground">
                       {worker.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
@@ -247,7 +247,7 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWor
                 </div>
 
                 {/* Mobile: Grid Layout */}
-                <div className="md:hidden grid grid-cols-2 gap-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                <div className="grid grid-cols-2 gap-3 border-t border-border pt-3 md:hidden">
                   <div className="text-left">
                     <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 mb-1">
                       <Calendar className="h-3.5 w-3.5" />
@@ -286,7 +286,7 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWor
                   </div>
 
                   {onTogglePaid && (
-                    <div className="col-span-2 text-left pt-2 border-t border-slate-200 dark:border-slate-700">
+                    <div className="col-span-2 border-t border-border pt-2 text-left">
                       <div className="flex items-center gap-2">
                         <Checkbox
                           checked={paidWorkers.has(worker.id)}
@@ -301,7 +301,7 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWor
               </div>
 
               {payroll.daysWorked === 0 && (
-                <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                <div className="mt-3 border-t border-border pt-3">
                   <p className="text-sm text-amber-600 dark:text-amber-400">
                     ⚠️ No attendance recorded for this period
                   </p>
@@ -313,7 +313,7 @@ export function WorkerPayrollList({ workers, attendance, selectedPeriod, paidWor
       </div>
 
       {activeWorkers.length > 0 && (
-        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+        <div className="mt-6 border-t border-border pt-6">
           {/* Desktop Footer - Original Layout */}
           <div className="hidden md:flex justify-between items-center flex-wrap gap-4">
             <div className="space-y-1">

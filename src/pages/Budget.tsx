@@ -132,7 +132,7 @@ export default function Budget() {
   }
 
   return (
-    <div className="min-h-screen space-y-6 bg-[#f7f8fa] p-4 text-[#111214] dark:bg-[#0b0c0e] dark:text-[#f5f5f7] sm:p-6 lg:p-8">
+    <div className="min-h-screen space-y-6 bg-background p-4 text-foreground sm:p-6 lg:p-8">
       <div className="space-y-6">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
@@ -140,7 +140,7 @@ export default function Budget() {
         >
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8b6b3e]">
+              <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-accent-foreground">
                 <MapPin className="h-3.5 w-3.5" /> Musanze Town Buildings · Finance
               </div>
               <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Budget</h1>

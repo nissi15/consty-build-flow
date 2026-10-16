@@ -19,12 +19,12 @@ const Activity = () => {
   }
 
   return (
-    <div className="min-h-screen space-y-6 bg-[#f7f8fa] p-4 text-[#111214] dark:bg-[#0b0c0e] dark:text-[#f5f5f7] sm:p-6 lg:p-8">
+    <div className="min-h-screen space-y-6 bg-background p-4 text-foreground sm:p-6 lg:p-8">
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
       >
-        <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#8b6b3e]">
+        <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-accent-foreground">
           <MapPin className="h-3.5 w-3.5" /> Musanze Town Buildings · Audit trail
         </div>
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Activity log</h1>
@@ -36,7 +36,7 @@ const Activity = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
-        <Card className="border-[#e2e4e7] bg-white p-6 shadow-sm dark:border-[#292b2f] dark:bg-[#111214]">
+        <Card className="p-6">
           <div className="space-y-4">
             {activityLog.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
@@ -49,7 +49,7 @@ const Activity = () => {
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: index * 0.05 }}
-                  className="flex items-start gap-4 rounded-lg border border-[#e7e0d3] bg-[#faf7f0] p-4 transition-colors hover:bg-[#f2ede2] dark:border-[#34453a] dark:bg-[#111814] dark:hover:bg-[#1d2a22]"
+                  className="surface-row flex items-start gap-4 p-4"
                 >
                   <div className={`p-3 rounded-xl ${getActionColor(log.action_type)}`}>
                     {getActionIcon(log.action_type)}

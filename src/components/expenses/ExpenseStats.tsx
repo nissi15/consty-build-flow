@@ -17,25 +17,25 @@ export function ExpenseStats({ stats }: ExpenseStatsProps) {
       title: 'Total Expenses',
       value: `RWF ${stats.totalExpenses.toLocaleString()}`,
       icon: DollarSign,
-      iconClass: 'bg-[#e9e3d7] text-[#8b6b3e]',
+      iconClass: 'bg-secondary text-secondary-foreground',
     },
     {
       title: 'Monthly Average',
       value: `RWF ${stats.monthlyAverage.toLocaleString()}`,
       icon: TrendingUp,
-      iconClass: 'bg-green-100 text-green-600',
+      iconClass: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400',
     },
     {
       title: 'This Month',
       value: `RWF ${stats.thisMonth.toLocaleString()}`,
       icon: Calendar,
-      iconClass: 'bg-blue-100 text-blue-600',
+      iconClass: 'bg-accent text-accent-foreground',
     },
     {
       title: 'Categories',
       value: stats.categories,
       icon: PieChart,
-      iconClass: 'bg-[#e9e3d7] text-[#8b6b3e]',
+      iconClass: 'bg-secondary text-secondary-foreground',
     },
   ];
 
@@ -48,9 +48,9 @@ export function ExpenseStats({ stats }: ExpenseStatsProps) {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: index * 0.1 }}
         >
-          <Card className="bg-white dark:bg-[#111827] rounded-xl p-4 shadow-lg border border-slate-200 dark:border-slate-800 hover:shadow-xl transition-all duration-300">
+          <Card className="p-4 transition-colors hover:border-primary/20">
             <div className="flex items-center gap-4">
-              <div className={`p-2 rounded-lg ${stat.iconClass}`}>
+              <div className={`rounded-xl p-2.5 ${stat.iconClass}`}>
                 <stat.icon className="h-5 w-5" />
               </div>
               <div>

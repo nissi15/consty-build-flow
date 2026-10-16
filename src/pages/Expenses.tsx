@@ -136,7 +136,7 @@ export default function Expenses() {
   };
 
   return (
-    <div className="min-h-screen space-y-4 bg-[#f7f8fa] p-4 text-[#111214] dark:bg-[#0b0c0e] dark:text-[#f5f5f7] sm:space-y-6 sm:p-6 lg:p-8">
+    <div className="min-h-screen space-y-4 bg-background p-4 text-foreground sm:space-y-6 sm:p-6 lg:p-8">
       <div className="space-y-6">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
@@ -149,7 +149,7 @@ export default function Expenses() {
             </div>
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="gap-2 bg-[#0071e3] text-white hover:bg-[#0077ed]">
+                <Button className="gap-2">
                   <Plus className="h-4 w-4" />
                   Add Expense
                 </Button>
@@ -261,7 +261,7 @@ export default function Expenses() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="bg-white dark:bg-[#111827] rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-800 mb-6">
+          <Card className="mb-6 p-6">
             <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100 flex items-center gap-2">
               <Filter className="h-5 w-5" />
               Filter Expenses

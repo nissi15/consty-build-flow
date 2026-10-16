@@ -18,25 +18,25 @@ export function BudgetStats({ stats }: BudgetStatsProps) {
       title: 'Total Budget',
       value: `RWF ${stats.totalBudget.toLocaleString()}`,
       icon: Wallet,
-      iconClass: 'bg-[#e9e3d7] text-[#8b6b3e]',
+      iconClass: 'bg-secondary text-secondary-foreground',
     },
     {
       title: 'Used Budget',
       value: `RWF ${stats.usedBudget.toLocaleString()}`,
       icon: DollarSign,
-      iconClass: 'bg-blue-100 text-blue-600',
+      iconClass: 'bg-accent text-accent-foreground',
     },
     {
       title: 'Remaining',
       value: `RWF ${stats.remainingBudget.toLocaleString()}`,
       icon: TrendingDown,
-      iconClass: 'bg-green-100 text-green-600',
+      iconClass: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400',
     },
     {
       title: 'Usage',
       value: `${stats.usagePercentage.toFixed(1)}%`,
       icon: Percent,
-      iconClass: 'bg-[#e9e3d7] text-[#8b6b3e]',
+      iconClass: 'bg-secondary text-secondary-foreground',
     },
   ];
 
@@ -50,9 +50,9 @@ export function BudgetStats({ stats }: BudgetStatsProps) {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: index * 0.1 }}
           >
-            <Card className="bg-white dark:bg-[#111827] rounded-xl p-4 shadow-lg border border-slate-200 dark:border-slate-800 hover:shadow-xl transition-all duration-300">
+            <Card className="p-4 transition-colors hover:border-primary/20">
               <div className="flex items-center gap-4">
-                <div className={`p-2 rounded-lg ${stat.iconClass}`}>
+                <div className={`rounded-xl p-2.5 ${stat.iconClass}`}>
                   <stat.icon className="h-5 w-5" />
                 </div>
                 <div>
@@ -69,13 +69,13 @@ export function BudgetStats({ stats }: BudgetStatsProps) {
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.4 }}
       >
-        <div className="bg-white dark:bg-[#111827] rounded-lg p-4 shadow-lg border border-slate-200 dark:border-slate-800">
+        <Card className="p-4">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">Budget Usage</span>
             <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{stats.usagePercentage.toFixed(1)}%</span>
           </div>
           <Progress value={stats.usagePercentage} className="h-2" />
-        </div>
+        </Card>
       </motion.div>
     </div>
   );
