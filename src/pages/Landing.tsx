@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowRight, BarChart3, Bell, Box, CalendarDays, ChevronRight,
-  ClipboardCheck, FileBarChart, FileText, HardHat, MapPin, Menu, PlayCircle,
-  Search, Settings, Users, X,
+  ArrowRight, BarChart3, Box, ChevronRight, FileText, HardHat,
+  MapPin, Menu, PlayCircle, Users, X,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -21,35 +20,14 @@ const lowerCards = [
   { icon: BarChart3, title: 'Budget & Reporting', text: 'Get real-time costs and keep projects on track.' },
 ];
 
-const dashboardNav = [
-  [ClipboardCheck, 'Projects', true], [Users, 'Workforce', false], [CalendarDays, 'Attendance', false],
-  [FileText, 'Payroll', false], [Box, 'Materials', false], [BarChart3, 'Budget', false], [FileBarChart, 'Reports', false],
-] as const;
-
 function DashboardPreview() {
   return (
-    <div className="mx-auto w-full max-w-[1030px] overflow-hidden rounded-t-[28px] border border-black/20 bg-white shadow-[0_28px_80px_rgba(0,0,0,.13)]">
-      <div className="flex h-9 items-center gap-2 border-b bg-[#fafafa] px-4"><i className="h-2.5 w-2.5 rounded-full border border-black/15" /><i className="h-2.5 w-2.5 rounded-full border border-black/15" /><i className="h-2.5 w-2.5 rounded-full border border-black/15" /></div>
-      <div className="grid min-h-[390px] grid-cols-[150px_1fr] sm:grid-cols-[170px_1fr]">
-        <aside className="border-r bg-[#fbfbfc] p-4 sm:p-5">
-          <div className="mb-7 text-lg font-bold tracking-tight">CONSTY</div>
-          <nav className="space-y-1">{dashboardNav.map(([Icon, label, active]) => <div key={label} className={`flex items-center gap-2 rounded-md px-2.5 py-2 text-[10px] sm:text-xs ${active ? 'bg-[#eaf2ff] text-[#0071e3]' : 'text-[#565a61]'}`}><Icon className="h-3.5 w-3.5" /><span>{label}</span></div>)}</nav>
-          <div className="mt-14 flex items-center gap-2 px-2.5 text-xs text-[#565a61]"><Settings className="h-3.5 w-3.5" /> Settings</div>
-        </aside>
-        <div className="min-w-0 p-4 sm:p-5">
-          <div className="flex items-center justify-between border-b pb-3"><div className="text-[9px] text-[#8a8e95]">Projects　›　Musanze Town Buildings</div><div className="flex items-center gap-3"><div className="hidden h-7 w-40 items-center gap-2 rounded-md border px-2 text-[9px] text-[#8a8e95] sm:flex"><Search className="h-3 w-3" /> Search...</div><Bell className="h-3.5 w-3.5" /><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#e9eaec] text-[10px] font-semibold">C</span></div></div>
-          <div className="mt-4 flex flex-wrap items-end justify-between gap-3"><div><h3 className="text-lg font-semibold tracking-[-.03em] sm:text-xl">Musanze Town Buildings</h3><div className="mt-2 flex flex-wrap items-center gap-3 text-[9px] text-[#73777f]"><span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> Rwanda / Musanze District</span><span className="rounded-full bg-[#eaf2ff] px-2 py-1 text-[#0071e3]">● In Progress</span><span>Jan 2024 – Dec 2025</span></div></div><button className="rounded-md border px-3 py-2 text-[9px]">Project settings</button></div>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">{[
-            ['Total Budget', 'RWF 450,000,000', '65% spent'], ['Workforce on Site', '90', '78 present · 12 absent'], ['Materials This Month', 'RWF 18,320,000', '↗ 12% from last month'], ['Project Progress', '62%', '██████░░░░'],
-          ].map(([label, value, note]) => <div key={label} className="rounded-lg border p-3"><p className="text-[8px] text-[#777b82]">{label}</p><p className="mt-1 text-xs font-semibold sm:text-sm">{value}</p><p className={`mt-2 text-[8px] ${note.includes('↗') ? 'text-[#15945c]' : 'text-[#777b82]'}`}>{note}</p></div>)}</div>
-          <div className="mt-3 grid gap-2 lg:grid-cols-[1fr_1.1fr_.95fr]">
-            <div className="rounded-lg border p-3"><div className="mb-3 flex justify-between text-[9px] font-semibold"><span>Site Attendance</span><span>View all →</span></div>{[['Today, 16 Oct 2026', '78 / 90'], ['Skilled workers', '28 / 32'], ['General workers', '42 / 50'], ['Supervisors', '8 / 8']].map(([label, count], index) => <div key={label} className="flex items-center justify-between border-t py-2 text-[8px]"><span>{label}</span><strong>{count}</strong><span className="h-1 w-14 rounded-full bg-[#eceef1]"><i className="block h-full rounded-full bg-[#0071e3]" style={{ width: `${[87, 88, 84, 100][index]}%` }} /></span></div>)}</div>
-            <div className="rounded-lg border p-3"><div className="mb-3 flex justify-between text-[9px] font-semibold"><span>Recent Materials</span><span>View all →</span></div>{[['Cement (50kg)', 'RWF 5,040,000'], ['Steel Rebar (12mm)', 'RWF 3,180,000'], ['Blocks (15cm)', 'RWF 1,140,000'], ['River Sand', 'RWF 870,000']].map(([item, price]) => <div key={item} className="grid grid-cols-[1fr_auto] border-t py-2 text-[8px]"><span>{item}</span><strong>{price}</strong></div>)}</div>
-            <div className="rounded-lg border p-3"><div className="flex justify-between text-[9px] font-semibold"><span>Budget Overview</span><span>View details →</span></div><div className="mt-4 flex items-center gap-4"><div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[conic-gradient(#0071e3_0_42%,#aeb3bb_42%_70%,#e3e5e8_70%)]"><div className="flex h-12 w-12 flex-col items-center justify-center rounded-full bg-white"><b className="text-xs">65%</b><span className="text-[7px]">used</span></div></div><div className="space-y-1.5 text-[7px]"><p>● Materials　42%</p><p className="text-[#777b82]">● Labour　28%</p><p className="text-[#777b82]">● Equipment　12%</p><p className="text-[#777b82]">● Other　18%</p></div></div></div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <img
+      src="/images/consty-dashboard-preview.svg"
+      alt="Consty project dashboard for Musanze Town Buildings"
+      className="mx-auto block h-auto w-full"
+      style={{ maxWidth: 1030 }}
+    />
   );
 }
 
@@ -73,8 +51,7 @@ export default function Landing() {
 
       <main>
         <section id="product" className="relative min-h-[850px] overflow-hidden pt-10 sm:pt-12 lg:min-h-[805px]">
-          <img src="/images/musanze-construction-hero.png" alt="Musanze construction site beneath the Virunga mountains" className="pointer-events-none absolute inset-x-0 bottom-0 h-[76%] w-full object-cover object-bottom" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white via-white/25 to-transparent" />
+          <img src="/images/musanze-construction-hero.png" alt="Musanze construction site beneath the Virunga mountains" className="pointer-events-none absolute inset-0 h-full w-full object-cover object-bottom" />
           <div className="relative z-10 mx-auto max-w-[1290px] px-5 text-center lg:px-8">
             <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-3.5 py-2 text-xs shadow-sm backdrop-blur"><MapPin className="h-3.5 w-3.5" /> Rwanda / Musanze District</div>
             <h1 className="mx-auto mt-5 max-w-[900px] text-5xl font-semibold leading-[.98] tracking-[-.065em] sm:text-6xl lg:text-[68px]">Construction, under control.</h1>

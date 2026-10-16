@@ -1,0 +1,63 @@
+<svg width="1100" height="450" viewBox="0 0 1100 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="16" stdDeviation="16" flood-opacity=".14"/></filter>
+    <style>
+      text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#111214}
+      .muted{fill:#72767e}.tiny{font-size:8px}.small{font-size:10px}.body{font-size:11px}.label{font-size:9px;font-weight:600}.value{font-size:15px;font-weight:700}.title{font-size:21px;font-weight:700;letter-spacing:-.5px}.line{stroke:#e2e4e7}.blue{fill:#0878f9}.blueText{fill:#0878f9}.green{fill:#17925a}
+    </style>
+  </defs>
+  <g filter="url(#shadow)">
+    <rect x="8" y="8" width="1084" height="442" rx="26" fill="white" stroke="#9b9da2" stroke-width="1.5"/>
+    <path d="M8 34C8 19.64 19.64 8 34 8H1066C1080.36 8 1092 19.64 1092 34V43H8V34Z" fill="#fafafa"/>
+    <line x1="8" y1="43" x2="1092" y2="43" class="line"/>
+    <circle cx="28" cy="25" r="4.5" fill="white" stroke="#c8cbd0"/><circle cx="44" cy="25" r="4.5" fill="white" stroke="#c8cbd0"/><circle cx="60" cy="25" r="4.5" fill="white" stroke="#c8cbd0"/>
+
+    <rect x="20" y="55" width="156" height="383" rx="12" fill="#fbfbfc" stroke="#e5e7ea"/>
+    <text x="42" y="87" font-size="18" font-weight="800">CONSTY</text>
+    <rect x="31" y="108" width="133" height="32" rx="6" fill="#eaf2ff"/>
+    <rect x="43" y="118" width="12" height="12" rx="2" class="blue"/><text x="64" y="127" class="body blueText">Projects</text>
+    <circle cx="49" cy="160" r="5" stroke="#555a62"/><path d="M40 173c1-6 5-9 9-9s8 3 9 9" stroke="#555a62"/><text x="64" y="170" class="body muted">Workforce</text>
+    <circle cx="49" cy="199" r="7" stroke="#555a62"/><path d="M49 195v5l3 2" stroke="#555a62"/><text x="64" y="203" class="body muted">Attendance</text>
+    <rect x="43" y="228" width="12" height="15" rx="2" stroke="#555a62"/><path d="M46 233h6M46 237h5" stroke="#555a62"/><text x="64" y="239" class="body muted">Payroll</text>
+    <path d="m49 267 7 4v8l-7 4-7-4v-8l7-4Z" stroke="#555a62"/><path d="m42 271 7 4 7-4M49 275v8" stroke="#555a62"/><text x="64" y="278" class="body muted">Materials</text>
+    <path d="M42 310h14M44 310v-10h3v10M50 310v-15h3v15" stroke="#555a62"/><text x="64" y="309" class="body muted">Budget</text>
+    <rect x="43" y="328" width="12" height="14" rx="1" stroke="#555a62"/><path d="M46 332h6M46 336h6" stroke="#555a62"/><text x="64" y="339" class="body muted">Reports</text>
+    <circle cx="49" cy="405" r="6" stroke="#555a62"/><path d="M49 397v3M49 410v3M41 405h3M54 405h3" stroke="#555a62"/><text x="64" y="409" class="body muted">Settings</text>
+
+    <text x="198" y="78" class="tiny muted">Projects　›　Musanze Town Buildings</text>
+    <rect x="815" y="61" width="168" height="27" rx="6" fill="white" stroke="#dfe2e7"/><circle cx="831" cy="74" r="4" stroke="#777b82"/><path d="m834 77 4 4" stroke="#777b82"/><text x="844" y="78" class="tiny muted">Search...</text>
+    <path d="M1008 78h11l-2-3v-5a4 4 0 0 0-8 0v5l-1 3Z" stroke="#555a62"/><circle cx="1048" cy="74" r="14" fill="#e7e8ea"/><text x="1044" y="78" class="small" font-weight="700">C</text>
+    <line x1="192" y1="98" x2="1073" y2="98" class="line"/>
+
+    <text x="198" y="129" class="title">Musanze Town Buildings</text>
+    <path d="M201 144a5 5 0 1 0 10 0c0-3-2-5-5-5s-5 2-5 5Zm5 5v5" stroke="#777b82"/><text x="217" y="151" class="tiny muted">Rwanda / Musanze District</text>
+    <rect x="343" y="138" width="76" height="18" rx="9" fill="#eaf2ff"/><circle cx="352" cy="147" r="3" class="blue"/><text x="359" y="150" class="tiny blueText">In Progress</text><text x="435" y="151" class="tiny muted">Jan 2024 – Dec 2025</text>
+    <rect x="960" y="119" width="105" height="29" rx="6" fill="white" stroke="#dfe2e7"/><circle cx="975" cy="133" r="5" stroke="#555a62"/><text x="987" y="136" class="tiny">Project settings</text>
+
+    <g>
+      <rect x="198" y="171" width="204" height="78" rx="8" fill="white" stroke="#dfe2e7"/><text x="219" y="191" class="tiny muted">Total Budget</text><text x="219" y="211" class="value">RWF 450,000,000</text><rect x="219" y="224" width="158" height="6" rx="3" fill="#e7e9ec"/><rect x="219" y="224" width="103" height="6" rx="3" class="blue"/><text x="219" y="242" class="tiny muted">65% spent　　　 RWF 157.5M remaining</text>
+      <rect x="411" y="171" width="204" height="78" rx="8" fill="white" stroke="#dfe2e7"/><text x="432" y="191" class="tiny muted">Workforce on Site</text><text x="432" y="211" class="value">90</text><text x="432" y="232" class="tiny muted">78 present　•　12 absent　›</text>
+      <rect x="624" y="171" width="204" height="78" rx="8" fill="white" stroke="#dfe2e7"/><text x="645" y="191" class="tiny muted">Materials This Month</text><text x="645" y="211" class="value">RWF 18,320,000</text><text x="645" y="232" class="tiny green">↗　12% from last month</text>
+      <rect x="837" y="171" width="228" height="78" rx="8" fill="white" stroke="#dfe2e7"/><text x="858" y="191" class="tiny muted">Project Progress</text><text x="858" y="211" class="value">62%</text><rect x="858" y="224" width="181" height="6" rx="3" fill="#e7e9ec"/><rect x="858" y="224" width="112" height="6" rx="3" class="blue"/>
+    </g>
+
+    <g>
+      <rect x="198" y="260" width="280" height="160" rx="8" fill="white" stroke="#dfe2e7"/><text x="213" y="280" class="label">Site Attendance</text><text x="441" y="280" class="tiny">View all →</text>
+      <line x1="213" y1="290" x2="463" y2="290" class="line"/>
+      <text x="213" y="309" class="tiny">Today, 16 Oct 2026</text><text x="389" y="309" class="label">78 / 90</text><rect x="429" y="303" width="34" height="5" rx="2.5" fill="#e7e9ec"/><rect x="429" y="303" width="30" height="5" rx="2.5" class="blue"/>
+      <line x1="213" y1="319" x2="463" y2="319" class="line"/><text x="213" y="338" class="tiny muted">Skilled workers</text><text x="389" y="338" class="label">28 / 32</text><rect x="429" y="332" width="34" height="5" rx="2.5" fill="#e7e9ec"/><rect x="429" y="332" width="30" height="5" rx="2.5" class="blue"/>
+      <line x1="213" y1="348" x2="463" y2="348" class="line"/><text x="213" y="367" class="tiny muted">General workers</text><text x="389" y="367" class="label">42 / 50</text><rect x="429" y="361" width="34" height="5" rx="2.5" fill="#e7e9ec"/><rect x="429" y="361" width="28" height="5" rx="2.5" class="blue"/>
+      <line x1="213" y1="377" x2="463" y2="377" class="line"/><text x="213" y="396" class="tiny muted">Supervisors</text><text x="389" y="396" class="label">8 / 8</text><rect x="429" y="390" width="34" height="5" rx="2.5" fill="#e7e9ec"/><rect x="429" y="390" width="34" height="5" rx="2.5" class="blue"/>
+
+      <rect x="487" y="260" width="302" height="160" rx="8" fill="white" stroke="#dfe2e7"/><text x="502" y="280" class="label">Recent Materials</text><text x="750" y="280" class="tiny">View all →</text>
+      <line x1="502" y1="290" x2="774" y2="290" class="line"/>
+      <text x="502" y="310" class="tiny">Cement (50kg)</text><text x="672" y="310" class="label">RWF 5,040,000</text><text x="751" y="310" class="tiny muted">Today</text>
+      <line x1="502" y1="319" x2="774" y2="319" class="line"/><text x="502" y="339" class="tiny">Steel Rebar (12mm)</text><text x="672" y="339" class="label">RWF 3,180,000</text><text x="741" y="339" class="tiny muted">Yesterday</text>
+      <line x1="502" y1="348" x2="774" y2="348" class="line"/><text x="502" y="368" class="tiny">Blocks (15cm)</text><text x="672" y="368" class="label">RWF 1,140,000</text><text x="744" y="368" class="tiny muted">14 Oct</text>
+      <line x1="502" y1="377" x2="774" y2="377" class="line"/><text x="502" y="397" class="tiny">River Sand</text><text x="672" y="397" class="label">RWF 870,000</text><text x="744" y="397" class="tiny muted">12 Oct</text>
+
+      <rect x="798" y="260" width="267" height="160" rx="8" fill="white" stroke="#dfe2e7"/><text x="813" y="280" class="label">Budget Overview</text><text x="1011" y="280" class="tiny">Details →</text>
+      <circle cx="862" cy="344" r="45" stroke="#e3e5e8" stroke-width="15"/><path d="M862 299a45 45 0 0 1 42 61" stroke="#0878f9" stroke-width="15"/><path d="M904 360a45 45 0 0 1-54 27" stroke="#1f2328" stroke-width="15"/><text x="848" y="340" class="value">65%</text><text x="848" y="353" class="tiny muted">RWF 292.5M</text><text x="930" y="316" class="tiny">●　Materials　42%</text><text x="930" y="337" class="tiny muted">●　Labour　　 28%</text><text x="930" y="358" class="tiny muted">●　Equipment　12%</text><text x="930" y="379" class="tiny muted">●　Other　　　18%</text>
+    </g>
+  </g>
+</svg>
