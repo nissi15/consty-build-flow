@@ -281,10 +281,17 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
   }
 
   onProgress(`Preparing ${expenseRows.length.toLocaleString()} material and operating-cost entries…`);
-  const { error: cleanupError } = await supabase
+  const { count: existingDemoExpenseCount, error: demoExpenseCountError } = await supabase
+    .from('expenses')
+    .select('id', { count: 'exact', head: true })
+    .like('description', 'DEMO · Musanze Town Buildings ·%');
+  if (demoExpenseCountError) throw demoExpenseCountError;
+  const { error: cleanupError } = existingDemoExpenseCount
+    ? await supabase
     .from('expenses')
     .delete()
-    .like('description', 'DEMO · Musanze Town Buildings ·%');
+    .like('description', 'DEMO · Musanze Town Buildings ·%')
+    : { error: null };
   if (cleanupError) throw cleanupError;
 
   const { count: retainedExpenseCount, error: expenseCountError } = await supabase
