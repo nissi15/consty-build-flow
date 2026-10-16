@@ -18,6 +18,7 @@ const DEMO_ID = {
   payroll: '40000000-0000-4000-8000-',
   budget: '50000000-0000-4000-8000-000000000001',
   activity: '60000000-0000-4000-8000-000000000001',
+  snapshot: '60000000-0000-4000-8000-000000000002',
 };
 
 const surnames = [
@@ -298,9 +299,9 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
     .from('expenses')
     .select('id', { count: 'exact', head: true });
   if (expenseCountError) throw expenseCountError;
-  const retainedExpenses = await fetchAllPagesInParallel<{ amount: number }>(retainedExpenseCount || 0, (from, to) => supabase
+  const retainedExpenses = await fetchAllPagesInParallel<{ amount: number; date: string }>(retainedExpenseCount || 0, (from, to) => supabase
     .from('expenses')
-    .select('amount')
+    .select('amount,date')
     .order('id')
     .range(from, to), 1000, 6);
   const retainedExpenseTotal = retainedExpenses.reduce((total, row) => total + Number(row.amount || 0), 0);
@@ -338,6 +339,27 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
     message: `Loaded 11-month Musanze Town Buildings demo: ${workerRows.length} workers, ${attendanceRows.length} attendance records, ${payrollRows.length} payroll records and ${expenseRows.length} expenses.`,
   }, { onConflict: 'id' });
   if (activityError) throw activityError;
+
+  const allExpenseRows = [...retainedExpenses, ...expenseRows];
+  const dashboardMonths = months.map(month => {
+    const start = isoDate(month.start);
+    const end = isoDate(month.end);
+    const monthAttendance = attendanceRows.filter(row => row.date! >= start && row.date! <= end);
+    const present = monthAttendance.filter(row => row.status === 'present').length;
+    return {
+      month: month.start.toLocaleString('en', { month: 'short' }),
+      spending: allExpenseRows
+        .filter(row => row.date! >= start && row.date! <= end)
+        .reduce((total, row) => total + Number(row.amount || 0), 0),
+      attendance: monthAttendance.length ? Math.round((present / monthAttendance.length) * 100) : 0,
+    };
+  });
+  const { error: snapshotError } = await supabase.from('activity_log').upsert({
+    id: DEMO_ID.snapshot,
+    action_type: 'dashboard_snapshot',
+    message: JSON.stringify({ months: dashboardMonths }),
+  }, { onConflict: 'id' });
+  if (snapshotError) throw snapshotError;
 
   onProgress('Demo portfolio ready.');
   return {

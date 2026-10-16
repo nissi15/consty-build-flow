@@ -1,14 +1,12 @@
-import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { format } from 'date-fns';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { AlertTriangle, ArrowUpRight, CalendarCheck, FileText, Package, Users, WalletCards } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useWorkers, useAttendanceSummary, useExpenses, useBudget, useActivityLog } from '@/hooks/useSupabaseData';
-import { usePayroll } from '@/hooks/usePayroll';
-import { getTodayInRwanda } from '@/utils/dateUtils';
+import { useActivityLog } from '@/hooks/useSupabaseData';
+import { useDashboardSummary } from '@/hooks/useDashboardSummary';
 
 const formatRwf = (value: number) => {
   if (value >= 1_000_000_000) return `RWF ${(value / 1_000_000_000).toFixed(2)}B`;
@@ -17,45 +15,22 @@ const formatRwf = (value: number) => {
 };
 
 const Dashboard = () => {
-  const { workers, loading: workersLoading } = useWorkers();
-  const { attendance, loading: attendanceLoading } = useAttendanceSummary();
-  const { expenses, loading: expensesLoading } = useExpenses();
-  const { budget, loading: budgetLoading } = useBudget();
-  const { payrolls, loading: payrollLoading } = usePayroll();
+  const { summary: dashboard, loading } = useDashboardSummary();
   const { activityLog } = useActivityLog();
-
-  const dashboard = useMemo(() => {
-    const activeWorkers = workers.filter(worker => worker.is_active);
-    const today = getTodayInRwanda();
-    const presentToday = attendance.filter(record => record.date === today && record.status === 'present').length;
-    const monthKey = today.slice(0, 7);
-    const monthlyPayroll = payrolls.filter(record => record.period_start.slice(0, 7) === monthKey).reduce((sum, record) => sum + Number(record.net_amount), 0);
-    const budgetUsed = Number(budget?.used_budget || 0);
-    const totalBudget = Number(budget?.total_budget || 0);
-    const budgetPercent = totalBudget ? Math.round((budgetUsed / totalBudget) * 100) : 0;
-    const months = Array.from({ length: 11 }, (_, index) => {
-      const date = subMonths(new Date(), 10 - index);
-      const start = format(startOfMonth(date), 'yyyy-MM-dd');
-      const end = format(endOfMonth(date), 'yyyy-MM-dd');
-      const monthExpenses = expenses.filter(expense => expense.date >= start && expense.date <= end).reduce((sum, expense) => sum + Number(expense.amount), 0);
-      const monthAttendance = attendance.filter(record => record.date >= start && record.date <= end);
-      const present = monthAttendance.filter(record => record.status === 'present').length;
-      return { month: format(date, 'MMM'), spending: monthExpenses, attendance: monthAttendance.length ? Math.round((present / monthAttendance.length) * 100) : 0 };
-    });
-    return { activeWorkers, presentToday, monthlyPayroll, budgetUsed, totalBudget, budgetPercent, months };
-  }, [workers, attendance, payrolls, expenses, budget]);
-
-  const loading = workersLoading || attendanceLoading || expensesLoading || budgetLoading || payrollLoading;
   if (loading) return <div className="space-y-5 p-5 lg:p-8"><Skeleton className="h-24" /><div className="grid gap-4 lg:grid-cols-4">{[1, 2, 3, 4].map(item => <Skeleton key={item} className="h-32" />)}</div><Skeleton className="h-[420px]" /></div>;
 
+  const budgetUsed = Number(dashboard.budget.used_budget || 0);
+  const totalBudget = Number(dashboard.budget.total_budget || 0);
+  const budgetPercent = totalBudget ? Math.round((budgetUsed / totalBudget) * 100) : 0;
+
   const cards = [
-    { label: 'Total workforce', value: dashboard.activeWorkers.length.toString(), detail: 'Active workers on project', icon: Users },
-    { label: 'Present today', value: dashboard.presentToday.toString(), detail: `${dashboard.activeWorkers.length ? Math.round((dashboard.presentToday / dashboard.activeWorkers.length) * 100) : 0}% attendance rate`, icon: CalendarCheck },
-    { label: 'Monthly payroll', value: formatRwf(dashboard.monthlyPayroll), detail: format(new Date(), 'MMMM yyyy'), icon: WalletCards },
-    { label: 'Budget used', value: `${dashboard.budgetPercent}%`, detail: `${formatRwf(dashboard.budgetUsed)} of ${formatRwf(dashboard.totalBudget)}`, icon: Package },
+    { label: 'Total workforce', value: dashboard.active_workers.toString(), detail: 'Active workers on project', icon: Users },
+    { label: 'Present today', value: dashboard.present_today.toString(), detail: `${dashboard.active_workers ? Math.round((dashboard.present_today / dashboard.active_workers) * 100) : 0}% attendance rate`, icon: CalendarCheck },
+    { label: 'Monthly payroll', value: formatRwf(Number(dashboard.monthly_payroll)), detail: format(new Date(), 'MMMM yyyy'), icon: WalletCards },
+    { label: 'Budget used', value: `${budgetPercent}%`, detail: `${formatRwf(budgetUsed)} of ${formatRwf(totalBudget)}`, icon: Package },
   ];
-  const recentMaterials = expenses.filter(expense => expense.category === 'Materials').sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4);
-  const attendanceExceptions = Math.max(0, dashboard.activeWorkers.length - dashboard.presentToday);
+  const recentMaterials = dashboard.recent_materials;
+  const attendanceExceptions = Math.max(0, dashboard.active_workers - dashboard.present_today);
 
   return (
     <div className="mx-auto max-w-[1540px] space-y-5 p-4 sm:p-6 lg:p-8">
@@ -75,14 +50,14 @@ const Dashboard = () => {
         </Card>
         <Card className="p-5">
           <div className="flex items-center justify-between"><h2 className="font-semibold">Budget position</h2><Link to="/budget" className="text-xs text-muted-foreground hover:text-foreground">View details →</Link></div>
-          <div className="mx-auto my-8 flex h-44 w-44 items-center justify-center rounded-full" style={{ background: `conic-gradient(#111 ${dashboard.budgetPercent * 3.6}deg, #e8e9eb 0deg)` }}><div className="flex h-32 w-32 flex-col items-center justify-center rounded-full bg-white dark:bg-[#111214]"><strong className="text-3xl">{dashboard.budgetPercent}%</strong><span className="text-xs text-muted-foreground">used</span></div></div>
-          <div className="space-y-3 border-t pt-4 text-sm"><div className="flex justify-between"><span className="text-muted-foreground">Spent</span><strong>{formatRwf(dashboard.budgetUsed)}</strong></div><div className="flex justify-between"><span className="text-muted-foreground">Remaining</span><strong>{formatRwf(Math.max(0, dashboard.totalBudget - dashboard.budgetUsed))}</strong></div><div className="flex justify-between"><span className="text-muted-foreground">Total budget</span><strong>{formatRwf(dashboard.totalBudget)}</strong></div></div>
+          <div className="mx-auto my-8 flex h-44 w-44 items-center justify-center rounded-full" style={{ background: `conic-gradient(#111 ${Math.min(100, budgetPercent) * 3.6}deg, #e8e9eb 0deg)` }}><div className="flex h-32 w-32 flex-col items-center justify-center rounded-full bg-white dark:bg-[#111214]"><strong className="text-3xl">{budgetPercent}%</strong><span className="text-xs text-muted-foreground">used</span></div></div>
+          <div className="space-y-3 border-t pt-4 text-sm"><div className="flex justify-between"><span className="text-muted-foreground">Spent</span><strong>{formatRwf(budgetUsed)}</strong></div><div className="flex justify-between"><span className="text-muted-foreground">Remaining</span><strong>{formatRwf(Math.max(0, totalBudget - budgetUsed))}</strong></div><div className="flex justify-between"><span className="text-muted-foreground">Total budget</span><strong>{formatRwf(totalBudget)}</strong></div></div>
         </Card>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">
         <Card className="p-5"><div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">Attendance</h2><span className="text-xs text-muted-foreground">11 months</span></div><ResponsiveContainer width="100%" height={190}><BarChart data={dashboard.months}><XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={11} /><YAxis hide domain={[0, 100]} /><Tooltip formatter={(value: number) => [`${value}%`, 'Attendance']} /><Bar dataKey="attendance" fill="#cfd2d6" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></Card>
-        <Card className="p-5"><div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">Recent materials</h2><Link to="/expenses" className="text-xs text-muted-foreground">View all →</Link></div><div className="divide-y">{recentMaterials.map(item => <div key={item.id} className="flex items-center gap-3 py-3"><div className="icon-tile h-8 w-8 rounded-full"><Package className="h-4 w-4" /></div><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{item.description?.replace('DEMO · Musanze Town Buildings · ', '') || 'Material purchase'}</p><p className="text-xs text-muted-foreground">{format(new Date(item.date), 'dd MMM yyyy')}</p></div><span className="text-xs font-medium">{formatRwf(Number(item.amount))}</span></div>)}</div></Card>
+        <Card className="p-5"><div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">Recent materials</h2><Link to="/expenses" className="text-xs text-muted-foreground">View all →</Link></div><div className="divide-y">{recentMaterials.map(item => <div key={item.id} className="flex items-center gap-3 py-3"><div className="icon-tile h-8 w-8 rounded-full"><Package className="h-4 w-4" /></div><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{item.description?.replace('DEMO · Musanze Town Buildings · ', '') || 'Material purchase'}</p><p className="text-xs text-muted-foreground">{format(new Date(`${item.date}T00:00:00`), 'dd MMM yyyy')}</p></div><span className="text-xs font-medium">{formatRwf(Number(item.amount))}</span></div>)}</div></Card>
         <Card className="p-5"><div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">Site alerts</h2><AlertTriangle className="h-4 w-4 text-amber-600" /></div><div className="space-y-3"><div className="flex gap-3 rounded-xl border border-amber-200/70 bg-amber-50/70 p-3 dark:border-amber-900 dark:bg-amber-950/35"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" /><div><p className="text-sm font-medium">{attendanceExceptions} workers not marked present</p><p className="mt-1 text-xs text-muted-foreground">Review today’s attendance before payroll closes.</p></div></div><div className="surface-row flex gap-3 p-3"><FileText className="mt-0.5 h-4 w-4 shrink-0" /><div><p className="text-sm font-medium">Reports available</p><p className="mt-1 text-xs text-muted-foreground">Export any date range as PDF or CSV.</p></div></div>{activityLog[0] && <div className="border-t pt-3"><p className="text-xs uppercase tracking-wide text-muted-foreground">Latest activity</p><p className="mt-2 text-sm">{activityLog[0].message}</p></div>}</div><Button asChild variant="ghost" className="mt-3 h-9 w-full justify-between px-1 text-sm"><Link to="/activity">Open activity log <ArrowUpRight className="h-4 w-4" /></Link></Button></Card>
       </section>
     </div>
