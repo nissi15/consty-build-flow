@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { cleanPortfolioLabel } from '@/lib/project-period';
 
 interface Attendance {
   id: string;
@@ -65,7 +66,7 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
           <div className="col-span-2">Worker</div>
           <div>Role</div>
           <div>Daily Rate</div>
-          <div>Today's Status</div>
+          <div>31 July Status</div>
           <div>This Week</div>
           <div className="text-right">Actions</div>
         </div>
@@ -81,7 +82,7 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
                 </Avatar>
                 <div>
                   <p className="font-medium capitalize">{worker.name}</p>
-                  <p className="text-sm text-muted-foreground">{worker.contact_info || 'No contact'}</p>
+                  <p className="text-sm text-muted-foreground">{cleanPortfolioLabel(worker.contact_info) || 'No contact'}</p>
                 </div>
               </div>
 
@@ -162,7 +163,7 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="truncate font-medium capitalize">{worker.name}</p>
-                  <p className="text-sm text-muted-foreground truncate">{worker.contact_info || 'No contact'}</p>
+                  <p className="text-sm text-muted-foreground truncate">{cleanPortfolioLabel(worker.contact_info) || 'No contact'}</p>
                 </div>
               </div>
               <div className="flex gap-2 flex-shrink-0">
@@ -196,7 +197,7 @@ export function WorkerList({ workers, onEdit, onDelete }: WorkerListProps) {
               </div>
 
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Today's Status</p>
+                <p className="text-xs text-muted-foreground mb-1">31 July Status</p>
                 {worker.attendance ? (
                   <Badge
                     variant="outline"

@@ -2,6 +2,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { startOfWeek, endOfWeek, eachDayOfInterval, format, subWeeks } from 'date-fns';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { PROJECT_END } from '@/lib/project-period';
 
 export function ExpenseOverTime() {
   const [data, setData] = useState<{ name: string; amount: number }[]>([]);
@@ -11,7 +12,7 @@ export function ExpenseOverTime() {
     const fetchExpenseData = async () => {
       setLoading(true);
       try {
-        const endDate = new Date();
+        const endDate = PROJECT_END;
         const startDate = subWeeks(endDate, 4); // Last 4 weeks
 
         const { data: expenses, error } = await supabase
@@ -96,15 +97,15 @@ export function ExpenseOverTime() {
           <XAxis dataKey="name" />
           <YAxis />
           <Tooltip
-            formatter={(value: number) => [`$${value.toLocaleString()}`, 'Amount']}
+            formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Amount']}
           />
           <Line
             type="monotone"
             dataKey="amount"
-            stroke="#8B5CF6"
+            stroke="#111214"
             strokeWidth={2}
-            dot={{ fill: '#8B5CF6', r: 4 }}
-            activeDot={{ r: 6, fill: '#8B5CF6' }}
+            dot={{ fill: '#111214', r: 4 }}
+            activeDot={{ r: 6, fill: '#111214' }}
           />
         </LineChart>
       </ResponsiveContainer>

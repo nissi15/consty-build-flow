@@ -13,11 +13,14 @@ import { toast } from 'sonner';
 import { WorkerStats } from '@/components/workers/WorkerStats';
 import { WorkerList } from '@/components/workers/WorkerList';
 import { WorkerFilters } from '@/components/workers/WorkerFilters';
-import { getTodayInRwanda } from '@/utils/dateUtils';
+import { PROJECT_END, PROJECT_END_DATE } from '@/lib/project-period';
+import type { Database } from '@/integrations/supabase/types';
+
+type Worker = Database['public']['Tables']['workers']['Row'];
 
 export default function Workers() {
   const { workers, loading, refetch: refetchWorkers } = useWorkers();
-  const { attendance, loading: attendanceLoading } = useAttendance();
+  const { attendance, loading: attendanceLoading } = useAttendance({ from: '2026-07-01', to: PROJECT_END_DATE });
 
   const [search, setSearch] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -29,15 +32,15 @@ export default function Workers() {
     daily_rate: '',
     lunch_allowance: '50',
     contact_info: '',
-    join_date: format(new Date(), 'yyyy-MM-dd'),
+    join_date: PROJECT_END_DATE,
   });
-  const [editingWorker, setEditingWorker] = useState<any>(null);
+  const [editingWorker, setEditingWorker] = useState<Worker | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
 
   const stats = useMemo(() => {
     const activeWorkers = workers.filter(w => w.is_active);
-    const today = getTodayInRwanda();
+    const today = PROJECT_END_DATE;
     const presentToday = attendance.filter(a => 
       a.date === today && a.status === 'present'
     ).length;
@@ -46,7 +49,7 @@ export default function Workers() {
       ? Math.round(activeWorkers.reduce((sum, w) => sum + Number(w.daily_rate), 0) / activeWorkers.length)
       : 0;
 
-    const weekStart = new Date();
+    const weekStart = new Date(PROJECT_END);
     weekStart.setDate(weekStart.getDate() - 7);
     const weeklyHours = attendance
       .filter(a => new Date(a.date) >= weekStart && a.status === 'present')
@@ -70,13 +73,13 @@ export default function Workers() {
     // Add attendance data to workers
     filtered = filtered.map(worker => {
       // Get today's attendance if a specific date is not selected
-      const targetDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : getTodayInRwanda();
+      const targetDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : PROJECT_END_DATE;
       const todayAttendance = attendance.find(a => 
         a.worker_id === worker.id && a.date === targetDate
       );
 
       // Get weekly attendance stats
-      const weekStart = new Date();
+      const weekStart = new Date(PROJECT_END);
       weekStart.setDate(weekStart.getDate() - 7);
       const weeklyAttendance = attendance.filter(a => 
         a.worker_id === worker.id && 
@@ -97,12 +100,12 @@ export default function Workers() {
     if (selectedStatus !== 'all') {
       if (selectedStatus === 'not_marked') {
         filtered = filtered.filter(w => {
-          const today = getTodayInRwanda();
+          const today = PROJECT_END_DATE;
           return !attendance.some(a => a.worker_id === w.id && a.date === today);
         });
       } else {
         filtered = filtered.filter(w => {
-          const today = getTodayInRwanda();
+          const today = PROJECT_END_DATE;
           return attendance.some(a => a.worker_id === w.id && a.date === today && a.status === selectedStatus);
         });
       }
@@ -139,7 +142,7 @@ export default function Workers() {
         daily_rate: '', 
         lunch_allowance: '50',
         contact_info: '',
-        join_date: format(new Date(), 'yyyy-MM-dd'),
+        join_date: PROJECT_END_DATE,
       });
       
       await supabase.from('activity_log').insert({
@@ -152,7 +155,7 @@ export default function Workers() {
 
   const handleAutoCalculate = async () => {
     setIsCalculating(true);
-    const today = getTodayInRwanda();
+    const today = PROJECT_END_DATE;
     
     try {
       // Get all present workers for today
@@ -279,7 +282,7 @@ export default function Workers() {
                 className="gap-2 bg-card hover:bg-muted"
               >
                 <Calculator className="h-4 w-4" />
-                {isCalculating ? 'Calculating...' : 'Calculate today'}
+                {isCalculating ? 'Calculating...' : 'Calculate 31 July'}
               </Button>
               <Dialog>
                 <DialogTrigger asChild>

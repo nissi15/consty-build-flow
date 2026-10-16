@@ -13,6 +13,8 @@ import {
 import { Receipt, Calendar, DollarSign, Trash2, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import { getCategoryColor } from '@/constants/expenseCategories';
+import { useEffect, useMemo, useState } from 'react';
+import { cleanPortfolioLabel } from '@/lib/project-period';
 
 interface Expense {
   id: string;
@@ -30,6 +32,14 @@ interface ExpenseListProps {
 }
 
 export function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
+  const pageSize = 100;
+  const [page, setPage] = useState(1);
+  const pageCount = Math.max(1, Math.ceil(expenses.length / pageSize));
+  useEffect(() => setPage(1), [expenses]);
+  const visibleExpenses = useMemo(
+    () => expenses.slice((page - 1) * pageSize, page * pageSize),
+    [expenses, page],
+  );
   const getCategoryBadgeColor = (category: string) => {
     const color = getCategoryColor(category, 0);
     // Convert hex to tailwind classes
@@ -105,7 +115,7 @@ export function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {expenses.map((expense, index) => (
+            {visibleExpenses.map((expense, index) => (
               <motion.tr
                 key={expense.id}
                 initial={{ opacity: 0, y: 10 }}
@@ -137,7 +147,7 @@ export function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
                 <TableCell>
                   <div className="max-w-xs">
                     <p className="text-sm text-slate-700 dark:text-slate-300 truncate">
-                      {expense.description || '-'}
+                      {cleanPortfolioLabel(expense.description) || '-'}
                     </p>
                   </div>
                 </TableCell>
@@ -184,7 +194,7 @@ export function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
       <div className="mt-6 border-t border-border pt-6">
         <div className="flex justify-between items-center">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Showing {expenses.length} {expenses.length === 1 ? 'expense' : 'expenses'}
+            Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, expenses.length)} of {expenses.length} expenses
           </p>
           <div className="text-right">
             <p className="text-sm text-slate-500 dark:text-slate-400">Total Amount</p>
@@ -194,6 +204,13 @@ export function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
           </div>
         </div>
       </div>
+      {pageCount > 1 && (
+        <div className="mt-4 flex items-center justify-center gap-3">
+          <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(value => value - 1)}>Previous</Button>
+          <span className="text-sm text-muted-foreground">Page {page} of {pageCount}</span>
+          <Button variant="outline" size="sm" disabled={page === pageCount} onClick={() => setPage(value => value + 1)}>Next</Button>
+        </div>
+      )}
     </Card>
   );
 }

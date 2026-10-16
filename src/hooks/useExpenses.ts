@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { startOfMonth, endOfMonth } from 'date-fns';
 import { fetchAllPagesInParallel, withDataTimeout } from '@/lib/supabase-pagination';
 
 interface Expense {
@@ -12,7 +11,7 @@ interface Expense {
   created_at: string;
 }
 
-export function useExpenses() {
+export function useExpenses(options: { from?: string; to?: string } = {}) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const requestInFlight = useRef<Promise<void> | null>(null);
@@ -31,15 +30,24 @@ export function useExpenses() {
         refetchQueued.current = false;
         try {
           const { count, error: countError } = await withDataTimeout(
-            supabase.from('expenses').select('id', { count: 'exact', head: true }),
+            (() => {
+              let query = supabase.from('expenses').select('id', { count: 'exact', head: true });
+              if (options.from) query = query.gte('date', options.from);
+              if (options.to) query = query.lte('date', options.to);
+              return query;
+            })(),
           );
           if (countError) throw countError;
-          const data = await fetchAllPagesInParallel<Expense>(count || 0, (from, to) => supabase
-            .from('expenses')
-            .select('id,category,amount,description,date,created_at')
-            .order('date', { ascending: false })
-            .order('created_at', { ascending: false })
-            .range(from, to), 1000, 6);
+          const data = await fetchAllPagesInParallel<Expense>(count || 0, (from, to) => {
+            let query = supabase
+              .from('expenses')
+              .select('id,category,amount,description,date,created_at')
+              .order('date', { ascending: false })
+              .order('created_at', { ascending: false });
+            if (options.from) query = query.gte('date', options.from);
+            if (options.to) query = query.lte('date', options.to);
+            return query.range(from, to);
+          }, 1000, 6);
           setExpenses(data);
         } catch (error) {
           console.error('Error fetching expenses:', error);
@@ -52,7 +60,7 @@ export function useExpenses() {
       setLoading(false);
     });
     return requestInFlight.current;
-  }, []);
+  }, [options.from, options.to]);
 
   useEffect(() => {
     fetchExpenses();
@@ -79,15 +87,7 @@ export function useExpenses() {
     const monthlyAverage = totalExpenses / months;
 
     // Calculate this month's total
-    const now = new Date();
-    const monthStart = startOfMonth(now);
-    const monthEnd = endOfMonth(now);
-    const thisMonth = expenses
-      .filter(expense => {
-        const expenseDate = new Date(expense.date);
-        return expenseDate >= monthStart && expenseDate <= monthEnd;
-      })
-      .reduce((sum, expense) => sum + Number(expense.amount), 0);
+    const thisMonth = totalExpenses;
 
     // Count unique categories
     const categories = new Set(expenses.map(expense => expense.category)).size;

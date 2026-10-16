@@ -62,7 +62,12 @@ export const useWorkers = () => {
   return { workers, loading, refetch: fetchWorkers };
 };
 
-export const useAttendance = () => {
+export interface AttendanceQueryOptions {
+  from?: string;
+  to?: string;
+}
+
+export const useAttendance = (options: AttendanceQueryOptions = {}) => {
   const [attendance, setAttendance] = useState<AttendanceWithWorker[]>([]);
   const [loading, setLoading] = useState(true);
   const requestInFlight = useRef<Promise<void> | null>(null);
@@ -79,16 +84,22 @@ export const useAttendance = () => {
       do {
         refetchQueued.current = false;
         try {
-          const { count, error: countError } = await withDataTimeout(
-            supabase.from('attendance').select('id', { count: 'exact', head: true }),
-          );
+          let countQuery = supabase.from('attendance').select('id', { count: 'exact', head: true });
+          if (options.from) countQuery = countQuery.gte('date', options.from);
+          if (options.to) countQuery = countQuery.lte('date', options.to);
+          const { count, error: countError } = await withDataTimeout(countQuery);
           if (countError) throw countError;
 
-          const data = await fetchAllPagesInParallel<AttendanceWithWorker>(count || 0, (from, to) => supabase
-            .from('attendance')
-            .select('*, workers(id, name, role)')
-            .order('created_at', { ascending: false })
-            .range(from, to));
+          const data = await fetchAllPagesInParallel<AttendanceWithWorker>(count || 0, (from, to) => {
+            let query = supabase
+              .from('attendance')
+              .select('*, workers(id, name, role)')
+              .order('date', { ascending: false })
+              .order('created_at', { ascending: false });
+            if (options.from) query = query.gte('date', options.from);
+            if (options.to) query = query.lte('date', options.to);
+            return query.range(from, to);
+          });
           setAttendance(data);
         } catch (error) {
           console.error('Error fetching attendance:', error);
@@ -101,7 +112,7 @@ export const useAttendance = () => {
       setLoading(false);
     });
     return requestInFlight.current;
-  }, []);
+  }, [options.from, options.to]);
 
   useEffect(() => {
     fetchAttendance();

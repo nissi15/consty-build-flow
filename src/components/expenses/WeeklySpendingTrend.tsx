@@ -1,6 +1,7 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { startOfWeek, endOfWeek, eachDayOfInterval, format } from 'date-fns';
 import { useMemo } from 'react';
+import { PROJECT_END } from '@/lib/project-period';
 
 interface Expense {
   date: string;
@@ -13,8 +14,7 @@ interface WeeklySpendingTrendProps {
 
 export function WeeklySpendingTrend({ expenses }: WeeklySpendingTrendProps) {
   const data = useMemo(() => {
-    const today = new Date();
-    const fourWeeksAgo = new Date(today.getTime() - 28 * 24 * 60 * 60 * 1000);
+    const today = PROJECT_END;
     
     // Create an array of weeks
     const weeks = Array.from({ length: 4 }, (_, i) => {
@@ -63,7 +63,7 @@ export function WeeklySpendingTrend({ expenses }: WeeklySpendingTrendProps) {
           <XAxis dataKey="name" />
           <YAxis />
           <Tooltip
-            formatter={(value: number) => [`$${value.toLocaleString()}`, 'Amount']}
+            formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Amount']}
           />
           <Area
             type="monotone"

@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState, useMemo } from 'react';
-import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { ExpenseStats } from '@/components/expenses/ExpenseStats';
@@ -16,21 +15,32 @@ import { ExpenseBreakdown } from '@/components/expenses/ExpenseBreakdown';
 import { WeeklySpendingTrend } from '@/components/expenses/WeeklySpendingTrend';
 import { ExpenseList } from '@/components/expenses/ExpenseList';
 import { useExpenses } from '@/hooks/useExpenses';
-import { getTodayInRwanda } from '@/utils/dateUtils';
+import { PROJECT_END_DATE } from '@/lib/project-period';
+import { useDashboardSummary } from '@/hooks/useDashboardSummary';
+import { adjustDashboardExpenseSnapshot, getProjectBudgetPosition, setProjectBudgetUsed } from '@/lib/budget-sync';
 
 export default function Expenses() {
-  const { expenses, loading, stats, refetchExpenses } = useExpenses();
+  const [dateRange, setDateRange] = useState({ start: '2026-07-01', end: PROJECT_END_DATE });
+  const expenseRange = useMemo(() => ({ from: dateRange.start, to: dateRange.end }), [dateRange]);
+  const { expenses, loading, stats: rangeStats, refetchExpenses } = useExpenses(expenseRange);
+  const { summary: dashboard } = useDashboardSummary();
+  const stats = useMemo(() => {
+    const totalExpenses = Number(dashboard.budget.used_budget || dashboard.total_expenses || 0);
+    const categoryCount = Object.keys(dashboard.category_totals || {}).length || rangeStats.categories;
+    return {
+      totalExpenses,
+      monthlyAverage: totalExpenses / 11,
+      thisMonth: rangeStats.totalExpenses,
+      categories: categoryCount,
+    };
+  }, [dashboard, rangeStats]);
   const [isAddingExpense, setIsAddingExpense] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [dateRange, setDateRange] = useState({
-    start: format(new Date(new Date().setDate(1)), 'yyyy-MM-dd'),
-    end: format(new Date(), 'yyyy-MM-dd'),
-  });
   const [newExpense, setNewExpense] = useState({
     category: '',
     amount: '',
     description: '',
-    date: getTodayInRwanda(),
+    date: PROJECT_END_DATE,
   });
 
   const filteredExpenses = useMemo(() => {
@@ -51,6 +61,7 @@ export default function Expenses() {
     }
 
     setIsAddingExpense(true);
+    const budgetBefore = await getProjectBudgetPosition();
     const { error } = await supabase.from('expenses').insert({
       category: newExpense.category,
       amount: parseFloat(newExpense.amount),
@@ -67,7 +78,7 @@ export default function Expenses() {
         category: '',
         amount: '',
         description: '',
-        date: getTodayInRwanda(),
+        date: PROJECT_END_DATE,
       });
 
       await supabase.from('activity_log').insert({
@@ -75,20 +86,12 @@ export default function Expenses() {
         action_type: 'expense',
       });
 
-      // Update budget used_budget
-      const { data: latestBudget } = await supabase
-        .from('budget')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (latestBudget) {
-        await supabase
-          .from('budget')
-          .update({ used_budget: latestBudget.used_budget + parseFloat(newExpense.amount) })
-          .eq('id', latestBudget.id);
-      }
+      await setProjectBudgetUsed(Number(budgetBefore?.used_budget || 0) + parseFloat(newExpense.amount));
+      await adjustDashboardExpenseSnapshot({
+        amount: parseFloat(newExpense.amount),
+        category: newExpense.category,
+        date: newExpense.date,
+      }, 1);
 
       refetchExpenses();
     }
@@ -103,6 +106,7 @@ export default function Expenses() {
     const expense = expenses.find(e => e.id === id);
     if (!expense) return;
 
+    const budgetBefore = await getProjectBudgetPosition();
     const { error } = await supabase.from('expenses').delete().eq('id', id);
 
     if (error) {
@@ -111,20 +115,12 @@ export default function Expenses() {
     } else {
       toast.success('Expense deleted successfully!');
 
-      // Update budget used_budget
-      const { data: latestBudget } = await supabase
-        .from('budget')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (latestBudget) {
-        await supabase
-          .from('budget')
-          .update({ used_budget: Math.max(0, latestBudget.used_budget - Number(expense.amount)) })
-          .eq('id', latestBudget.id);
-      }
+      await setProjectBudgetUsed(Number(budgetBefore?.used_budget || 0) - Number(expense.amount));
+      await adjustDashboardExpenseSnapshot({
+        amount: Number(expense.amount),
+        category: expense.category,
+        date: expense.date,
+      }, -1);
 
       await supabase.from('activity_log').insert({
         message: `Expense deleted: RWF ${expense.amount} for ${expense.category}`,
@@ -203,6 +199,7 @@ export default function Expenses() {
                       <Input
                         id="date"
                         type="date"
+                        max={PROJECT_END_DATE}
                         value={newExpense.date}
                         onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
                       />
@@ -242,7 +239,7 @@ export default function Expenses() {
               <Filter className="h-4 w-4" />
               Expense Breakdown
             </h2>
-            <ExpenseBreakdown expenses={filteredExpenses} />
+            <ExpenseBreakdown expenses={filteredExpenses} categoryTotals={dashboard.category_totals} />
           </motion.div>
 
           <motion.div
@@ -286,6 +283,7 @@ export default function Expenses() {
                   <div className="relative">
                     <Input
                       type="date"
+                      max={PROJECT_END_DATE}
                       value={dateRange.start}
                       onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
                       className="w-full"
@@ -297,6 +295,7 @@ export default function Expenses() {
                   <div className="relative">
                     <Input
                       type="date"
+                      max={PROJECT_END_DATE}
                       value={dateRange.end}
                       onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
                       className="w-full"

@@ -12,15 +12,15 @@ import {
 } from '@/components/ui/table';
 import { History, TrendingUp, Calendar, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
-import { usePayroll } from '@/hooks/usePayroll';
+import type { PayrollRecord } from '@/hooks/usePayroll';
 
 interface PayrollHistoryProps {
+  payrolls: PayrollRecord[];
   onGeneratePayroll: () => void;
   showNoData?: boolean;
 }
 
-export function PayrollHistory({ onGeneratePayroll, showNoData = true }: PayrollHistoryProps) {
-  const { payrolls } = usePayroll();
+export function PayrollHistory({ payrolls, onGeneratePayroll, showNoData = true }: PayrollHistoryProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {

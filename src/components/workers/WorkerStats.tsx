@@ -20,7 +20,7 @@ export function WorkerStats({ totalWorkers, presentToday, avgDailyRate, weeklyHo
       iconClass: 'bg-accent text-accent-foreground',
     },
     {
-      title: 'Present today',
+      title: 'Present 31 July',
       value: presentToday,
       note: `${attendanceRate}% of active workers`,
       icon: CalendarDays,

@@ -13,12 +13,12 @@ import { BudgetAllocation } from '@/components/budget/BudgetAllocation';
 import { ExpenseOverTime } from '@/components/budget/ExpenseOverTime';
 import { BudgetStats } from '@/components/budget/BudgetStats';
 import { useBudget } from '@/hooks/useBudget';
-import { useExpenses } from '@/hooks/useSupabaseData';
 import { exportToCSV } from '@/lib/utils';
+import { useDashboardSummary } from '@/hooks/useDashboardSummary';
 
 export default function Budget() {
   const { budget, loading, stats, refetchBudget, recalculateTotals } = useBudget();
-  const { expenses, loading: expensesLoading } = useExpenses();
+  const { summary: dashboard } = useDashboardSummary();
   
   console.log('Budget component rendering, loading:', loading, 'budget:', budget);
 
@@ -40,7 +40,10 @@ export default function Budget() {
     try {
       const { error } = await supabase
         .from('budget')
-        .update({ total_budget: parseFloat(newBudget) })
+        .update({
+          total_budget: parseFloat(newBudget),
+          budget_remaining: parseFloat(newBudget) - Number(budget?.used_budget || 0),
+        })
         .eq('id', budget?.id);
 
       if (error) throw error;
@@ -231,7 +234,7 @@ export default function Budget() {
             className="glass rounded-lg p-6"
           >
             <h2 className="text-lg font-semibold mb-4">Budget Allocation</h2>
-            <BudgetAllocation budget={budget} />
+            <BudgetAllocation budget={budget} categoryTotals={dashboard.category_totals} />
           </motion.div>
 
           <motion.div

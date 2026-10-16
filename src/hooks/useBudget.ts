@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchAllPagesInParallel, withDataTimeout } from '@/lib/supabase-pagination';
+import { PROJECT_END_DATE } from '@/lib/project-period';
 
 interface Budget {
   id: string;
@@ -42,19 +43,20 @@ export function useBudget() {
 
     try {
       const { count, error: countError } = await withDataTimeout(
-        supabase.from('expenses').select('id', { count: 'exact', head: true }),
+        supabase.from('expenses').select('id', { count: 'exact', head: true }).lte('date', PROJECT_END_DATE),
       );
       if (countError) throw countError;
       const expenses = await fetchAllPagesInParallel<{ amount: number }>(count || 0, (from, to) => supabase
         .from('expenses')
         .select('amount')
+        .lte('date', PROJECT_END_DATE)
         .order('id')
         .range(from, to), 1000, 6);
       const usedBudget = expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
 
       const { error: updateError } = await supabase
         .from('budget')
-        .update({ used_budget: usedBudget })
+        .update({ used_budget: usedBudget, budget_remaining: Number(budget.total_budget) - usedBudget })
         .eq('id', budget.id);
 
       if (updateError) throw updateError;

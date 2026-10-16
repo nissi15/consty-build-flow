@@ -9,11 +9,24 @@ interface Expense {
 
 interface ExpenseBreakdownProps {
   expenses: Expense[];
+  categoryTotals?: Record<string, number>;
 }
 
-export function ExpenseBreakdown({ expenses }: ExpenseBreakdownProps) {
+interface PieLabelData {
+  cx: number;
+  cy: number;
+  midAngle: number;
+  innerRadius: number;
+  outerRadius: number;
+  percent: number;
+  name: string;
+}
+
+export function ExpenseBreakdown({ expenses, categoryTotals: suppliedTotals }: ExpenseBreakdownProps) {
   const data = useMemo(() => {
-    const categoryTotals = expenses.reduce((acc, expense) => {
+    const categoryTotals = suppliedTotals && Object.keys(suppliedTotals).length
+      ? suppliedTotals
+      : expenses.reduce((acc, expense) => {
       acc[expense.category] = (acc[expense.category] || 0) + Number(expense.amount);
       return acc;
     }, {} as Record<string, number>);
@@ -21,10 +34,10 @@ export function ExpenseBreakdown({ expenses }: ExpenseBreakdownProps) {
     return Object.entries(categoryTotals)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
-  }, [expenses]);
+  }, [expenses, suppliedTotals]);
 
   // Custom label renderer - only show labels for slices > 5%
-  const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
+  const renderCustomLabel = ({ cx, cy, midAngle, outerRadius, percent, name }: PieLabelData) => {
     if (percent < 0.05) return null; // Don't show label if less than 5%
     
     const RADIAN = Math.PI / 180;

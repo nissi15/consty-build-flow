@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { startOfWeek, endOfWeek, format, subWeeks } from 'date-fns';
+import { startOfWeek, format } from 'date-fns';
 import { fetchAllPagesInParallel, withDataTimeout } from '@/lib/supabase-pagination';
 
-interface PayrollRecord {
+export interface PayrollRecord {
   id: string;
   worker_id: string;
   period_start: string;
@@ -72,8 +72,8 @@ export function usePayroll() {
             .range(from, to), 1000, 4);
 
           setPayrolls(payrollData);
-          const currentWeekStart = format(startOfWeek(new Date()), 'yyyy-MM-dd');
-          const currentWeekEnd = format(endOfWeek(new Date()), 'yyyy-MM-dd');
+          const currentWeekStart = format(startOfWeek(new Date('2026-07-31T12:00:00')), 'yyyy-MM-dd');
+          const currentWeekEnd = '2026-07-31';
           const weeklyTotal = payrollData
             .filter(p => p.period_start >= currentWeekStart && p.period_end <= currentWeekEnd)
             .reduce((sum, p) => sum + Number(p.net_amount), 0);
@@ -114,8 +114,8 @@ export function usePayroll() {
 
   const generatePayroll = async () => {
     try {
-      const startDate = format(startOfWeek(new Date()), 'yyyy-MM-dd');
-      const endDate = format(endOfWeek(new Date()), 'yyyy-MM-dd');
+      const startDate = format(startOfWeek(new Date('2026-07-31T12:00:00')), 'yyyy-MM-dd');
+      const endDate = '2026-07-31';
 
       const { data, error } = await supabase
         .rpc('generate_payroll', {

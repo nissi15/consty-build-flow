@@ -131,7 +131,7 @@ const Settings = () => {
 
   const loadDemoPortfolio = async () => {
     const confirmed = window.confirm(
-      'Refresh the 11-month complexity demo? This updates the generated demo records while preserving manually entered records.',
+      'Refresh the 11-month project portfolio? This updates generated project records while preserving manually entered records.',
     );
     if (!confirmed) return;
 
@@ -141,10 +141,10 @@ const Settings = () => {
     try {
       const result = await seedDemoPortfolio(setDemoProgress);
       setDemoResult(result);
-      toast.success('The 11-month demo portfolio is ready.');
+      toast.success('The 11-month project portfolio is ready.');
     } catch (error: unknown) {
-      console.error('Error loading demo portfolio:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to load the demo portfolio');
+      console.error('Error loading project portfolio:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to load the project portfolio');
       setDemoProgress('The load stopped. You can safely retry; completed records will be reused.');
     } finally {
       setIsSeedingDemo(false);
@@ -161,7 +161,7 @@ const Settings = () => {
           <MapPin className="h-3.5 w-3.5" /> Rwanda · Musanze District · Musanze Town Buildings
         </div>
         <h1 className="text-3xl font-semibold tracking-tight text-[#111214] dark:text-[#f5f5f7] sm:text-4xl">Settings</h1>
-        <p className="mt-2 text-muted-foreground">Manage project access, appearance and demonstration data.</p>
+        <p className="mt-2 text-muted-foreground">Manage project access, appearance and portfolio data.</p>
       </motion.div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -177,7 +177,7 @@ const Settings = () => {
                 <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10">
                   <Database className="h-5 w-5 text-white" />
                 </div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Complexity demo</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Project portfolio</p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-tight">Load 11 months of realistic project operations</h2>
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-white/65">
                   Adds 90 Rwandan workers, six-day attendance history, monthly payroll, detailed construction materials,
@@ -202,7 +202,7 @@ const Settings = () => {
                 className="h-12 min-w-56 bg-white px-6 font-semibold text-black hover:bg-[#f0f1f2]"
               >
                 {isSeedingDemo ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
-                {isSeedingDemo ? 'Refreshing portfolio…' : 'Refresh demo portfolio'}
+                {isSeedingDemo ? 'Refreshing portfolio…' : 'Refresh project portfolio'}
               </Button>
             </div>
           </Card>

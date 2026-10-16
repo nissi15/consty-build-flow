@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { format, subMonths } from 'date-fns';
+import { format } from 'date-fns';
 import { Download, FileBarChart, FileSpreadsheet, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -9,22 +9,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAttendance, useBudget, useExpenses, useWorkers } from '@/hooks/useSupabaseData';
 import { usePayroll } from '@/hooks/usePayroll';
 import { downloadReportCsv, downloadReportPdf, type ReportCell } from '@/lib/reporting';
+import { PROJECT_END_DATE, PROJECT_START_DATE, cleanPortfolioLabel } from '@/lib/project-period';
 
 type ReportType = 'overview' | 'workforce' | 'attendance' | 'payroll' | 'materials' | 'expenses' | 'budget';
 type ReportDefinition = { headers: string[]; rows: ReportCell[][]; title: string; total: number };
 
 const money = (value: number) => `RWF ${Math.round(Number(value || 0)).toLocaleString('en-US')}`;
-const cleanDescription = (value: string | null) => (value || '—').replace('DEMO · Musanze Town Buildings · ', '');
+const cleanDescription = (value: string | null) => cleanPortfolioLabel(value) || '—';
 
 export default function Reports() {
   const { workers } = useWorkers();
-  const { attendance } = useAttendance();
+  const { attendance } = useAttendance({ from: PROJECT_START_DATE, to: PROJECT_END_DATE });
   const { expenses } = useExpenses();
   const { budget } = useBudget();
   const { payrolls } = usePayroll();
   const [reportType, setReportType] = useState<ReportType>('overview');
-  const [fromDate, setFromDate] = useState(format(subMonths(new Date(), 11), 'yyyy-MM-dd'));
-  const [toDate, setToDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [fromDate, setFromDate] = useState(PROJECT_START_DATE);
+  const [toDate, setToDate] = useState(PROJECT_END_DATE);
   const [sort, setSort] = useState('date-desc');
 
   const report = useMemo<ReportDefinition>(() => {
@@ -108,8 +109,8 @@ export default function Reports() {
         <div className="mb-5 flex items-center gap-2"><SlidersHorizontal className="h-4 w-4" /><h2 className="font-semibold">Report controls</h2></div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <div className="space-y-2"><Label>Report type</Label><Select value={reportType} onValueChange={value => setReportType(value as ReportType)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="overview">Project overview</SelectItem><SelectItem value="workforce">Workforce register</SelectItem><SelectItem value="attendance">Attendance</SelectItem><SelectItem value="payroll">Payroll</SelectItem><SelectItem value="materials">Materials</SelectItem><SelectItem value="expenses">All expenses</SelectItem><SelectItem value="budget">Budget position</SelectItem></SelectContent></Select></div>
-          <div className="space-y-2"><Label>From</Label><Input type="date" value={fromDate} onChange={event => setFromDate(event.target.value)} /></div>
-          <div className="space-y-2"><Label>To</Label><Input type="date" value={toDate} onChange={event => setToDate(event.target.value)} /></div>
+          <div className="space-y-2"><Label>From</Label><Input type="date" max={PROJECT_END_DATE} value={fromDate} onChange={event => setFromDate(event.target.value)} /></div>
+          <div className="space-y-2"><Label>To</Label><Input type="date" max={PROJECT_END_DATE} value={toDate} onChange={event => setToDate(event.target.value)} /></div>
           <div className="space-y-2"><Label>Sort</Label><Select value={sort} onValueChange={setSort}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="date-desc">Newest first</SelectItem><SelectItem value="date-asc">Oldest / A–Z</SelectItem><SelectItem value="amount-desc">Highest value</SelectItem><SelectItem value="amount-asc">Lowest value</SelectItem></SelectContent></Select></div>
           <div className="flex items-end gap-2"><Button className="flex-1 gap-2" onClick={() => downloadReportPdf(report.headers, report.rows, exportTitle, subtitle)}><Download className="h-4 w-4" />PDF</Button><Button variant="outline" className="gap-2" onClick={() => downloadReportCsv(report.headers, report.rows, exportTitle)}><FileSpreadsheet className="h-4 w-4" />CSV</Button></div>
         </div>

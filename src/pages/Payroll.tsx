@@ -15,17 +15,22 @@ import { PayrollHistory } from '@/components/payroll/PayrollHistory';
 import { WorkerPayrollList } from '@/components/payroll/WorkerPayrollList';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { generatePayrollPDF } from '@/lib/payroll-pdf-export';
+import { PROJECT_END, PROJECT_END_DATE } from '@/lib/project-period';
 
 export default function Payroll() {
   const { payrolls, loading, stats, generatePayroll, getPayrollTrend, refetch: refetchPayrolls } = usePayroll();
   const { workers, loading: workersLoading } = useWorkers();
-  const { attendance, loading: attendanceLoading } = useAttendance();
   const [isGenerating, setIsGenerating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState<{ start: Date; end: Date }>({
-    start: startOfWeek(new Date()),
-    end: endOfWeek(new Date()),
-  });
+  const [selectedPeriod, setSelectedPeriod] = useState<{ start: Date; end: Date }>(() => ({
+    start: startOfWeek(PROJECT_END),
+    end: PROJECT_END,
+  }));
+  const attendanceRange = useMemo(() => ({
+    from: format(selectedPeriod.start, 'yyyy-MM-dd'),
+    to: format(selectedPeriod.end, 'yyyy-MM-dd'),
+  }), [selectedPeriod]);
+  const { attendance, loading: attendanceLoading } = useAttendance(attendanceRange);
   const [paidWorkers, setPaidWorkers] = useState<Set<string>>(new Set());
   const [excludedWorkers, setExcludedWorkers] = useState<Set<string>>(new Set());
 
@@ -47,7 +52,7 @@ export default function Payroll() {
   }, [selectedPeriod, payrolls]);
 
   const filteredWorkers = useMemo(() => {
-    let filtered = workers.filter(w => !excludedWorkers.has(w.id));
+    const filtered = workers.filter(w => !excludedWorkers.has(w.id));
     
     if (!searchQuery.trim()) return filtered;
     
@@ -303,14 +308,14 @@ export default function Payroll() {
       setTimeout(() => {
         refetchPayrolls();
       }, 1000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating payroll status:', error);
-      
+      const message = error instanceof Error ? error.message : 'Unknown error';
       // Check if it's an RLS error
-      if (error.message && error.message.includes('row-level security')) {
+      if (message.includes('row-level security')) {
         toast.error('Permission denied. Please apply the RLS migration in Supabase SQL Editor.');
       } else {
-        toast.error(`Failed to update payment status: ${error.message || 'Unknown error'}`);
+        toast.error(`Failed to update payment status: ${message}`);
       }
     }
   };
@@ -328,15 +333,15 @@ export default function Payroll() {
   };
 
   const handleDateRangeChange = (period: 'week' | 'lastWeek' | 'month') => {
-    const today = new Date();
+    const today = PROJECT_END;
     switch (period) {
       case 'week':
         setSelectedPeriod({
           start: startOfWeek(today),
-          end: endOfWeek(today),
+          end: today,
         });
         break;
-      case 'lastWeek':
+      case 'lastWeek': {
         const lastWeekStart = startOfWeek(subWeeks(today, 1));
         const lastWeekEnd = endOfWeek(subWeeks(today, 1));
         setSelectedPeriod({
@@ -344,6 +349,7 @@ export default function Payroll() {
           end: lastWeekEnd,
         });
         break;
+      }
       case 'month':
         setSelectedPeriod({
           start: subMonths(today, 1),
@@ -469,6 +475,7 @@ export default function Payroll() {
                       <label className="text-xs text-muted-foreground mb-1 block">Start Date</label>
                       <Input
                         type="date"
+                        max={PROJECT_END_DATE}
                         value={format(selectedPeriod.start, 'yyyy-MM-dd')}
                         onChange={(e) => setSelectedPeriod(prev => ({ ...prev, start: new Date(e.target.value) }))}
                         className="text-sm"
@@ -478,6 +485,7 @@ export default function Payroll() {
                       <label className="text-xs text-muted-foreground mb-1 block">End Date</label>
                       <Input
                         type="date"
+                        max={PROJECT_END_DATE}
                         value={format(selectedPeriod.end, 'yyyy-MM-dd')}
                         onChange={(e) => setSelectedPeriod(prev => ({ ...prev, end: new Date(e.target.value) }))}
                         className="text-sm"
@@ -581,6 +589,7 @@ export default function Payroll() {
             transition={{ delay: 0.4 }}
           >
             <PayrollHistory
+              payrolls={payrolls}
               onGeneratePayroll={handleGeneratePayroll}
               showNoData={payrolls.length === 0}
             />

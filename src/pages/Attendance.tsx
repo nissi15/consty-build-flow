@@ -3,18 +3,23 @@ import { MapPin } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState, useMemo } from 'react';
 import { useWorkers, useAttendance } from '@/hooks/useSupabaseData';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AttendanceStats } from '@/components/attendance/AttendanceStats';
 import { PendingAttendance } from '@/components/attendance/PendingAttendance';
 import { AttendanceTrendChart } from '@/components/attendance/AttendanceTrendChart';
 import { AttendanceRecords } from '@/components/attendance/AttendanceRecords';
+import { PROJECT_END } from '@/lib/project-period';
 
 const Attendance = () => {
-  const [date] = useState<Date>(new Date());
+  const [date] = useState<Date>(PROJECT_END);
   const { workers, loading: workersLoading } = useWorkers();
-  const { attendance, loading: attendanceLoading, refetch: refetchAttendance } = useAttendance();
+  const attendanceWindow = useMemo(() => ({
+    from: format(subDays(PROJECT_END, 30), 'yyyy-MM-dd'),
+    to: format(PROJECT_END, 'yyyy-MM-dd'),
+  }), []);
+  const { attendance, loading: attendanceLoading, refetch: refetchAttendance } = useAttendance(attendanceWindow);
 
   const stats = useMemo(() => {
     const today = format(date, 'yyyy-MM-dd');
@@ -96,10 +101,10 @@ const Attendance = () => {
             <MapPin className="h-3.5 w-3.5" /> Musanze Town Buildings · Workforce
           </div>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Attendance</h1>
-          <p className="mt-2 text-muted-foreground">Mark daily presence and review the complete workforce history.</p>
+          <p className="mt-2 text-muted-foreground">Review daily presence and the latest 31 days of workforce history.</p>
         </div>
         <div className="flex items-center gap-2">
-          <p className="text-sm text-muted-foreground">Today</p>
+          <p className="text-sm text-muted-foreground">Reporting date</p>
           <p className="text-sm font-medium">{format(date, 'EEEE, MMMM d, yyyy')}</p>
         </div>
       </motion.div>

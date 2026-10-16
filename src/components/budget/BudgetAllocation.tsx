@@ -1,6 +1,7 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
+import { getCategoryColor } from '@/constants/expenseCategories';
 
 interface Budget {
   total_budget: number;
@@ -10,29 +11,17 @@ interface Budget {
 
 interface BudgetAllocationProps {
   budget: Budget | null;
+  categoryTotals?: Record<string, number>;
 }
 
-const COLORS = {
-  Payroll: '#8B5CF6',
-  Equipment: '#7367F0',
-  Materials: '#28C76F',
-  Transport: '#EA5455',
-  Miscellaneous: '#00CFE8',
-};
-
-export function BudgetAllocation({ budget }: BudgetAllocationProps) {
+export function BudgetAllocation({ budget, categoryTotals = {} }: BudgetAllocationProps) {
   const data = useMemo(() => {
     if (!budget) return [];
-
-    // This would ideally come from your expenses table grouped by category
-    return [
-      { name: 'Payroll', value: budget.used_budget * 0.45 }, // 45% for payroll
-      { name: 'Equipment', value: budget.used_budget * 0.20 }, // 20% for equipment
-      { name: 'Materials', value: budget.used_budget * 0.15 }, // 15% for materials
-      { name: 'Transport', value: budget.used_budget * 0.10 }, // 10% for transport
-      { name: 'Miscellaneous', value: budget.used_budget * 0.10 }, // 10% for misc
-    ];
-  }, [budget]);
+    return Object.entries(categoryTotals)
+      .map(([name, value]) => ({ name, value: Number(value) }))
+      .filter(item => item.value > 0)
+      .sort((a, b) => b.value - a.value);
+  }, [budget, categoryTotals]);
 
   if (!budget || !budget.total_budget) {
     return (
@@ -62,13 +51,13 @@ export function BudgetAllocation({ budget }: BudgetAllocationProps) {
             {data.map((entry, index) => (
               <Cell 
                 key={`cell-${index}`} 
-                fill={COLORS[entry.name as keyof typeof COLORS]}
+                fill={getCategoryColor(entry.name, index)}
                 className="hover:opacity-80 transition-opacity cursor-pointer"
               />
             ))}
           </Pie>
           <Tooltip
-            formatter={(value: number) => [`$${value.toLocaleString()}`, 'Amount']}
+            formatter={(value: number) => [`RWF ${value.toLocaleString()}`, 'Amount']}
           />
           <Legend />
         </PieChart>

@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { TablesInsert } from '@/integrations/supabase/types';
 import { fetchAllPagesInParallel } from '@/lib/supabase-pagination';
+import { PROJECT_END, PROJECT_END_DATE, PROJECT_MONTHS } from '@/lib/project-period';
 
 export interface DemoSeedResult {
   workers: number;
@@ -93,10 +94,10 @@ const isoDate = (date: Date) => `${date.getFullYear()}-${pad(date.getMonth() + 1
 const stableUnit = (seed: number) => ((seed * 9301 + 49297) % 233280) / 233280;
 const stableUuid = (prefix: string, index: number) => `${prefix}${pad(index, 12)}`;
 
-const monthWindows = (today: Date) => Array.from({ length: 11 }, (_, index) => {
-  const start = new Date(today.getFullYear(), today.getMonth() - (10 - index), 1);
+const monthWindows = () => Array.from({ length: PROJECT_MONTHS }, (_, index) => {
+  const start = new Date(PROJECT_END.getFullYear(), PROJECT_END.getMonth() - (PROJECT_MONTHS - 1 - index), 1);
   const naturalEnd = new Date(start.getFullYear(), start.getMonth() + 1, 0);
-  const end = naturalEnd > today ? today : naturalEnd;
+  const end = naturalEnd > PROJECT_END ? PROJECT_END : naturalEnd;
   return { start, end };
 });
 
@@ -121,10 +122,9 @@ async function upsertBatches<T extends Record<string, unknown>>(
 
 export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => undefined): Promise<DemoSeedResult> {
   const { data: sessionData } = await supabase.auth.getSession();
-  if (!sessionData.session) throw new Error('Sign in before loading the demo portfolio.');
+  if (!sessionData.session) throw new Error('Sign in before loading the project portfolio.');
 
-  const today = new Date();
-  const months = monthWindows(today);
+  const months = monthWindows();
   const projectStart = months[0].start;
   const roleQueue = rolePlan.flatMap(([role, count, rate, lunch]) =>
     Array.from({ length: count }, () => ({ role, rate, lunch })),
@@ -140,7 +140,7 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
       role: assignment.role,
       daily_rate: assignment.rate,
       lunch_allowance: assignment.lunch,
-      contact_info: `+250 78${index % 10} ${pad(120 + index, 3)} ${pad(300 + index * 3, 3)} · DEMO`,
+      contact_info: `+250 78${index % 10} ${pad(120 + index, 3)} ${pad(300 + index * 3, 3)}`,
       join_date: isoDate(joinDate),
       is_active: index % 23 !== 0,
       total_days_worked: 0,
@@ -185,19 +185,28 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
     }
   }
 
-  const { count: existingAttendance, error: attendanceCountError } = await supabase
-    .from('attendance')
-    .select('id', { count: 'exact', head: true })
-    .gte('date', isoDate(months[0].start))
-    .lte('date', isoDate(months[months.length - 1].end))
-    .in('worker_id', workerRows.map(worker => worker.id!));
-  if (attendanceCountError) throw attendanceCountError;
+  const monthAttendanceStatus = await Promise.all(months.map(async month => {
+    const start = isoDate(month.start);
+    const end = isoDate(month.end);
+    const expected = attendanceRows.filter(row => row.date! >= start && row.date! <= end).length;
+    const { count, error } = await supabase
+      .from('attendance')
+      .select('id', { count: 'exact', head: true })
+      .gte('date', start)
+      .lte('date', end)
+      .in('worker_id', workerRows.map(worker => worker.id!));
+    if (error) throw error;
+    return { start, end, complete: count === expected };
+  }));
+  const attendanceRowsToWrite = attendanceRows.filter(row => monthAttendanceStatus.some(month =>
+    !month.complete && row.date! >= month.start && row.date! <= month.end,
+  ));
 
-  if (existingAttendance === attendanceRows.length) {
+  if (attendanceRowsToWrite.length === 0) {
     onProgress(`${attendanceRows.length.toLocaleString()} attendance records already complete — skipping the slow rewrite…`);
   } else {
-    onProgress(`Writing ${attendanceRows.length.toLocaleString()} attendance records in parallel batches…`);
-    await upsertBatches('attendance', attendanceRows, 'worker_id,date', 1000, 3);
+    onProgress(`Writing ${attendanceRowsToWrite.length.toLocaleString()} missing attendance records in parallel batches…`);
+    await upsertBatches('attendance', attendanceRowsToWrite, 'worker_id,date', 1000, 3);
   }
 
   const updatedWorkers = workerRows.map((worker) => ({
@@ -232,6 +241,11 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
     }
   }
 
+  const { error: payrollCleanupError } = await supabase
+    .from('payroll')
+    .delete()
+    .in('worker_id', workerRows.map(worker => worker.id!));
+  if (payrollCleanupError) throw payrollCleanupError;
   onProgress(`Creating ${payrollRows.length.toLocaleString()} monthly payroll records…`);
   await upsertBatches('payroll', payrollRows, 'worker_id,period_start,period_end', 500, 3);
 
@@ -251,7 +265,7 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
         date: isoDate(date),
         category: 'Materials',
         type: 'material',
-        description: `DEMO · Musanze Town Buildings · ${description} · delivery ${Math.floor(materialIndex / materials.length) + 1}`,
+        description: `${description} · delivery ${Math.floor(materialIndex / materials.length) + 1}`,
         amount: Math.round((baseAmount * variation) / 1000) * 1000,
       });
     }
@@ -275,35 +289,33 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
         date: isoDate(date),
         category,
         type: 'misc',
-        description: `DEMO · Musanze Town Buildings · ${description}`,
+        description,
         amount: Math.round((baseAmount * variation) / 1000) * 1000,
       });
     }
   }
 
   onProgress(`Preparing ${expenseRows.length.toLocaleString()} material and operating-cost entries…`);
-  const { count: existingDemoExpenseCount, error: demoExpenseCountError } = await supabase
-    .from('expenses')
-    .select('id', { count: 'exact', head: true })
-    .like('description', 'DEMO · Musanze Town Buildings ·%');
-  if (demoExpenseCountError) throw demoExpenseCountError;
-  const { error: cleanupError } = existingDemoExpenseCount
-    ? await supabase
-    .from('expenses')
-    .delete()
-    .like('description', 'DEMO · Musanze Town Buildings ·%')
-    : { error: null };
+  onProgress('Closing the reporting period at 31 July 2026…');
+  const cleanupResults = await Promise.all([
+    supabase.from('attendance').delete().gt('date', PROJECT_END_DATE),
+    supabase.from('payroll').delete().gt('period_start', PROJECT_END_DATE),
+    supabase.from('expenses').delete().gt('date', PROJECT_END_DATE),
+  ]);
+  const cleanupError = cleanupResults.map(result => result.error).find(Boolean);
   if (cleanupError) throw cleanupError;
 
   const { count: retainedExpenseCount, error: expenseCountError } = await supabase
     .from('expenses')
     .select('id', { count: 'exact', head: true });
   if (expenseCountError) throw expenseCountError;
-  const retainedExpenses = await fetchAllPagesInParallel<{ amount: number; date: string }>(retainedExpenseCount || 0, (from, to) => supabase
+  const retainedExpensesWithIds = await fetchAllPagesInParallel<{ id: string; amount: number; date: string; category: string }>(retainedExpenseCount || 0, (from, to) => supabase
     .from('expenses')
-    .select('amount,date')
+    .select('id,amount,date,category')
     .order('id')
     .range(from, to), 1000, 6);
+  const portfolioExpenseIds = new Set(expenseRows.map(row => row.id!));
+  const retainedExpenses = retainedExpensesWithIds.filter(row => !portfolioExpenseIds.has(row.id));
   const retainedExpenseTotal = retainedExpenses.reduce((total, row) => total + Number(row.amount || 0), 0);
   const targetUsedBudget = 360_000_000;
   const minimumDemoExpenseTotal = expenseRows.length * 25_000;
@@ -335,8 +347,8 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
 
   const { error: activityError } = await supabase.from('activity_log').upsert({
     id: DEMO_ID.activity,
-    action_type: 'demo_portfolio_loaded',
-    message: `Loaded 11-month Musanze Town Buildings demo: ${workerRows.length} workers, ${attendanceRows.length} attendance records, ${payrollRows.length} payroll records and ${expenseRows.length} expenses.`,
+    action_type: 'portfolio_reconciled',
+    message: `Reconciled Musanze Town Buildings through July 2026: ${workerRows.length} workers, ${attendanceRows.length} attendance records, ${payrollRows.length} payroll records and ${expenseRows.length} project expenses.`,
   }, { onConflict: 'id' });
   if (activityError) throw activityError;
 
@@ -354,14 +366,19 @@ export async function seedDemoPortfolio(onProgress: DemoSeedProgress = () => und
       attendance: monthAttendance.length ? Math.round((present / monthAttendance.length) * 100) : 0,
     };
   });
+  const categoryTotals = allExpenseRows.reduce<Record<string, number>>((totals, row) => {
+    const category = 'category' in row ? String(row.category || 'Other') : 'Other';
+    totals[category] = (totals[category] || 0) + Number(row.amount || 0);
+    return totals;
+  }, {});
   const { error: snapshotError } = await supabase.from('activity_log').upsert({
     id: DEMO_ID.snapshot,
     action_type: 'dashboard_snapshot',
-    message: JSON.stringify({ months: dashboardMonths }),
+    message: JSON.stringify({ months: dashboardMonths, total_expenses: usedBudget, category_totals: categoryTotals }),
   }, { onConflict: 'id' });
   if (snapshotError) throw snapshotError;
 
-  onProgress('Demo portfolio ready.');
+  onProgress('Portfolio ready through July 2026.');
   return {
     workers: workerRows.length,
     attendance: attendanceRows.length,

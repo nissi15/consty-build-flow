@@ -7,6 +7,10 @@ import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useActivityLog } from '@/hooks/useSupabaseData';
 import { useDashboardSummary } from '@/hooks/useDashboardSummary';
+import { cleanPortfolioLabel, PROJECT_END } from '@/lib/project-period';
+import { seedDemoPortfolio } from '@/lib/demo-data';
+import { useEffect, useRef } from 'react';
+import { toast } from 'sonner';
 
 const formatRwf = (value: number) => {
   if (value >= 1_000_000_000) return `RWF ${(value / 1_000_000_000).toFixed(2)}B`;
@@ -15,8 +19,26 @@ const formatRwf = (value: number) => {
 };
 
 const Dashboard = () => {
-  const { summary: dashboard, loading } = useDashboardSummary();
+  const { summary: dashboard, loading, refetch } = useDashboardSummary();
   const { activityLog } = useActivityLog();
+  const reconciliationStarted = useRef(false);
+  useEffect(() => {
+    const key = 'consty-portfolio-reconciled-july-2026-v1';
+    if (reconciliationStarted.current || localStorage.getItem(key)) return;
+    reconciliationStarted.current = true;
+    toast.info('Synchronising the portfolio through July 2026…');
+    seedDemoPortfolio()
+      .then(async () => {
+        localStorage.setItem(key, 'complete');
+        await refetch();
+        toast.success('Portfolio figures are now synchronised through July 2026.');
+      })
+      .catch((error) => {
+        reconciliationStarted.current = false;
+        console.error('Portfolio reconciliation failed:', error);
+        toast.error('Portfolio synchronisation could not finish. Use Settings to retry.');
+      });
+  }, [refetch]);
   if (loading) return <div className="space-y-5 p-5 lg:p-8"><Skeleton className="h-24" /><div className="grid gap-4 lg:grid-cols-4">{[1, 2, 3, 4].map(item => <Skeleton key={item} className="h-32" />)}</div><Skeleton className="h-[420px]" /></div>;
 
   const budgetUsed = Number(dashboard.budget.used_budget || 0);
@@ -26,7 +48,7 @@ const Dashboard = () => {
   const cards = [
     { label: 'Total workforce', value: dashboard.active_workers.toString(), detail: 'Active workers on project', icon: Users },
     { label: 'Present today', value: dashboard.present_today.toString(), detail: `${dashboard.active_workers ? Math.round((dashboard.present_today / dashboard.active_workers) * 100) : 0}% attendance rate`, icon: CalendarCheck },
-    { label: 'Monthly payroll', value: formatRwf(Number(dashboard.monthly_payroll)), detail: format(new Date(), 'MMMM yyyy'), icon: WalletCards },
+    { label: 'Monthly payroll', value: formatRwf(Number(dashboard.monthly_payroll)), detail: format(PROJECT_END, 'MMMM yyyy'), icon: WalletCards },
     { label: 'Budget used', value: `${budgetPercent}%`, detail: `${formatRwf(budgetUsed)} of ${formatRwf(totalBudget)}`, icon: Package },
   ];
   const recentMaterials = dashboard.recent_materials;
@@ -57,7 +79,7 @@ const Dashboard = () => {
 
       <section className="grid gap-4 lg:grid-cols-3">
         <Card className="p-5"><div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">Attendance</h2><span className="text-xs text-muted-foreground">11 months</span></div><ResponsiveContainer width="100%" height={190}><BarChart data={dashboard.months}><XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={11} /><YAxis hide domain={[0, 100]} /><Tooltip formatter={(value: number) => [`${value}%`, 'Attendance']} /><Bar dataKey="attendance" fill="#cfd2d6" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></Card>
-        <Card className="p-5"><div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">Recent materials</h2><Link to="/expenses" className="text-xs text-muted-foreground">View all →</Link></div><div className="divide-y">{recentMaterials.map(item => <div key={item.id} className="flex items-center gap-3 py-3"><div className="icon-tile h-8 w-8 rounded-full"><Package className="h-4 w-4" /></div><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{item.description?.replace('DEMO · Musanze Town Buildings · ', '') || 'Material purchase'}</p><p className="text-xs text-muted-foreground">{format(new Date(`${item.date}T00:00:00`), 'dd MMM yyyy')}</p></div><span className="text-xs font-medium">{formatRwf(Number(item.amount))}</span></div>)}</div></Card>
+        <Card className="p-5"><div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">Recent materials</h2><Link to="/expenses" className="text-xs text-muted-foreground">View all →</Link></div><div className="divide-y">{recentMaterials.map(item => <div key={item.id} className="flex items-center gap-3 py-3"><div className="icon-tile h-8 w-8 rounded-full"><Package className="h-4 w-4" /></div><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{cleanPortfolioLabel(item.description) || 'Material purchase'}</p><p className="text-xs text-muted-foreground">{format(new Date(`${item.date}T00:00:00`), 'dd MMM yyyy')}</p></div><span className="text-xs font-medium">{formatRwf(Number(item.amount))}</span></div>)}</div></Card>
         <Card className="p-5"><div className="mb-4 flex items-center justify-between"><h2 className="font-semibold">Site alerts</h2><AlertTriangle className="h-4 w-4 text-amber-600" /></div><div className="space-y-3"><div className="flex gap-3 rounded-xl border border-amber-200/70 bg-amber-50/70 p-3 dark:border-amber-900 dark:bg-amber-950/35"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" /><div><p className="text-sm font-medium">{attendanceExceptions} workers not marked present</p><p className="mt-1 text-xs text-muted-foreground">Review today’s attendance before payroll closes.</p></div></div><div className="surface-row flex gap-3 p-3"><FileText className="mt-0.5 h-4 w-4 shrink-0" /><div><p className="text-sm font-medium">Reports available</p><p className="mt-1 text-xs text-muted-foreground">Export any date range as PDF or CSV.</p></div></div>{activityLog[0] && <div className="border-t pt-3"><p className="text-xs uppercase tracking-wide text-muted-foreground">Latest activity</p><p className="mt-2 text-sm">{activityLog[0].message}</p></div>}</div><Button asChild variant="ghost" className="mt-3 h-9 w-full justify-between px-1 text-sm"><Link to="/activity">Open activity log <ArrowUpRight className="h-4 w-4" /></Link></Button></Card>
       </section>
     </div>
